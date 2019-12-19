@@ -1,6 +1,6 @@
 # Parallel Helper
 
-*Parallel Helper* is a static code analyzer for C# projects that supports the development of parallel and asynchronous code. The analyzer is built with the help of the [.NET Compiler Platform (Roslyn)](https://github.com/dotnet/roslyn) and is available as a NuGet package as well as a Visual Studio extension.
+*Parallel Helper* is a static code analyzer for C# projects that supports the development of parallel and asynchronous code. The analyzer is built with the help of the [.NET Compiler Platform (Roslyn)](https://github.com/dotnet/roslyn) and is available as a [NuGet package](https://www.nuget.org/packages/ParallelHelper/) as well as a [Visual Studio extension](https://marketplace.visualstudio.com/items?itemName=camrein.ParallelHelper).
 
 ![Screenshot](screenshot.png)
 
