@@ -1,0 +1,6 @@
+After the successful installation of Parallel Helper, it automatically scans the currently open files.
+For issue reports for all available documents within Visual Studio, it is necessary to enable the full solution analysis:
+
+1. Open the Visual Studio options dialog via "Tools" -> "Options"
+2. Navigate to the C# Advanced Settings via "Text Editor" -> "C#" -> "Advanced" -> or just type "Full Solution Analysis" into the search field.
+3. Tick the option "Enable full solution analysis" in the "Analysis" property group.
