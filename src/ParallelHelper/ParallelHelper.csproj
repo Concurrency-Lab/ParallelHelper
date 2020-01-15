@@ -11,14 +11,14 @@
 
   <PropertyGroup>
     <PackageId>ParallelHelper</PackageId>
-    <Version>1.8.3</Version>
+    <Version>2.0.0</Version>
     <Authors>Christoph Amrein</Authors>
     <PackageProjectUrl>https://github.com/Concurrency-Lab/ParallelHelper</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Concurrency-Lab/ParallelHelper</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Description>ParallelHelper is a static code analyzer that helps to identify concurrency related issues. Moreover, it provides hints to improve the robustness of code with concurrency in mind.</Description>
     <PackageReleaseNotes>Initial release</PackageReleaseNotes>
-    <Copyright>Copyright (C) 2019  Christoph Amrein, Concurrency Lab, HSR Hochschule fuer Technik Rapperswil, Switzerland</Copyright>
+    <Copyright>Copyright (C) 2019 - 2020 Christoph Amrein, Concurrency Lab, HSR Hochschule fuer Technik Rapperswil, Switzerland</Copyright>
     <PackageTags>C#, Parallel, Asynchronous, Concurrency, Bugs, Best Practices, TPL, Task, QC, Static Analysis</PackageTags>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
