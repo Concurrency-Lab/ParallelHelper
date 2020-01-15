@@ -26,6 +26,7 @@ namespace ParallelHelper.Test {
       MetadataReference.CreateFromFile(typeof(ImmutableArray).Assembly.Location),
 
       MetadataReference.CreateFromFile(Assembly.Load("System.Collections, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a").Location),
+      MetadataReference.CreateFromFile(typeof(File).Assembly.Location),
       MetadataReference.CreateFromFile(typeof(WebClient).Assembly.Location),
       MetadataReference.CreateFromFile(typeof(StreamReader).Assembly.Location),
       MetadataReference.CreateFromFile(typeof(Socket).Assembly.Location),
