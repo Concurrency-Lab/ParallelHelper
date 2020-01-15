@@ -7,6 +7,7 @@
         <MoreInfo>https://github.com/Concurrency-Lab/ParallelHelper</MoreInfo>
         <License>License.txt</License>
         <GettingStartedGuide>GettingStarted.txt</GettingStartedGuide>
+        <ReleaseNotes>ReleaseNotes.txt</ReleaseNotes>
         <Tags>C#; Parallel; Asynchronous; Concurrency; Bugs; Best Practices; TPL; Task; QC; Static Analysis</Tags>
     </Metadata>
     <Installation>
