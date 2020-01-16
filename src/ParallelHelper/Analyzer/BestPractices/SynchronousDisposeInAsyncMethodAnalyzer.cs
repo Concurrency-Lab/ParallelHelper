@@ -27,7 +27,6 @@ namespace ParallelHelper.Analyzer.BestPractices {
   /// </summary>
   [DiagnosticAnalyzer(LanguageNames.CSharp)]
   public class SynchronousDisposeInAsyncMethodAnalyzer : DiagnosticAnalyzer {
-    // TODO Using declaration.
     // TODO Search for DisposeAsync implementation?
     public const string DiagnosticId = "PH_P009";
 
@@ -69,15 +68,27 @@ namespace ParallelHelper.Analyzer.BestPractices {
         if (!IsAsyncMethod && !IsAsyncAnonymousFunction) {
           return;
         }
-        foreach(var usingStatement in GetUsingStatementsThatCanBeAsynchronous()) {
-          Context.ReportDiagnostic(Diagnostic.Create(Rule, GetReportLocation(usingStatement)));
+        foreach(var location in GetUsingLocationsThatCanBeDisposedAsynchronously()) {
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, location));
         }
       }
 
-      private Location GetReportLocation(UsingStatementSyntax statement) {
+      private IEnumerable<Location> GetUsingLocationsThatCanBeDisposedAsynchronously() {
+        return GetUsingStatementsThatCanBeAsynchronous()
+          .Select(GetUsingStatementReportLocation)
+          .Concat(
+            GetLocalUsingDeclarationsThatCanBeAsynchronous().Select(GetUsingDeclarationReportLocation)
+          );
+      }
+
+      private Location GetUsingStatementReportLocation(UsingStatementSyntax statement) {
         var start = statement.GetLocation().SourceSpan.Start;
         var end = statement.CloseParenToken.GetLocation().SourceSpan.End;
         return Location.Create(statement.SyntaxTree, TextSpan.FromBounds(start, end));
+      }
+
+      private Location GetUsingDeclarationReportLocation(LocalDeclarationStatementSyntax statement) {
+        return statement.GetLocation();
       }
 
       private IEnumerable<UsingStatementSyntax> GetUsingStatementsThatCanBeAsynchronous() {
@@ -86,13 +97,28 @@ namespace ParallelHelper.Analyzer.BestPractices {
           .WithCancellation(CancellationToken)
           .OfType<UsingStatementSyntax>()
           .Where(statement => !statement.AwaitKeyword.IsKind(SyntaxKind.AwaitKeyword))
-          .Where(statement => AreAllDisposedVariablesAssignableToAnyTargetType(statement, asyncDisposableTypes));
+          .Where(statement => AreAllDisposedVariablesAssignableToAnyTargetType(
+            GetTypesOfDisposedValues(statement), asyncDisposableTypes
+          ));
       }
 
-      private bool AreAllDisposedVariablesAssignableToAnyTargetType(UsingStatementSyntax usingStatement, IEnumerable<ITypeSymbol> targetTypes) {
-        var disposedValues = GetTypesOfDisposedValues(usingStatement).ToArray();
-        return disposedValues.Length > 0 
-          && disposedValues.WithCancellation(CancellationToken)
+      private IEnumerable<LocalDeclarationStatementSyntax> GetLocalUsingDeclarationsThatCanBeAsynchronous() {
+        var asyncDisposableTypes = SemanticModel.GetTypesByName(AsyncDisposableType).ToArray();
+        return Node.DescendantNodesInSameActivationFrame()
+          .WithCancellation(CancellationToken)
+          .OfType<LocalDeclarationStatementSyntax>()
+          .Where(statement => statement.UsingKeyword.IsKind(SyntaxKind.UsingKeyword))
+          .Where(statement => !statement.AwaitKeyword.IsKind(SyntaxKind.AwaitKeyword))
+          .Where(statement => AreAllDisposedVariablesAssignableToAnyTargetType(
+            GetTypesOfDeclaredVariables(statement.Declaration), asyncDisposableTypes
+          ));
+      }
+
+      private bool AreAllDisposedVariablesAssignableToAnyTargetType(IEnumerable<ITypeSymbol?> disposedTypes,
+          IEnumerable<ITypeSymbol> targetTypes) {
+        var disposedTypesArray = disposedTypes.ToArray();
+        return disposedTypesArray.Length > 0 
+          && disposedTypesArray.WithCancellation(CancellationToken)
             .All(variable => IsAssignableToAnyType(variable, targetTypes));
       }
 
@@ -101,11 +127,15 @@ namespace ParallelHelper.Analyzer.BestPractices {
           return new[] { SemanticModel.GetTypeInfo(usingStatement.Expression, CancellationToken).Type };
         }
         if(usingStatement.Declaration != null) {
-          return usingStatement.Declaration.Variables
-            .WithCancellation(CancellationToken)
-            .Select(variable => ((ILocalSymbol)SemanticModel.GetDeclaredSymbol(variable, CancellationToken)).Type);
+          return GetTypesOfDeclaredVariables(usingStatement.Declaration);
         }
         return Enumerable.Empty<ITypeSymbol>();
+      }
+
+      private IEnumerable<ITypeSymbol> GetTypesOfDeclaredVariables(VariableDeclarationSyntax declaration) {
+        return declaration.Variables
+          .WithCancellation(CancellationToken)
+          .Select(variable => ((ILocalSymbol)SemanticModel.GetDeclaredSymbol(variable, CancellationToken)).Type);
       }
 
       private bool IsAssignableToAnyType(ITypeSymbol? type, IEnumerable<ITypeSymbol> targetTypes) {

@@ -20,6 +20,20 @@ class Test {
     }
 
     [TestMethod]
+    public void ReportsSynchronousDisposeWithUsingDeclarationInAsyncMethodOfAsyncDisposableStream() {
+      const string source = @"
+using System.IO;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync(string fileName) {
+    using var stream = File.OpenRead(fileName);
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(6, 5));
+    }
+
+    [TestMethod]
     public void DoesNotReportAsynchronousDisposeInAsyncMethodOfAsyncDisposableStream() {
       const string source = @"
 using System.IO;
