@@ -136,7 +136,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
 
       private bool IsAsyncDisposable(ITypeSymbol? type) {
         return type != null
-          && type.GetAllMembers()
+          && type.GetAllPublicMembers()
             .WithCancellation(CancellationToken)
             .OfType<IMethodSymbol>()
             .Any(IsDisposeAsyncMethod);
