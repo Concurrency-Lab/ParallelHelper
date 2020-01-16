@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Text;
 using ParallelHelper.Extensions;
 using ParallelHelper.Util;
 using System.Collections.Generic;
@@ -69,8 +70,14 @@ namespace ParallelHelper.Analyzer.BestPractices {
           return;
         }
         foreach(var usingStatement in GetUsingStatementsThatCanBeAsynchronous()) {
-          Context.ReportDiagnostic(Diagnostic.Create(Rule, usingStatement.GetLocation()));
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, GetReportLocation(usingStatement)));
         }
+      }
+
+      private Location GetReportLocation(UsingStatementSyntax statement) {
+        var start = statement.GetLocation().SourceSpan.Start;
+        var end = statement.CloseParenToken.GetLocation().SourceSpan.End;
+        return Location.Create(statement.SyntaxTree, TextSpan.FromBounds(start, end));
       }
 
       private IEnumerable<UsingStatementSyntax> GetUsingStatementsThatCanBeAsynchronous() {
