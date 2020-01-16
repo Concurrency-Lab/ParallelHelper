@@ -34,6 +34,52 @@ class Test {
     }
 
     [TestMethod]
+    public void ReportsSynchronousDisposeInAsyncMethodOfImplicitelyAsyncDisposableInstance() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync(string fileName) {
+    using(var resource = new Resource()) {
+    }
+  }
+
+  class Resource : IDisposable {
+    public void Dispose() {}
+    public Task DisposeAsync() {
+      return Task.CompletedTask;
+    }
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(6, 5));
+    }
+
+    [TestMethod]
+    public void ReportsSynchronousDisposeInAsyncMethodOfImplicitelyAsyncDisposableInstanceThroughBaseType() {
+      const string source = @"
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync(string fileName) {
+    using(var resource = new Resource()) {
+    }
+  }
+
+  class Resource : ResourceBase {
+  }
+
+  class ResourceBase {
+    public void Dispose() {}
+    public Task DisposeAsync() {
+      return Task.CompletedTask;
+    }
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(5, 5));
+    }
+
+    [TestMethod]
     public void DoesNotReportAsynchronousDisposeInAsyncMethodOfAsyncDisposableStream() {
       const string source = @"
 using System.IO;

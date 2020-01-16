@@ -27,7 +27,6 @@ namespace ParallelHelper.Analyzer.BestPractices {
   /// </summary>
   [DiagnosticAnalyzer(LanguageNames.CSharp)]
   public class SynchronousDisposeInAsyncMethodAnalyzer : DiagnosticAnalyzer {
-    // TODO Search for DisposeAsync implementation?
     public const string DiagnosticId = "PH_P009";
 
     private const string Category = "Concurrency";
@@ -43,7 +42,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-    private const string AsyncDisposableType = "System.IAsyncDisposable";
+    private const string DisposeAsyncMethod = "DisposeAsync";
     
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
@@ -92,34 +91,31 @@ namespace ParallelHelper.Analyzer.BestPractices {
       }
 
       private IEnumerable<UsingStatementSyntax> GetUsingStatementsThatCanBeAsynchronous() {
-        var asyncDisposableTypes = SemanticModel.GetTypesByName(AsyncDisposableType).ToArray();
         return Node.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<UsingStatementSyntax>()
           .Where(statement => !statement.AwaitKeyword.IsKind(SyntaxKind.AwaitKeyword))
           .Where(statement => AreAllDisposedVariablesAssignableToAnyTargetType(
-            GetTypesOfDisposedValues(statement), asyncDisposableTypes
+            GetTypesOfDisposedValues(statement)
           ));
       }
 
       private IEnumerable<LocalDeclarationStatementSyntax> GetLocalUsingDeclarationsThatCanBeAsynchronous() {
-        var asyncDisposableTypes = SemanticModel.GetTypesByName(AsyncDisposableType).ToArray();
         return Node.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<LocalDeclarationStatementSyntax>()
           .Where(statement => statement.UsingKeyword.IsKind(SyntaxKind.UsingKeyword))
           .Where(statement => !statement.AwaitKeyword.IsKind(SyntaxKind.AwaitKeyword))
           .Where(statement => AreAllDisposedVariablesAssignableToAnyTargetType(
-            GetTypesOfDeclaredVariables(statement.Declaration), asyncDisposableTypes
+            GetTypesOfDeclaredVariables(statement.Declaration)
           ));
       }
 
-      private bool AreAllDisposedVariablesAssignableToAnyTargetType(IEnumerable<ITypeSymbol?> disposedTypes,
-          IEnumerable<ITypeSymbol> targetTypes) {
+      private bool AreAllDisposedVariablesAssignableToAnyTargetType(IEnumerable<ITypeSymbol?> disposedTypes) {
         var disposedTypesArray = disposedTypes.ToArray();
         return disposedTypesArray.Length > 0 
           && disposedTypesArray.WithCancellation(CancellationToken)
-            .All(variable => IsAssignableToAnyType(variable, targetTypes));
+            .All(variable => IsAsyncDisposable(variable));
       }
 
       private IEnumerable<ITypeSymbol> GetTypesOfDisposedValues(UsingStatementSyntax usingStatement) {
@@ -138,11 +134,15 @@ namespace ParallelHelper.Analyzer.BestPractices {
           .Select(variable => ((ILocalSymbol)SemanticModel.GetDeclaredSymbol(variable, CancellationToken)).Type);
       }
 
-      private bool IsAssignableToAnyType(ITypeSymbol? type, IEnumerable<ITypeSymbol> targetTypes) {
+      private bool IsAsyncDisposable(ITypeSymbol? type) {
         return type != null
-          && targetTypes.WithCancellation(CancellationToken)
-            .Any(targetType => SemanticModel.Compilation.ClassifyConversion(type, targetType).IsImplicit);
+          && type.GetAllMembers()
+            .WithCancellation(CancellationToken)
+            .OfType<IMethodSymbol>()
+            .Any(IsDisposeAsyncMethod);
       }
+
+      private bool IsDisposeAsyncMethod(IMethodSymbol method) => method.Name == DisposeAsyncMethod;
     }
   }
 }
