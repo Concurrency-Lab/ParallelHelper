@@ -127,5 +127,19 @@ class Disposable : IDisposable {
 }";
       VerifyDiagnostic(source);
     }
+
+    [TestMethod]
+    public void DoesNotReportAsyncDisposableForNotDisposedVariableDeclarations() {
+      const string source = @"
+using System.IO;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync(string fileName) {
+    var stream = File.OpenRead(fileName);
+  }
+}";
+      VerifyDiagnostic(source);
+    }
   }
 }
