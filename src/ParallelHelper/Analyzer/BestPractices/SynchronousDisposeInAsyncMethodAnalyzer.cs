@@ -142,7 +142,10 @@ namespace ParallelHelper.Analyzer.BestPractices {
             .Any(IsDisposeAsyncMethod);
       }
 
-      private bool IsDisposeAsyncMethod(IMethodSymbol method) => method.Name == DisposeAsyncMethod;
+      private bool IsDisposeAsyncMethod(IMethodSymbol method) {
+        return method.Name == DisposeAsyncMethod
+          && method.Parameters.IsEmpty;
+      }
     }
   }
 }
