@@ -58,6 +58,7 @@ class Test {
     [TestMethod]
     public void ReportsSynchronousDisposeInAsyncMethodOfImplicitelyAsyncDisposableInstanceThroughBaseType() {
       const string source = @"
+using System;
 using System.Threading.Tasks;
 
 class Test {
@@ -69,14 +70,14 @@ class Test {
   class Resource : ResourceBase {
   }
 
-  class ResourceBase {
+  class ResourceBase : IDisposable {
     public void Dispose() {}
     public Task DisposeAsync() {
       return Task.CompletedTask;
     }
   }
 }";
-      VerifyDiagnostic(source, new DiagnosticResultLocation(5, 5));
+      VerifyDiagnostic(source, new DiagnosticResultLocation(6, 5));
     }
 
     [TestMethod]
