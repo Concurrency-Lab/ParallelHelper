@@ -52,7 +52,8 @@ namespace ParallelHelper.Analyzer.Smells {
         SyntaxKind.MethodDeclaration,
         SyntaxKind.SimpleLambdaExpression,
         SyntaxKind.ParenthesizedLambdaExpression,
-        SyntaxKind.AnonymousMethodExpression
+        SyntaxKind.AnonymousMethodExpression,
+        SyntaxKind.LocalFunctionStatement
       );
     }
 
