@@ -68,6 +68,20 @@ class Test {
     }
 
     [TestMethod]
+    public void ReportsThreadSleepInAsyncLocalFunctionInMethod() {
+      const string source = @"
+using System.Threading;
+using System.Threading.Tasks;
+
+class Test {
+  public void DoWork() {
+    async Task Sleep() => Thread.Sleep(100);
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(6, 27));
+    }
+
+    [TestMethod]
     public void DoesNotReportThreadSleepInNonAsyncMethod() {
       const string source = @"
 using System.Threading;
