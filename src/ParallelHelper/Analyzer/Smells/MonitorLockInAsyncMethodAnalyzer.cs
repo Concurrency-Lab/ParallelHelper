@@ -67,12 +67,12 @@ namespace ParallelHelper.Analyzer.Smells {
       public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
 
       public override void Analyze() {
-        foreach(var lockStatement in GetLockStatementsInSameMethodScope()) {
+        foreach(var lockStatement in GetLockStatementsInSameActivationFrame()) {
           Context.ReportDiagnostic(Diagnostic.Create(Rule, lockStatement.GetLocation()));
         }
       }
 
-      private IEnumerable<LockStatementSyntax> GetLockStatementsInSameMethodScope() {
+      private IEnumerable<LockStatementSyntax> GetLockStatementsInSameActivationFrame() {
         return Node.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<LockStatementSyntax>();
