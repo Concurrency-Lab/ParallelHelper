@@ -108,5 +108,19 @@ class Test {
 }";
       VerifyDiagnostic(source);
     }
+
+    [TestMethod]
+    public void DoesNotReportThreadSleepInLocalFunctionInAsyncMethod() {
+      const string source = @"
+using System.Threading;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWork() {
+    void Sleep() => Thread.Sleep(100);
+  }
+}";
+      VerifyDiagnostic(source);
+    }
   }
 }

@@ -21,7 +21,8 @@ namespace ParallelHelper.Extensions {
 
     private static bool IsNewActivationFrame(SyntaxNode node) {
       return node is BaseMethodDeclarationSyntax
-        || node is AnonymousFunctionExpressionSyntax;
+        || node is AnonymousFunctionExpressionSyntax
+        || node is LocalFunctionStatementSyntax;
     }
 
     /// <summary>
