@@ -8,6 +8,9 @@ before_build:
 
 build:
   project: src\ParallelHelper.sln
+  
+test_script:
+  - vstest.console /logger:Appveyor "src\ParallelHelper.Test\bin\Release\netcoreapp2.0\ParallelHelper.Test.dll"
 
 artifacts:
   - path: src\**\*.nupkg
