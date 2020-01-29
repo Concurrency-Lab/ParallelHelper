@@ -61,7 +61,6 @@ class Test {
     }
 
     [TestMethod]
-    [Ignore("Probably requires a more recent roslyn version")]
     public void ReportsLockStatementInsideAsyncInnerMethodDefinedInNonAsyncMethod() {
       const string source = @"
 using System;
