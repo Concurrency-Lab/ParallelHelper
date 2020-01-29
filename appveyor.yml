@@ -1,6 +1,10 @@
 image: Visual Studio 2019
+version: 1.8.3.{build}
 platform: Any CPU
 configuration: Release
+
+before_build:
+  - msbuild -t:restore "src\ParallelHelper.sln"
 
 build:
   project: src\ParallelHelper.sln
