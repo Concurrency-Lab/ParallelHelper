@@ -3,6 +3,7 @@ platform: Any CPU
 configuration: Release
 
 build_script:
+  - msbuild -t:restore "src\ParallelHelper.sln"
   - msbuild "src\ParallelHelper.sln" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 artifacts:
