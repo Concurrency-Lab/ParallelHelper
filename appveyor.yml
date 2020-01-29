@@ -15,6 +15,12 @@ before_test:
 test_script:
   - packages\OpenCover.4.7.922\tools\OpenCover.Console.exe -register:user -oldstyle -output:".\coverage.xml" -target:"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe" -targetargs:"/logger:Appveyor src\ParallelHelper.Test\bin\Release\netcoreapp2.0\ParallelHelper.Test.dll"
 
+after_test:
+  - ps: |
+      $env:PATH = 'C:\msys64\usr\bin;' + $env:PATH
+      Invoke-WebRequest -Uri 'https://codecov.io/bash' -OutFile codecov.sh
+      bash codecov.sh -f "coverage.xml" -t %CODECOV_TOKEN%
+
 artifacts:
   - path: src\**\*.nupkg
   - path: src\**\*.vsix
