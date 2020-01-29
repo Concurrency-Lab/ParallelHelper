@@ -8,9 +8,12 @@ before_build:
 
 build:
   project: src\ParallelHelper.sln
-  
+
+before_test:
+  - nuget install OpenCover -OutputDirectory packages -Version 4.7.922
+
 test_script:
-  - vstest.console /logger:Appveyor "src\ParallelHelper.Test\bin\Release\netcoreapp2.0\ParallelHelper.Test.dll"
+  - OpenCover.Console.exe -register:user -target:"vstest.console" -targetargs:"/logger:Appveyor /output:".\coverage.xml" src\ParallelHelper.Test\bin\Release\netcoreapp2.0\ParallelHelper.Test.dll"
 
 artifacts:
   - path: src\**\*.nupkg
