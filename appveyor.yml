@@ -10,7 +10,7 @@ build:
   project: src\ParallelHelper.sln
   
 test_script:
-  - vstest.console /logger:Appveyor "src\ParallelHelper.Test\bin\Release\netcoreapp2.0\ParallelHelper.Test.dll"
+  - vstest.console /logger:Appveyor "src\ParallelHelper.Test\bin\Release\netcoreapp3.0\ParallelHelper.Test.dll"
 
 artifacts:
   - path: src\**\*.nupkg
