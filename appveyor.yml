@@ -1,0 +1,17 @@
+image: Visual Studio 2019
+version: 1.8.3.{build}
+platform: Any CPU
+configuration: Release
+
+before_build:
+  - msbuild -t:restore "src\ParallelHelper.sln"
+
+build:
+  project: src\ParallelHelper.sln
+  
+test_script:
+  - vstest.console /logger:Appveyor "src\ParallelHelper.Test\bin\Release\netcoreapp2.0\ParallelHelper.Test.dll"
+
+artifacts:
+  - path: src\**\*.nupkg
+  - path: src\**\*.vsix
