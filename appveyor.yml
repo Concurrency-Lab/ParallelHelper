@@ -6,6 +6,10 @@ build_script:
   - msbuild -t:restore "src\ParallelHelper.sln"
   - msbuild "src\ParallelHelper.sln" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
+test:
+  assemblies:
+    - 'src\**\*.Test.dll'
+
 artifacts:
   - path: src\**\*.nupkg
   - path: src\**\*.vsix
