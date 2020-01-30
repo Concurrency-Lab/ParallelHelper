@@ -12,7 +12,8 @@ build:
 for:
 -
   branches:
-    except: master
+    except:
+      - master
   configuration: Debug
 
   test_script:
