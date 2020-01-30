@@ -17,7 +17,7 @@ for:
   configuration: Debug
 
   test_script:
-    - vstest.console.exe /logger:Appveyor "src\ParallelHelper.Test\bin\Release\netcoreapp2.0\ParallelHelper.Test.dll"
+    - vstest.console.exe /logger:Appveyor "src\ParallelHelper.Test\bin\Debug\netcoreapp2.0\ParallelHelper.Test.dll"
 
 -
   branches:
