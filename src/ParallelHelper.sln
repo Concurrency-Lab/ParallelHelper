@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ParallelHelper", "ParallelH
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParallelHelper.Plugin", "ParallelHelper.Plugin\ParallelHelper.Plugin.csproj", "{557F9B7A-043D-40C3-A57A-8DAE20334DB1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParallelHelper.Test", "ParallelHelper.Test\ParallelHelper.Test.csproj", "{0A380A77-44E4-4DEE-9BC6-85F5BB62DCF2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ParallelHelper.Test", "ParallelHelper.Test\ParallelHelper.Test.csproj", "{0A380A77-44E4-4DEE-9BC6-85F5BB62DCF2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{82A97BB8-A3C8-4388-A988-40E034962221}"
 	ProjectSection(SolutionItems) = preProject

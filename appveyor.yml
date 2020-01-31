@@ -1,5 +1,5 @@
 image: Visual Studio 2019
-version: 1.8.3.{build}
+version: 2.0.0.{build}
 platform: Any CPU
 
 before_build:
@@ -17,7 +17,7 @@ for:
   configuration: Debug
 
   test_script:
-    - vstest.console.exe /logger:Appveyor "src\ParallelHelper.Test\bin\Debug\netcoreapp2.0\ParallelHelper.Test.dll"
+    - vstest.console.exe /logger:Appveyor "src\ParallelHelper.Test\bin\Debug\netcoreapp3.0\ParallelHelper.Test.dll"
 
 -
   branches:
@@ -29,7 +29,7 @@ for:
     - nuget install OpenCover -OutputDirectory packages -Version 4.7.922
 
   test_script:
-    - packages\OpenCover.4.7.922\tools\OpenCover.Console.exe -register:user -oldstyle -output:".\coverage.xml" -target:"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe" -targetargs:"/logger:Appveyor src\ParallelHelper.Test\bin\Release\netcoreapp2.0\ParallelHelper.Test.dll"
+    - packages\OpenCover.4.7.922\tools\OpenCover.Console.exe -register:user -oldstyle -output:".\coverage.xml" -target:"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe" -targetargs:"/logger:Appveyor src\ParallelHelper.Test\bin\Release\netcoreapp3.0\ParallelHelper.Test.dll"
 
   after_test:
     - ps: |
