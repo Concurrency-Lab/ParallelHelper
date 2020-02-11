@@ -3,6 +3,7 @@
 - Dropped VS2017 support
 - Upgraded the .NET Compiler Platform to 3.0.0 to support C# 8.0 features
 - New Analyzer: PH_P009 - Synchronous Dispose in Async Method
+- New Analyzer: PH_B012 - Multiple Awaits on the Same ValueTask
 - Now respecting local functions as guards for activation frames
 
 
