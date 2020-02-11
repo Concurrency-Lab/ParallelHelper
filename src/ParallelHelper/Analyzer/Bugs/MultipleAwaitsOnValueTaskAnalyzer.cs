@@ -34,7 +34,7 @@ namespace ParallelHelper.Analyzer.Bugs {
 
     private const string Category = "Concurrency";
 
-    private static readonly LocalizableString Title = "Multiple Awaits on the same ValueTask";
+    private static readonly LocalizableString Title = "Multiple Awaits on the Same ValueTask";
     private static readonly LocalizableString MessageFormat = "The ValueTask of the variable '{0}' is awaited multiple times. This can be problematic since the underlying object may be recycled.";
     private static readonly LocalizableString Description = "";
 
