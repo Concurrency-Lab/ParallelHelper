@@ -16,7 +16,7 @@ namespace ParallelHelper.Extensions {
     /// <param name="metadataName">The metadata name of the type.</param>
     /// <returns><c>True</c> if the type has the given metadata name.</returns>
     public static bool IsEqualType(this SemanticModel semanticModel, ITypeSymbol type, string metadataName) {
-      return semanticModel.GetTypesByName(metadataName).Any(type.OriginalDefinition.Equals);
+      return semanticModel.GetTypesByName(metadataName).Any(type.IsEqualType);
     }
 
     /// <summary>
