@@ -123,11 +123,13 @@ public class Test {
     [TestMethod]
     public void HasSideEffectsReturnsTrueIfLocalVariableIsDeclaredOutsideButAssignedInside() {
       const string source = @"
+using System;
+
 public class Test {
   public void TestMethod() {
     int value = 1;
     Func<int> increment = () => {
-      value += 1;
+      return value += 1;
     };
     increment();
   }
@@ -143,6 +145,8 @@ public class Test {
     [TestMethod]
     public void HasSideEffectsReturnsFalseIfLocalVariableIsDeclaredOutsideButOnlyReadInside() {
       const string source = @"
+using System;
+
 public class Test {
   public void TestMethod() {
     int value = 1;
@@ -163,11 +167,13 @@ public class Test {
     [TestMethod]
     public void HasSideEffectsReturnsTrueIfLocalVariableIsDeclaredOutsideButIncrementedInside() {
       const string source = @"
+using System;
+
 public class Test {
   public void TestMethod() {
     int value = 1;
     Func<int> increment = () => {
-      value++;
+      return value++;
     };
     increment();
   }
@@ -183,10 +189,12 @@ public class Test {
     [TestMethod]
     public void HasSideEffectsReturnsTrueIfLocalVariableIsDeclaredOutsideButChangedWithRefArgumentInside() {
       const string source = @"
+using System;
+
 public class Test {
   public void TestMethod() {
     int value = 1;
-    Func<int> increment = () => {
+    Action increment = () => {
       Increment(ref value);
     };
     increment();
@@ -207,10 +215,12 @@ public class Test {
     [TestMethod]
     public void HasSideEffectsReturnsTrueIfLocalVariableIsDeclaredOutsideButChangedWithOutArgumentInside() {
       const string source = @"
+using System;
+
 public class Test {
   public void TestMethod() {
     int value = 1;
-    Func<int> reset = () => {
+    Action reset = () => {
       Reset(out value);
     };
     reset();
@@ -231,9 +241,11 @@ public class Test {
     [TestMethod]
     public void HasSideEffectsReturnsFalseIfLocalVariableIsDeclaredAndAssignedInside() {
       const string source = @"
+using System;
+
 public class Test {
   public void TestMethod() {
-    Func<int> doIt = () => {
+    Action doIt = () => {
       int value = 1;
       value += 2;
     };
@@ -251,11 +263,13 @@ public class Test {
     [TestMethod]
     public void HasSideEffectsReturnsFalseIfLocalVariableIsDeclaredInOuterAndChangedInInnerLambda() {
       const string source = @"
+using System;
+
 public class Test {
   public void TestMethod() {
     Func<int> doIt = () => {
       int value = 1;
-      Func<int> inner = () => {
+      Action inner = () => {
         value = 0;
       };
     };
