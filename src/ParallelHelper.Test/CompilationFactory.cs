@@ -49,5 +49,11 @@ namespace ParallelHelper.Test {
         .DescendantNodes()
         .OfType<TSyntaxNode>();
     }
+
+    public static SemanticModel GetSemanticModel(string source) {
+      var compilation = CreateCompilation(source);
+      var syntaxTree = compilation.SyntaxTrees.Single();
+      return compilation.GetSemanticModel(syntaxTree);
+    }
   }
 }
