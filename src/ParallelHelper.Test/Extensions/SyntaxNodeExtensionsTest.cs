@@ -239,6 +239,20 @@ public class Test {
     }
 
     [TestMethod]
+    public void IsMethodOrFunctionWithAsyncModifierReturnsFalseIfSyntaxNodeIsNeither() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+public class Test {
+  public void TestMethod() {
+  }
+}";
+      var declaration = CompilationFactory.GetNodesOfType<ClassDeclarationSyntax>(source).Single();
+      Assert.IsFalse(declaration.IsMethodOrFunctionWithAsyncModifier());
+    }
+
+    [TestMethod]
     public void GetAllWrittenExpressionsReturnsLeftOperandOfAssignment() {
       const string source = @"
 public class Test {
