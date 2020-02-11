@@ -139,7 +139,7 @@ namespace ParallelHelper.Analyzer.Bugs {
           );
       }
 
-      private bool HasMoreThanOneWriteAccess(
+      private static bool HasMoreThanOneWriteAccess(
         ILocalSymbol variable,
         bool initializedOnDeclaration,
         IDictionary<ILocalSymbol, int> writeAccessCountPerVariable
