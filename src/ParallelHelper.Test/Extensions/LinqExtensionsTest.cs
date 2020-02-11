@@ -21,10 +21,10 @@ namespace ParallelHelper.Test.Extensions {
     [TestMethod]
     public void WithCancellationDoesNotThrowOperationCanceledExceptionWhenNoCancellationIsRequested() {
       var canceledToken = new CancellationTokenSource();
-      var array = Enumerable.Range(0, 10)
+      var entryCount = Enumerable.Range(0, 10)
         .WithCancellation(canceledToken.Token)
-        .ToArray();
-      Assert.AreEqual(10, array.Length);
+        .Count();
+      Assert.AreEqual(10, entryCount);
     }
 
     [TestMethod]
