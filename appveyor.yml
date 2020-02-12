@@ -17,7 +17,7 @@ test_script:
 
 after_test:
   - ps: |
-      if(-not Test-Path env:APPVEYOR_PULL_REQUEST_TITLE) {
+      if(-not (Test-Path env:APPVEYOR_PULL_REQUEST_TITLE)) {
         $env:PATH = 'C:\msys64\usr\bin;' + $env:PATH
         Invoke-WebRequest -Uri 'https://codecov.io/bash' -OutFile codecov.sh
         bash codecov.sh -f "coverage.xml"
