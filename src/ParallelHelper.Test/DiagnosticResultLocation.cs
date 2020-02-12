@@ -20,7 +20,7 @@ namespace ParallelHelper.Test {
       _hashCode = Hash.With(path).And(Line).And(Column).Get();
     }
 
-    public override bool Equals(object obj) {
+    public override bool Equals(object? obj) {
       return obj is DiagnosticResultLocation other
         && Equals(Path, other.Path)
         && Equals(Line, other.Line)
