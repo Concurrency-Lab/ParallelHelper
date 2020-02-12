@@ -12,7 +12,7 @@ namespace ParallelHelper.Analyzer {
   /// invocation of the <see cref="System.Threading.Monitor.Wait(object)"/> invocation. Moreover, it collects any
   /// access to a field.
   /// </summary>
-  internal abstract class FieldAccessAwareSemanticModelAnalyzerWithSyntaxWalkerBase : MonitorAwareSemanticModelAnalyzerWithSyntaxWalkerBase {
+  public abstract class FieldAccessAwareSemanticModelAnalyzerWithSyntaxWalkerBase : MonitorAwareSemanticModelAnalyzerWithSyntaxWalkerBase {
     // TODO Detect cyclic access to the same field, i.e. through loops?
     // TODO For the read-only accesses: Is it better to always treat ExpressionSyntax as read-access
     //      and exclude write-only parents instead of manually listing every read-access?
@@ -20,12 +20,12 @@ namespace ParallelHelper.Analyzer {
     /// <summary>
     /// Gets the fields whose access is tracked.
     /// </summary>
-    protected ISet<IFieldSymbol> FieldsToTrack { get; }
+    public ISet<IFieldSymbol> FieldsToTrack { get; }
 
     /// <summary>
     /// Gets the collected field accesses.
     /// </summary>
-    protected ISet<FieldAccess> FieldAccesses { get; } = new HashSet<FieldAccess>();
+    public ISet<FieldAccess> FieldAccesses { get; } = new HashSet<FieldAccess>();
 
     /// <summary>
     /// Gets the currently enclosing scopes.
@@ -47,7 +47,7 @@ namespace ParallelHelper.Analyzer {
     /// </summary>
     /// <param name="context">The semantic model analysis context to use during the analysis.</param>
     /// <param name="fieldsToTrack">The fields whose accesses should be tracked.</param>
-    public FieldAccessAwareSemanticModelAnalyzerWithSyntaxWalkerBase(SemanticModelAnalysisContext context, ISet<IFieldSymbol> fieldsToTrack) : base(context) {
+    protected FieldAccessAwareSemanticModelAnalyzerWithSyntaxWalkerBase(SemanticModelAnalysisContext context, ISet<IFieldSymbol> fieldsToTrack) : base(context) {
       FieldsToTrack = fieldsToTrack;
     }
 
@@ -100,6 +100,8 @@ namespace ParallelHelper.Analyzer {
         TrackWriteAccessToPotentialField(node.Expression, node);
       } else if (node.RefOrOutKeyword.IsKind(SyntaxKind.OutKeyword)) {
         TrackWriteAccessToPotentialField(node.Expression, node);
+      } else {
+        TrackReadAccessToPotentialField(node.Expression, node);
       }
       base.VisitArgument(node);
     }

@@ -5,7 +5,7 @@ namespace ParallelHelper.Analyzer {
   /// <summary>
   /// Base analyzer for implementations that work with the semantic model analysis context and a syntax walker.
   /// </summary>
-  internal abstract class SemanticModelAnalyzerWithSyntaxWalkerBase : InternalAnalyzerWithSyntaxWalkerBase<SemanticModelAnalysisContext> {
+  public abstract class SemanticModelAnalyzerWithSyntaxWalkerBase : InternalAnalyzerWithSyntaxWalkerBase<SemanticModelAnalysisContext> {
     /// <summary>
     /// Gets the semantic model used during the analysis.
     /// </summary>
