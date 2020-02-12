@@ -24,9 +24,11 @@ for:
 
   after_test:
     - ps: |
-        $env:PATH = 'C:\msys64\usr\bin;' + $env:PATH
-        Invoke-WebRequest -Uri 'https://codecov.io/bash' -OutFile codecov.sh
-        bash codecov.sh -f "coverage.xml"
+        if(-not Test-Path env:APPVEYOR_PULL_REQUEST_TITLE) {
+          $env:PATH = 'C:\msys64\usr\bin;' + $env:PATH
+          Invoke-WebRequest -Uri 'https://codecov.io/bash' -OutFile codecov.sh
+          bash codecov.sh -f "coverage.xml"
+        }
 
   artifacts:
     - path: src\**\*.nupkg
