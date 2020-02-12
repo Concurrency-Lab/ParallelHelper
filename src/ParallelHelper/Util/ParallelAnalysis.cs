@@ -70,7 +70,8 @@ namespace ParallelHelper.Util {
 
     private bool IsParallelMethodWithName(InvocationExpressionSyntax invocation, string methodName) {
       return _semanticModel.GetSymbolInfo(invocation, _cancellationToken).Symbol is IMethodSymbol method
-        && method.Name.Equals(methodName) && IsParallelMethod(method);
+        && method.Name.Equals(methodName)
+        && IsParallelMethod(method);
     }
 
     /// <summary>
