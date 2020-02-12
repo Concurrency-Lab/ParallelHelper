@@ -23,6 +23,6 @@ after_test:
         bash codecov.sh -f "coverage.xml"
       }
 
-  artifacts:
-    - path: src\**\*.nupkg
-    - path: src\**\*.vsix
+artifacts:
+  - path: src\**\*.nupkg
+  - path: src\**\*.vsix
