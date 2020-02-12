@@ -10,10 +10,10 @@ build:
   project: src\ParallelHelper.sln
 
 before_test:
-  - nuget install OpenCover -OutputDirectory packages -Version 4.7.922
+  - dotnet tool install --global coverlet.console --version 1.7.0
 
 test_script:
-  - packages\OpenCover.4.7.922\tools\OpenCover.Console.exe -register:user -output:".\coverage.xml" -target:"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe" -targetargs:"/logger:Appveyor src\ParallelHelper.Test\bin\Release\netcoreapp3.0\ParallelHelper.Test.dll"
+  - coverlet src\ParallelHelper.Test\bin\Release\netcoreapp3.0\ParallelHelper.Test.dll --target "dotnet" --targetargs "test src\ -c Release --no-build" --format opencover --output coverage.xml
 
 after_test:
   - ps: |
