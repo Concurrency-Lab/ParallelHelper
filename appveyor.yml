@@ -1,6 +1,6 @@
 image: Visual Studio 2019
 version: 2.0.0.{build}
-platform: Any CPU
+configuration: Release
 
 before_build:
   - msbuild -t:restore "src\ParallelHelper.sln"
@@ -8,35 +8,25 @@ before_build:
 build:
   project: src\ParallelHelper.sln
 
+before_test:
+  - dotnet tool install --global coverlet.console --version 1.7.0
+
+test_script:
+  - coverlet src\ParallelHelper.Test\bin\Release\netcoreapp3.0\ParallelHelper.Test.dll --target "dotnet" --targetargs "test src\ParallelHelper.Test -c Release --no-build" --format opencover --output coverage.xml
+
+after_test:
+  - ps: |
+      if(-not (Test-Path env:APPVEYOR_PULL_REQUEST_TITLE)) {
+        $env:PATH = 'C:\msys64\usr\bin;' + $env:PATH
+        Invoke-WebRequest -Uri 'https://codecov.io/bash' -OutFile codecov.sh
+        bash codecov.sh -f "coverage.xml"
+      }
 
 for:
 -
   branches:
-    except:
-      - master
-  configuration: Debug
-
-  test_script:
-    - vstest.console.exe /logger:Appveyor "src\ParallelHelper.Test\bin\Debug\netcoreapp3.0\ParallelHelper.Test.dll"
-
--
-  branches:
     only:
       - master
-  configuration: Release
-
-  before_test:
-    - nuget install OpenCover -OutputDirectory packages -Version 4.7.922
-
-  test_script:
-    - packages\OpenCover.4.7.922\tools\OpenCover.Console.exe -register:user -oldstyle -output:".\coverage.xml" -target:"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe" -targetargs:"/logger:Appveyor src\ParallelHelper.Test\bin\Release\netcoreapp3.0\ParallelHelper.Test.dll"
-
-  after_test:
-    - ps: |
-        $env:PATH = 'C:\msys64\usr\bin;' + $env:PATH
-        Invoke-WebRequest -Uri 'https://codecov.io/bash' -OutFile codecov.sh
-        bash codecov.sh -f "coverage.xml"
-
   artifacts:
     - path: src\**\*.nupkg
     - path: src\**\*.vsix

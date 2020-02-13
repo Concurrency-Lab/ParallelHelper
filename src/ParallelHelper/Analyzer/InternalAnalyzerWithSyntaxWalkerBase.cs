@@ -8,7 +8,7 @@ namespace ParallelHelper.Analyzer {
   /// The <see cref="CSharpSyntaxWalker.Visit(SyntaxNode)"/> method is overriden to respect the context's cancellation token.
   /// </summary>
   /// <typeparam name="TContext">The type of the analysis context.</typeparam>
-  internal abstract class InternalAnalyzerWithSyntaxWalkerBase<TContext> : CSharpSyntaxWalker {
+  public abstract class InternalAnalyzerWithSyntaxWalkerBase<TContext> : CSharpSyntaxWalker {
     /// <summary>
     /// Gets the analysis context used during the analysis.
     /// </summary>

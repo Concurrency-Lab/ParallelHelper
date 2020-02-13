@@ -9,7 +9,7 @@ namespace ParallelHelper.Analyzer {
   /// implementation is aware of the use of lock statements and loops that are candidates for conditional loops of an
   /// invocation of the <see cref="System.Threading.Monitor.Wait(object)"/> invocation.
   /// </summary>
-  internal abstract class MonitorAwareSemanticModelAnalyzerWithSyntaxWalkerBase : SemanticModelAnalyzerWithSyntaxWalkerBase {
+  public abstract class MonitorAwareSemanticModelAnalyzerWithSyntaxWalkerBase : SemanticModelAnalyzerWithSyntaxWalkerBase {
     /// <summary>
     /// Gets the analysis instance for monitor based analysis.
     /// </summary>

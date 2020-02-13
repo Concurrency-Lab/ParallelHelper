@@ -51,11 +51,12 @@ namespace ParallelHelper.Extensions {
     /// <param name="type">The type to get non-private members of.</param>
     /// <returns>All the non-private members of the type and its base types.</returns>
     public static IEnumerable<ISymbol> GetAllNonPrivateMembers(this ITypeSymbol type) {
-      return GetAllMembers(type)
-        .Where(member =>
-          member.DeclaredAccessibility != Accessibility.NotApplicable
-           && member.DeclaredAccessibility != Accessibility.Private
-        );
+      return GetAllMembers(type).Where(IsNonPrivateMember);
+    }
+
+    private static bool IsNonPrivateMember(ISymbol member) {
+      return member.DeclaredAccessibility != Accessibility.NotApplicable
+        && member.DeclaredAccessibility != Accessibility.Private;
     }
 
     /// <summary>

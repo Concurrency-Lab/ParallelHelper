@@ -1,4 +1,4 @@
-﻿using ParallelHelper.Util;
+﻿using System;
 
 namespace ParallelHelper.Test {
   /// <summary>
@@ -17,10 +17,10 @@ namespace ParallelHelper.Test {
       Path = path;
       Line = line;
       Column = column;
-      _hashCode = Hash.With(path).And(Line).And(Column).Get();
+      _hashCode = HashCode.Combine(path, Line, Column);
     }
 
-    public override bool Equals(object obj) {
+    public override bool Equals(object? obj) {
       return obj is DiagnosticResultLocation other
         && Equals(Path, other.Path)
         && Equals(Line, other.Line)

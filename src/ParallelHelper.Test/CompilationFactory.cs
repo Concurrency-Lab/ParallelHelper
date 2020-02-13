@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
@@ -38,6 +39,21 @@ namespace ParallelHelper.Test {
     public static Compilation CreateCompilation(string source) {
       var syntaxTree = CSharpSyntaxTree.ParseText(source, default, TestSourceFilePath);
       return CSharpCompilation.Create("Test.dll", new[] { syntaxTree }, References, CompilationOptions);
+    }
+
+    public static IEnumerable<TSyntaxNode> GetNodesOfType<TSyntaxNode>(string source) where TSyntaxNode : SyntaxNode {
+      return CreateCompilation(source)
+        .SyntaxTrees
+        .Single()
+        .GetRoot()
+        .DescendantNodes()
+        .OfType<TSyntaxNode>();
+    }
+
+    public static SemanticModel GetSemanticModel(string source) {
+      var compilation = CreateCompilation(source);
+      var syntaxTree = compilation.SyntaxTrees.Single();
+      return compilation.GetSemanticModel(syntaxTree);
     }
   }
 }
