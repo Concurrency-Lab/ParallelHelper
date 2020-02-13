@@ -12,7 +12,7 @@ before_test:
   - dotnet tool install --global coverlet.console --version 1.7.0
 
 test_script:
-  - coverlet src\ParallelHelper.Test\bin\Release\netcoreapp3.0\ParallelHelper.Test.dll --target "dotnet" --targetargs "test src\ParallelHelper.Test -c Release -logger:Appveyor --no-build" --format opencover --output coverage.xml
+  - coverlet src\ParallelHelper.Test\bin\Release\netcoreapp3.0\ParallelHelper.Test.dll --target "dotnet" --targetargs 'test src\ParallelHelper.Test -c Release -logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" --no-build' --format opencover --output coverage.xml
 
 after_test:
   - ps: |
