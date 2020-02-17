@@ -27,7 +27,6 @@ namespace ParallelHelper.Analyzer.Bugs {
   /// </summary>
   [DiagnosticAnalyzer(LanguageNames.CSharp)]
   public class TaskCreationOnDisposedValueAnalyzer : DiagnosticAnalyzer {
-    // TODO Support using declarations?
     public const string DiagnosticId = "PH_B011";
 
     private const string Category = "Concurrency";
@@ -51,39 +50,47 @@ namespace ParallelHelper.Analyzer.Bugs {
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
       context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-      context.RegisterSyntaxNodeAction(AnalyzeExpressionStatement, SyntaxKind.UsingStatement);
+      context.RegisterSyntaxNodeAction(AnalyzeStatement, SyntaxKind.UsingStatement);
     }
 
-    private static void AnalyzeExpressionStatement(SyntaxNodeAnalysisContext context) {
+    private static void AnalyzeStatement(SyntaxNodeAnalysisContext context) {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<UsingStatementSyntax> {
+    private class Analyzer : SyntaxNodeAnalyzerBase<StatementSyntax> {
       public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
 
       public override void Analyze() {
-        var disposedVariables = GetDisposedVariables().ToImmutableHashSet();
-        foreach(var returnStatement in GetReturnStatementsReturningTasksDependingOnVariable(disposedVariables)) {
+        foreach(var returnStatement in GetReturnStatementsReturningTasksDependingOnVariableFromUsingStatement()) {
           Context.ReportDiagnostic(Diagnostic.Create(Rule, returnStatement.GetLocation()));
         }
       }
 
-      private IEnumerable<ISymbol> GetDisposedVariables() {
-        return GetDisposedVariablesFromUsingDeclaration()
-          .Concat(GetDisposedVariablesFromUsingExpression());
+      private IEnumerable<ReturnStatementSyntax> GetReturnStatementsReturningTasksDependingOnVariableFromUsingStatement() {
+        if(Node is UsingStatementSyntax usingStatement) {
+          var disposedVariables = GetDisposedVariablesFromUsingStatement(usingStatement).ToImmutableHashSet();
+          return GetReturnStatementsReturningTasksDependingOnVariable(disposedVariables);
+        }
+        return Enumerable.Empty<ReturnStatementSyntax>();
       }
 
-      private IEnumerable<ISymbol> GetDisposedVariablesFromUsingDeclaration() {
-        if (Node.Declaration == null) {
+      private IEnumerable<ISymbol> GetDisposedVariablesFromUsingStatement(UsingStatementSyntax usingStatement) {
+        return GetDisposedVariablesFromUsingStatementDeclaration(usingStatement)
+          .Concat(GetDisposedVariablesFromUsingStatementExpression(usingStatement));
+      }
+
+      private IEnumerable<ISymbol> GetDisposedVariablesFromUsingStatementDeclaration(UsingStatementSyntax usingStatement) {
+        var declaration = usingStatement.Declaration;
+        if (declaration == null) {
           return Enumerable.Empty<ISymbol>();
         }
-        return Node.Declaration.Variables
+        return declaration.Variables
           .WithCancellation(CancellationToken)
           .Select(declarator => SemanticModel.GetDeclaredSymbol(declarator, CancellationToken));
       }
 
-      private IEnumerable<ISymbol> GetDisposedVariablesFromUsingExpression() {
-        var expression = Node.Expression;
+      private IEnumerable<ISymbol> GetDisposedVariablesFromUsingStatementExpression(UsingStatementSyntax usingStatement) {
+        var expression = usingStatement.Expression;
         if(expression is AssignmentExpressionSyntax assignment) {
           expression = assignment.Left;
         }
