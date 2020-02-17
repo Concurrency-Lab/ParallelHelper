@@ -50,7 +50,7 @@ namespace ParallelHelper.Analyzer.Bugs {
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
       context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-      context.RegisterSyntaxNodeAction(AnalyzeStatement, SyntaxKind.UsingStatement);
+      context.RegisterSyntaxNodeAction(AnalyzeStatement, SyntaxKind.UsingStatement, SyntaxKind.LocalDeclarationStatement);
     }
 
     private static void AnalyzeStatement(SyntaxNodeAnalysisContext context) {
@@ -67,9 +67,12 @@ namespace ParallelHelper.Analyzer.Bugs {
       }
 
       private IEnumerable<ReturnStatementSyntax> GetReturnStatementsReturningTasksDependingOnVariableFromUsingStatement() {
-        if(Node is UsingStatementSyntax usingStatement) {
+        if (Node is UsingStatementSyntax usingStatement) {
           var disposedVariables = GetDisposedVariablesFromUsingStatement(usingStatement).ToImmutableHashSet();
-          return GetReturnStatementsReturningTasksDependingOnVariable(disposedVariables);
+          return GetReturnStatementsReturningTasksDependingOnVariable(Node, disposedVariables);
+        } else if(Node is LocalDeclarationStatementSyntax localDeclaration) {
+          var disposedVariables = GetDisposedVariablesFromLocalDeclaration(localDeclaration).ToImmutableHashSet();
+          return GetReturnStatementsReturningTasksDependingOnVariable(Node.Parent, disposedVariables);
         }
         return Enumerable.Empty<ReturnStatementSyntax>();
       }
@@ -80,7 +83,17 @@ namespace ParallelHelper.Analyzer.Bugs {
       }
 
       private IEnumerable<ISymbol> GetDisposedVariablesFromUsingStatementDeclaration(UsingStatementSyntax usingStatement) {
-        var declaration = usingStatement.Declaration;
+        return GetVariablesFromVariableDeclaration(usingStatement.Declaration);
+      }
+
+      private IEnumerable<ISymbol> GetDisposedVariablesFromLocalDeclaration(LocalDeclarationStatementSyntax localDeclaration) {
+        if (!localDeclaration.UsingKeyword.IsKind(SyntaxKind.UsingKeyword)) {
+          return Enumerable.Empty<ISymbol>();
+        }
+        return GetVariablesFromVariableDeclaration(localDeclaration.Declaration);
+      }
+
+      private IEnumerable<ISymbol> GetVariablesFromVariableDeclaration(VariableDeclarationSyntax? declaration) {
         if (declaration == null) {
           return Enumerable.Empty<ISymbol>();
         }
@@ -101,8 +114,8 @@ namespace ParallelHelper.Analyzer.Bugs {
         return symbol == null ? Enumerable.Empty<ISymbol>() : new ISymbol[] { symbol };
       }
 
-      private IEnumerable<ReturnStatementSyntax> GetReturnStatementsReturningTasksDependingOnVariable(ISet<ISymbol> disposedVariables) {
-        return Node.DescendantNodes()
+      private IEnumerable<ReturnStatementSyntax> GetReturnStatementsReturningTasksDependingOnVariable(SyntaxNode root, ISet<ISymbol> disposedVariables) {
+        return root.DescendantNodes()
           .WithCancellation(CancellationToken)
           .OfType<ReturnStatementSyntax>()
           .Where(returnStatement => returnStatement.Expression != null)

@@ -5,7 +5,7 @@ namespace ParallelHelper.Test.Analyzer.Bugs {
   [TestClass]
   public class TaskCreationOnDisposedValueAnalyzerTest : AnalyzerTestBase<TaskCreationOnDisposedValueAnalyzer> {
     [TestMethod]
-    public void ReportsReturnWithTaskThatIsCreatedByTheInvocationOfMemberOfObjectDisposedByEnclosingUsingDeclaration() {
+    public void ReportsReturnWithTaskThatIsCreatedByTheInvocationOfMemberOfObjectDisposedByEnclosingUsingStatementDeclaration() {
       const string source = @"
 using System.Net;
 using System.Threading.Tasks;
@@ -38,6 +38,21 @@ class Test {
     }
 
     [TestMethod]
+    public void ReportsReturnWithTaskThatIsCreatedByTheInvocationOfMemberOfObjectDisposedBySameScopedLocalUsingDeclaration() {
+      const string source = @"
+using System.Net;
+using System.Threading.Tasks;
+
+class Test {
+  public Task<string> GetEventsAsync() {
+    using var client = new WebClient();
+    return client.DownloadStringTaskAsync(""https://api.github.com/events"");
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(7, 5));
+    }
+
+    [TestMethod]
     public void ReportsReturnWithTaskThatIsCreatedByTheInvocationOfMemberOfObjectDisposedByEnclosingUsingAssignment() {
       const string source = @"
 using System.Net;
@@ -55,8 +70,9 @@ class Test {
     }
 
     [TestMethod]
-    public void ReportsReturnWithTaskThatIsCreatedByTheInvocationOfNestedMemberOfObjectDisposedByEnclosingUsingDeclaration() {
+    public void ReportsReturnWithTaskThatIsCreatedByTheInvocationOfNestedMemberOfObjectDisposedByEnclosingUsingStatementDeclaration() {
       const string source = @"
+using System;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -75,7 +91,7 @@ class NestedWebClient : IDisposable {
     Client.Dispose();
   }
 }";
-      VerifyDiagnostic(source, new DiagnosticResultLocation(7, 7));
+      VerifyDiagnostic(source, new DiagnosticResultLocation(8, 7));
     }
 
     [TestMethod]
@@ -103,6 +119,21 @@ using System.Threading.Tasks;
 class Test {
   public async Task<string> GetEventsAsync() {
     var client = new WebClient();
+    return await client.DownloadStringTaskAsync(""https://api.github.com/events"");
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportReturnTaskThatIsCreatedByTheInvocationOfMemberOfUsingDeclarationDisposedObject() {
+      const string source = @"
+using System.Net;
+using System.Threading.Tasks;
+
+class Test {
+  public Task<string> GetEventsAsync() {
+    using var client = new WebClient();
     return await client.DownloadStringTaskAsync(""https://api.github.com/events"");
   }
 }";
