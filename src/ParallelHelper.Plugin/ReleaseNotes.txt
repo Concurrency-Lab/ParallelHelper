@@ -5,7 +5,8 @@
 - New Analyzer: PH_P009 - Synchronous Dispose in Async Method
 - New Analyzer: PH_B012 - Multiple Awaits on the Same ValueTask
 - Improved Analyzer: PH_B011 - Added support for using declarations
-- Improved: Now respecting local functions as guards for activation frames
+- Now respecting local functions as guards for activation frames
+- Set the default severity of PH_P004 to hidden since PH_P007 covers the issue
 
 
 ------------------
