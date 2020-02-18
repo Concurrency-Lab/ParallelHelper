@@ -31,7 +31,6 @@ namespace ParallelHelper.Analyzer.BestPractices {
   /// </summary>
   [DiagnosticAnalyzer(LanguageNames.CSharp)]
   public class PassCancellationTokenWherePossibleAnalyzer : DiagnosticAnalyzer {
-    // TODO Probably obsolete due to the analyzer UnusedCancellationTokenFromEnclosingScopeAnalyzer.
     public const string DiagnosticId = "PH_P004";
 
     private const string Category = "Concurrency";
@@ -41,7 +40,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
     private static readonly LocalizableString Description = "";
 
     private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
-      DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Warning,
+      DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Hidden,
       isEnabledByDefault: true, description: Description, helpLinkUri: HelpLinkFactory.CreateUri(DiagnosticId)
     );
 
