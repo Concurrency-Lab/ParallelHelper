@@ -23,6 +23,10 @@ For issue reports for all available documents within *Visual Studio*, it is nece
 
 A complete rebuild of the solution should yield potential issues for all available documents. For Visual Studio users, enabling the *Full Solution Analysis* option, as described in the *Visual Studio Extension* section, is also possible.
 
+### Visual Studio Code
+
+*VS Code* requires the C# extension as well as the installation of *Parallel Helper* as a NuGet package into the desired projects. Last but not least, it is necessary to enable the Roslyn analyzers support. One way to enable the Roslyn analyzers is through the *VS Code* settings page by ticking the option *Omnisharp: Enable Roslyn Analyzers*.
+
 ## Issue Classes
 
 There are currently three classes of issues:
