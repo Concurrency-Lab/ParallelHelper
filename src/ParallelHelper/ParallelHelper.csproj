@@ -31,6 +31,8 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Company>Concurrency Lab, HSR Hochschule fuer Technik Rapperswil, Switzerland</Company>
     <NeutralLanguage>en-US</NeutralLanguage>
+    <AssemblyVersion>2.0.1.0</AssemblyVersion>
+    <FileVersion>2.0.1.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
