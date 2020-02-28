@@ -25,7 +25,7 @@ A complete rebuild of the solution should yield potential issues for all availab
 
 ### Visual Studio Code
 
-*VS Code* requires the C# extension as well as the installation of *Parallel Helper* as a NuGet package into the desired projects. Last but not least, it is necessary to enable the Roslyn analyzers support. One way to enable the Roslyn analyzers is through the *VS Code* settings page by ticking the option *Omnisharp: Enable Roslyn Analyzers*.
+*VS Code* requires the [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.csharp) as well as the installation of *Parallel Helper* as a NuGet package into the desired projects. After the installation, it is necessary to enable the Roslyn analyzers support of the C# extension. One way to enable the analyzers is through the *VS Code* settings page by ticking the option *Omnisharp: Enable Roslyn Analyzers*.
 
 ## Issue Classes
 
