@@ -29,7 +29,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
   /// </summary>
   [DiagnosticAnalyzer(LanguageNames.CSharp)]
   public class AsyncInsteadOfContinuationsAnalyzer : DiagnosticAnalyzer {
-    public const string DiagnosticId = "PH_P009";
+    public const string DiagnosticId = "PH_P010";
 
     private const string Category = "Concurrency";
 
