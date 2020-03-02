@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using ParallelHelper.Extensions;
 using ParallelHelper.Util;
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -60,10 +59,6 @@ namespace ParallelHelper.Analyzer.BestPractices {
 
     private static void AnalyzeCandidate(SyntaxNodeAnalysisContext context) {
       new Analyzer(context).Analyze();
-    }
-
-    private static bool IsTaskType(ITypeSymbol type, SemanticModel semanticModel) {
-      return TaskTypes.Any(typeName => semanticModel.IsEqualType(type, typeName));
     }
 
     private class Analyzer : SyntaxNodeAnalyzerBase<SyntaxNode> {
