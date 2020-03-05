@@ -92,7 +92,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
       private bool IsContinuation(InvocationExpressionSyntax invocation) {
         return SemanticModel.GetSymbolInfo(invocation, CancellationToken).Symbol is IMethodSymbol method
           && method.Name == ContinueWithMethod
-          && IsTaskType(method.ReturnType);
+          && IsTaskType(method.ContainingType);
       }
 
       private bool IsTaskType(ITypeSymbol type) {
