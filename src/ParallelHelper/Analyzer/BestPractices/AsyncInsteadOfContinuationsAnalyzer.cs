@@ -38,7 +38,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
     private static readonly LocalizableString Description = "";
 
     private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
-      DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Info,
+      DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Hidden,
       isEnabledByDefault: true, description: Description, helpLinkUri: HelpLinkFactory.CreateUri(DiagnosticId)
     );
 
