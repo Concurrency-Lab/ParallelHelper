@@ -1,4 +1,11 @@
-﻿v2.0.0
+﻿v2.1.0
+
+- New Analyzer: PH_P010 - Async Instead of Continuation
+
+
+------------------
+
+v2.0.0
 
 - Dropped VS2017 support
 - Upgraded the .NET Compiler Platform to 3.0.0 to support C# 8.0 features
