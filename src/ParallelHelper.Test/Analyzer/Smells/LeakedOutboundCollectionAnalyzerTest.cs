@@ -21,6 +21,25 @@ class Test {
 }";
       VerifyDiagnostic(source, new DiagnosticResultLocation(9, 14));
     }
+    [TestMethod]
+    public void ReportsReturnedUnsafeFieldCollectionInsideLockStatementOfPublicMethodInNestedClassOnlyOnce() {
+      const string source = @"
+using System.Collections.Generic;
+
+class Test {
+  class Nested {
+    private readonly object syncObject = new object();
+    private readonly HashSet<string> entries = new HashSet<string>();
+
+    public ISet<string> GetContent() {
+      lock(syncObject) {
+        return entries;
+      }
+    }
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(10, 16));
+    }
 
     [TestMethod]
     public void ReportsReturnedUnsafeFieldCollectionInsideLockStatementOfPublicProperty() {
