@@ -190,7 +190,7 @@ class Test {
     }
 
     [TestMethod]
-    public void DoesNotReportReturnedUnsafeFieldCollectionReturnedByLambdaInsideLockStatementOfPublicMethod() {
+    public void DoesNotReportReturnedUnsafeFieldCollectionReturnedByParenthesizedLambdaInsideLockStatementOfPublicMethod() {
       const string source = @"
 using System;
 using System.Collections.Generic;
@@ -204,6 +204,25 @@ class Test {
       Func<ISet<string>> lambda = () => {
         return entries;
       };
+    }
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportReturnedUnsafeFieldCollectionReturnedBySimpleLambdaInsideLockStatementOfPublicMethod() {
+      const string source = @"
+using System;
+using System.Collections.Generic;
+
+class Test {
+  private readonly object syncObject = new object();
+  private readonly HashSet<string> entries = new HashSet<string>();
+
+  public void DoIt() {
+    lock(syncObject) {
+      Func<ISet<string>> lambda = () => entries;
     }
   }
 }";
