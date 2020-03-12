@@ -109,7 +109,7 @@ using System.Collections.Generic;
 class Test {
   private readonly HashSet<string> entries = new HashSet<string>();
 
-  private ISet<string> GetContent() {
+  public ISet<string> GetContent() {
     return entries;
   }
 }";
@@ -126,7 +126,7 @@ class Test {
   private readonly object syncObject = new object();
   private readonly ImmutableHashSet<string> entries = ImmutableHashSet.Create<string>();
 
-  private ISet<string> GetContent() {
+  public ISet<string> GetContent() {
     lock(syncObject) {
       return entries;
     }
@@ -144,7 +144,7 @@ class Test {
   private readonly object syncObject = new object();
   private readonly HashSet<string> entries = new HashSet<string>();
 
-  private ISet<string> GetContent() {
+  public ISet<string> GetContent() {
     lock(syncObject) {
       return new HashSet<string>(entries);
     }
@@ -163,7 +163,7 @@ class Test {
   private readonly object syncObject = new object();
   private readonly HashSet<string> entries = new HashSet<string>();
 
-  private void DoIt() {
+  public void DoIt() {
     lock(syncObject) {
       Func<ISet<string>> lambda = () => {
         return entries;
@@ -184,7 +184,7 @@ class Test {
   private readonly object syncObject = new object();
   private readonly HashSet<string> entries = new HashSet<string>();
 
-  private void DoIt() {
+  public void DoIt() {
     lock(syncObject) {
       Func<ISet<string>> lambda = delegate {
         return entries;
@@ -205,7 +205,7 @@ class Test {
   private readonly object syncObject = new object();
   private readonly HashSet<string> entries = new HashSet<string>();
 
-  private void DoIt() {
+  public void DoIt() {
     lock(syncObject) {
       ISet<string> GetEntries() {
         return entries;
