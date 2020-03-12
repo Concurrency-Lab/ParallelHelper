@@ -93,10 +93,6 @@ namespace ParallelHelper.Analyzer.Smells {
         }
       }
 
-      public override void VisitReturnStatement(ReturnStatementSyntax node) {
-        var field = TryGetFieldSymbol(node.Expression);
-        if (field != null && _unsafeCollectionFields!.Contains(field)) {
-          Context.ReportDiagnostic(Diagnostic.Create(Rule, node.Expression.GetLocation(), field.Name));
         }
       }
 
@@ -104,6 +100,11 @@ namespace ParallelHelper.Analyzer.Smells {
 
       }
 
+      public override void VisitReturnStatement(ReturnStatementSyntax node) {
+        var field = TryGetFieldSymbol(node.Expression);
+        if (field != null && IsInsideLock && _unsafeCollectionFields!.Contains(field)) {
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, node.Expression.GetLocation(), field.Name));
+        }
       }
 
       private IFieldSymbol? TryGetFieldSymbol(ExpressionSyntax? expression) {
