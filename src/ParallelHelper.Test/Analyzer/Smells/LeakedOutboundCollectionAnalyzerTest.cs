@@ -41,6 +41,23 @@ class Test {
 }";
       VerifyDiagnostic(source, new DiagnosticResultLocation(10, 16));
     }
+    [TestMethod]
+    public void DoesNotReportEmptyReturnInsideLockStatementOfPublicMethod() {
+      const string source = @"
+using System.Collections.Generic;
+
+class Test {
+  private readonly object syncObject = new object();
+  private readonly HashSet<string> entries = new HashSet<string>();
+
+  public void DoIt() {
+    lock(syncObject) {
+      return;
+    }
+  }
+}";
+      VerifyDiagnostic(source);
+    }
 
     [TestMethod]
     public void DoesNotReportReturnedUnsafeFieldCollectionInsideLockStatementOfPrivateMethod() {
