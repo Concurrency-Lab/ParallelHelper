@@ -222,7 +222,9 @@ class Test {
 
   public void DoIt() {
     lock(syncObject) {
-      Func<ISet<string>> lambda = () => entries;
+      Func<int, ISet<string>> lambda = x => {
+        return entries;
+      };
     }
   }
 }";
