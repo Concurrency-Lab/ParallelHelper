@@ -93,11 +93,24 @@ namespace ParallelHelper.Analyzer.Smells {
         }
       }
 
+      public override void VisitMethodDeclaration(MethodDeclarationSyntax node) {
+        if(node.Modifiers.Any(SyntaxKind.PublicKeyword)) {
+          base.VisitMethodDeclaration(node);
         }
       }
 
+      public override void VisitPropertyDeclaration(PropertyDeclarationSyntax node) {
+        if (node.Modifiers.Any(SyntaxKind.PublicKeyword)) {
+          base.VisitPropertyDeclaration(node);
+        }
       }
 
+      public override void VisitAccessorDeclaration(AccessorDeclarationSyntax node) {
+        // Since it is required that the enclosing property declaration is public,
+        // only more restrictive modifiers may be used here.
+        if(!node.Modifiers.Any()) {
+          base.VisitAccessorDeclaration(node);
+        }
       }
 
       public override void VisitReturnStatement(ReturnStatementSyntax node) {
