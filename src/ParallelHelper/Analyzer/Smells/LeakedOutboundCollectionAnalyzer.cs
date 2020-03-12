@@ -100,24 +100,10 @@ namespace ParallelHelper.Analyzer.Smells {
         }
       }
 
-      public override void VisitParenthesizedLambdaExpression(ParenthesizedLambdaExpressionSyntax node) {
-        // Lambdas start a new activation frame.
       }
 
-      public override void VisitSimpleLambdaExpression(SimpleLambdaExpressionSyntax node) {
-        // Lambdas start a new activation frame.
       }
 
-      public override void VisitAnonymousMethodExpression(AnonymousMethodExpressionSyntax node) {
-        // Anonymous methods start a new activation frame.
-      }
-
-      public override void VisitLocalFunctionStatement(LocalFunctionStatementSyntax node) {
-        // Local functions start a new activation frame.
-      }
-
-      public override void VisitClassDeclaration(ClassDeclarationSyntax node) {
-        // Each class is analyzed individually.
       }
 
       private IFieldSymbol? TryGetFieldSymbol(ExpressionSyntax? expression) {
@@ -150,6 +136,26 @@ namespace ParallelHelper.Analyzer.Smells {
         return targetTypes
           .SelectMany(targetType => SemanticModel.GetTypesByName(targetType))
           .Any(targetType => type.AllInterfaces.Any(type => type.IsEqualType(targetType)));
+      }
+
+      public override void VisitParenthesizedLambdaExpression(ParenthesizedLambdaExpressionSyntax node) {
+        // Lambdas start a new activation frame.
+      }
+
+      public override void VisitSimpleLambdaExpression(SimpleLambdaExpressionSyntax node) {
+        // Lambdas start a new activation frame.
+      }
+
+      public override void VisitAnonymousMethodExpression(AnonymousMethodExpressionSyntax node) {
+        // Anonymous methods start a new activation frame.
+      }
+
+      public override void VisitLocalFunctionStatement(LocalFunctionStatementSyntax node) {
+        // Local functions start a new activation frame.
+      }
+
+      public override void VisitClassDeclaration(ClassDeclarationSyntax node) {
+        // Each class is analyzed individually.
       }
     }
   }
