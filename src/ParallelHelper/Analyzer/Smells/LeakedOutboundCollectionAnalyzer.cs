@@ -167,10 +167,6 @@ namespace ParallelHelper.Analyzer.Smells {
       public override void VisitLocalFunctionStatement(LocalFunctionStatementSyntax node) {
         // Local functions start a new activation frame.
       }
-
-      public override void VisitClassDeclaration(ClassDeclarationSyntax node) {
-        // Each class is analyzed individually.
-      }
     }
   }
 }
