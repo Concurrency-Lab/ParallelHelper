@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using ParallelHelper.Extensions;
 using ParallelHelper.Util;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -27,13 +28,13 @@ namespace ParallelHelper.Analyzer.Bugs {
   /// </example>
   /// </summary>
   [DiagnosticAnalyzer(LanguageNames.CSharp)]
-  public class LinqToCollectionOnConcurrentCollectionAnalyzer : DiagnosticAnalyzer {
+  public class LinqToCollectionOnConcurrentDictionaryAnalyzer : DiagnosticAnalyzer {
     public const string DiagnosticId = "PH_B008";
 
     private const string Category = "Concurrency";
 
-    private static readonly LocalizableString Title = "LINQ To* Operation on Concurrent Collection";
-    private static readonly LocalizableString MessageFormat = "LINQ's extension methods to convert a concurrent collection to a generic collection are not thread-safe.";
+    private static readonly LocalizableString Title = "LINQ To* Operation on ConcurrentDictionary";
+    private static readonly LocalizableString MessageFormat = "LINQ's extension methods to convert a ConcurrentDictionary to a generic collection are not thread-safe.";
     private static readonly LocalizableString Description = "";
 
     private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
@@ -53,11 +54,7 @@ namespace ParallelHelper.Analyzer.Bugs {
     };
 
     private static readonly string[] ConcurrentCollectionTypes = {
-      "System.Collections.Concurrent.BlockingCollection`1",
-      "System.Collections.Concurrent.ConcurrentBag`1",
       "System.Collections.Concurrent.ConcurrentDictionary`2",
-      "System.Collections.Concurrent.ConcurrentQueue`1",
-      "System.Collections.Concurrent.ConcurrentStack`1"
     };
 
     public override void Initialize(AnalysisContext context) {
