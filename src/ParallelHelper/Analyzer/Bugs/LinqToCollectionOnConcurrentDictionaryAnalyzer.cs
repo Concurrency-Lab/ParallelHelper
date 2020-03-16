@@ -33,7 +33,7 @@ namespace ParallelHelper.Analyzer.Bugs {
 
     private const string Category = "Concurrency";
 
-    private static readonly LocalizableString Title = "LINQ To* Operation on Concurrent Collection";
+    private static readonly LocalizableString Title = "LINQ To* Operation on Concurrent Dictionary";
     private static readonly LocalizableString MessageFormat = "LINQ's extension methods to convert a concurrent dictionary to a generic collection are not thread-safe.";
     private static readonly LocalizableString Description = "";
 
