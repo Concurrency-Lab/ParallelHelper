@@ -46,6 +46,57 @@ class Test {
     }
 
     [TestMethod]
+    public void ReportsStartNewWithTaskReturningMethod() {
+      const string source = @"
+using System.Threading.Tasks;
+
+class Test {
+  public Task DoWorkAsync() {
+    return Task.Factory.StartNew(DoItAsync);
+  }
+
+  public Task DoItAsync() {
+    return Task.CompletedTask;
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(5, 12));
+    }
+
+    [TestMethod]
+    public void ReportsStartNewWithTaskReturningLambda() {
+      const string source = @"
+using System.Threading.Tasks;
+
+class Test {
+  public Task DoWorkAsync() {
+    return Task.Factory.StartNew(() => Task.FromResult(1));
+  }
+
+  public Task DoItAsync() {
+    return Task.CompletedTask;
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(5, 12));
+    }
+
+    [TestMethod]
+    public void ReportsStartNewWithTaskReturningLambdaFromWrapping() {
+      const string source = @"
+using System.Threading.Tasks;
+
+class Test {
+  public Task DoWorkAsync() {
+    return Task.Factory.StartNew(() => DoItAsync());
+  }
+
+  public Task DoItAsync() {
+    return Task.CompletedTask;
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(5, 12));
+    }
+
+    [TestMethod]
     public void DoesNotReportStartNewWithNonAsyncMethodReference() {
       const string source = @"
 using System.Threading.Tasks;

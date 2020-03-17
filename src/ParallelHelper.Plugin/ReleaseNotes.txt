@@ -3,6 +3,7 @@
 - New Analyzer: PH_P010 - Async Instead of Continuation
 - New Analyzer: PH_S027 - Leaked Outbound Collection
 - Adapted Analyzer: PH_B008 - Now only reports unsafe LINQ operations for ConcurrentDictionary
+- Improved Analyzer: PH_S014 - Now reports all task returning delegates
 
 
 ------------------
