@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using ParallelHelper.Extensions;
 using ParallelHelper.Util;
 using System.Collections.Immutable;
+using System.Linq;
 
 namespace ParallelHelper.Analyzer.Smells {
   /// <summary>
@@ -47,6 +48,11 @@ namespace ParallelHelper.Analyzer.Smells {
     private const string TaskFactoryType = "System.Threading.Tasks.TaskFactory";
     private const string StartNewMethod = "StartNew";
 
+    private static readonly string[] TaskTypes = {
+      "System.Threading.Tasks.Task",
+      "System.Threading.Tasks.Task`1"
+    };
+
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
       context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
@@ -78,7 +84,12 @@ namespace ParallelHelper.Analyzer.Smells {
           return false;
         }
         return SemanticModel.GetSymbolInfo(arguments[0].Expression, CancellationToken).Symbol is IMethodSymbol method
-          && method.IsAsync;
+          && (method.IsAsync || IsTaskType(method.ReturnType));
+      }
+
+      private bool IsTaskType(ITypeSymbol? type) {
+        return type != null
+          && TaskTypes.Any(taskType => SemanticModel.IsEqualType(type, taskType));
       }
     }
   }
