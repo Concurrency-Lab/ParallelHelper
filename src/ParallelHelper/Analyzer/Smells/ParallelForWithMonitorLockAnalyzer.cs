@@ -38,7 +38,7 @@ namespace ParallelHelper.Analyzer.Smells {
     private const string Category = "Concurrency";
 
     private static readonly LocalizableString Title = "Parallel.For with Monitor Synchronization";
-    private static readonly LocalizableString MessageFormat = "The application of synchronization inside a Parallel.For is discouraged.";
+    private static readonly LocalizableString MessageFormat = "The application of synchronization inside the loop body of a Parallel.For introduces unnecessary overhead. Apply the synchronization within the local finally body.";
     private static readonly LocalizableString Description = "";
 
     private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
