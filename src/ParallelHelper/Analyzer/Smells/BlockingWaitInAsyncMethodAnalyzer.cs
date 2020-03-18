@@ -92,13 +92,15 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private IEnumerable<InvocationExpressionSyntax> GetTaskWaitInvocations() {
-        return Node.DescendantNodes().WithCancellation(CancellationToken)
+        return Node.DescendantNodesInSameActivationFrame()
+          .WithCancellation(CancellationToken)
           .OfType<InvocationExpressionSyntax>()
           .Where(invocation => IsTaskMemberAccess(invocation.Expression, WaitMethod));
       }
 
       private IEnumerable<MemberAccessExpressionSyntax> GetTaskResultAccesses() {
-        return Node.DescendantNodes().WithCancellation(CancellationToken)
+        return Node.DescendantNodesInSameActivationFrame()
+          .WithCancellation(CancellationToken)
           .OfType<MemberAccessExpressionSyntax>()
           .Where(memberAccess => IsTaskMemberAccess(memberAccess, ResultProperty));
       }

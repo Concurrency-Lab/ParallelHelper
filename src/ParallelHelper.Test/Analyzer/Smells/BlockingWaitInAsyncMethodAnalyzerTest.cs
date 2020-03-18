@@ -89,5 +89,43 @@ class Test {
 }";
       VerifyDiagnostic(source);
     }
+
+    [TestMethod]
+    public void DoesNotReportTaskWaitInAsyncMethodNestedInLambda() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    Action<Task> action = t => t.Wait();
+    await DoWorkInternalAsync();
+  }
+
+  private Task DoWorkInternalAsync() {
+    return Task.CompletedTask;
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportTaskResultInAsyncMethodNestedInLambda() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    Func<Task<int>, int> action = t => t.Result;
+    await DoWorkInternalAsync();
+  }
+
+  private Task DoWorkInternalAsync() {
+    return Task.CompletedTask;
+  }
+}";
+      VerifyDiagnostic(source);
+    }
   }
 }
