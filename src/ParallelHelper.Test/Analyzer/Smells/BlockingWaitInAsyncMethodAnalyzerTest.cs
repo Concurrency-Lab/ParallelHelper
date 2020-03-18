@@ -83,7 +83,7 @@ class Test {
 using System.Threading.Tasks;
 
 class Test {
-  public int DoWork() {
+  public void DoWork() {
     Task.Run(() => { }).Wait();
   }
 }";
