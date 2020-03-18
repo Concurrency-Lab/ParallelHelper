@@ -1,7 +1,10 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace ParallelHelper.Extensions {
   /// <summary>
@@ -67,6 +70,29 @@ namespace ParallelHelper.Extensions {
         .Except(dataFlow.VariablesDeclared)
         .Intersect(dataFlow.Captured)
         .Any();
+    }
+
+    /// <summary>
+    /// Tries to retrieve the method symbol from the specified syntax node representing a method declaration or anonymous function declaration.
+    /// </summary>
+    /// <param name="semanticModel">The semantic model to query.</param>
+    /// <param name="node">The node to get the method symbol of.</param>
+    /// <param name="methodSymbol">The resolved method symbol, or <c>null</c> if it couldn't be resolved.</param>
+    /// <param name="cancellationToken">The cancellation token to use.</param>
+    /// <returns><c>True</c> if the method symbol could be resolved.</returns>
+    public static bool TryGetMethodSymbolFromMethodOrFunctionDeclaration(
+        this SemanticModel semanticModel,
+        SyntaxNode node,
+        out IMethodSymbol? methodSymbol,
+        CancellationToken cancellationToken
+    ) {
+      methodSymbol = node switch {
+        MethodDeclarationSyntax method => semanticModel.GetDeclaredSymbol(method, cancellationToken),
+        LocalFunctionStatementSyntax function => (IMethodSymbol)semanticModel.GetDeclaredSymbol(function, cancellationToken),
+        AnonymousFunctionExpressionSyntax function => (IMethodSymbol)semanticModel.GetSymbolInfo(function, cancellationToken).Symbol,
+        _ => throw new ArgumentException($"{node} is not a method or function declaration")
+      };
+      return methodSymbol != null;
     }
   }
 }

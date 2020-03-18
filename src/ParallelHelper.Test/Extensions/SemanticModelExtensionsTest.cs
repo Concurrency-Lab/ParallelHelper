@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ParallelHelper.Extensions;
+using System;
 using System.Linq;
 
 namespace ParallelHelper.Test.Extensions {
@@ -267,7 +268,7 @@ using System;
 
 public class Test {
   public void TestMethod() {
-    Func<int> doIt = () => {
+    Action doIt = () => {
       int value = 1;
       Action inner = () => {
         value = 0;
@@ -283,6 +284,105 @@ public class Test {
         .OrderBy(lambda => lambda.GetLocation().SourceSpan)
         .First();
       Assert.IsFalse(semanticModel.HasSideEffects(lambda));
+    }
+
+    [TestMethod]
+    public void TryGetMethodSymbolFromMethodOrFunctionDeclarationReturnsMethodSymbolForMethodDeclaration() {
+      const string source = @"
+using System;
+
+public class Test {
+  public void TestMethod() {
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var method = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<MethodDeclarationSyntax>()
+        .Single();
+      Assert.IsTrue(semanticModel.TryGetMethodSymbolFromMethodOrFunctionDeclaration(method, out var symbol, default));
+      Assert.IsNotNull(symbol);
+    }
+
+    [TestMethod]
+    public void TryGetMethodSymbolFromMethodOrFunctionDeclarationReturnsMethodSymbolForLambdaExpression() {
+      const string source = @"
+using System;
+
+public class Test {
+  public void TestMethod() {
+    Func<int> doIt = () => 1;
+    doIt();
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var method = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<ParenthesizedLambdaExpressionSyntax>()
+        .Single();
+      Assert.IsTrue(semanticModel.TryGetMethodSymbolFromMethodOrFunctionDeclaration(method, out var symbol, default));
+      Assert.IsNotNull(symbol);
+    }
+
+    [TestMethod]
+    public void TryGetMethodSymbolFromMethodOrFunctionDeclarationReturnsMethodSymbolForDelegate() {
+      const string source = @"
+using System;
+
+public class Test {
+  public void TestMethod() {
+    Func<int> doIt = delegate {
+      return 1;
+    };
+    doIt();
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var method = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<AnonymousFunctionExpressionSyntax>()
+        .Single();
+      Assert.IsTrue(semanticModel.TryGetMethodSymbolFromMethodOrFunctionDeclaration(method, out var symbol, default));
+      Assert.IsNotNull(symbol);
+    }
+
+    [TestMethod]
+    public void TryGetMethodSymbolFromMethodOrFunctionDeclarationReturnsMethodSymbolForLocalFunction() {
+      const string source = @"
+using System;
+
+public class Test {
+  public void TestMethod() {
+    void DoIt() {
+    }
+    DoIt();
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var method = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<LocalFunctionStatementSyntax>()
+        .Single();
+      Assert.IsTrue(semanticModel.TryGetMethodSymbolFromMethodOrFunctionDeclaration(method, out var symbol, default));
+      Assert.IsNotNull(symbol);
+    }
+
+    [TestMethod, ExpectedException(typeof(ArgumentException))]
+    public void TryGetMethodSymbolFromMethodOrFunctionDeclarationThrowsArgumentExceptionForVariableDeclaration() {
+      const string source = @"
+using System;
+
+public class Test {
+  public void TestMethod() {
+    int test = 1;
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var method = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<VariableDeclaratorSyntax>()
+        .Single();
+      semanticModel.TryGetMethodSymbolFromMethodOrFunctionDeclaration(method, out var _, default);
     }
   }
 }
