@@ -33,16 +33,12 @@ namespace ParallelHelper.Extensions {
     /// <param name="node">The node to check if it has an async modifier.</param>
     /// <returns><c>True</c> if an async modifier is present.</returns>
     public static bool IsMethodOrFunctionWithAsyncModifier(this SyntaxNode node) {
-      if(node is BaseMethodDeclarationSyntax method) {
-        return method.Modifiers.Any(SyntaxKind.AsyncKeyword);
-      }
-      if (node is AnonymousFunctionExpressionSyntax function) {
-        return function.AsyncKeyword.IsKind(SyntaxKind.AsyncKeyword);
-      }
-      if(node is LocalFunctionStatementSyntax localFunction) {
-        return localFunction.Modifiers.Any(SyntaxKind.AsyncKeyword);
-      }
-      return false;
+      return node switch {
+        BaseMethodDeclarationSyntax method => method.Modifiers.Any(SyntaxKind.AsyncKeyword),
+        AnonymousFunctionExpressionSyntax function => function.AsyncKeyword.IsKind(SyntaxKind.AsyncKeyword),
+        LocalFunctionStatementSyntax function => function.Modifiers.Any(SyntaxKind.AsyncKeyword),
+        _ => false
+      };
     }
 
     /// <summary>

@@ -56,14 +56,21 @@ namespace ParallelHelper.Analyzer.Smells {
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
       context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-      context.RegisterSyntaxNodeAction(AnalyzeMethodDeclaration, SyntaxKind.MethodDeclaration);
+      context.RegisterSyntaxNodeAction(
+        AnalyzeMethodOrAnonymousFunction,
+        SyntaxKind.MethodDeclaration,
+        SyntaxKind.SimpleLambdaExpression,
+        SyntaxKind.ParenthesizedLambdaExpression,
+        SyntaxKind.AnonymousMethodExpression,
+        SyntaxKind.LocalFunctionStatement
+      );
     }
 
-    private static void AnalyzeMethodDeclaration(SyntaxNodeAnalysisContext context) {
+    private static void AnalyzeMethodOrAnonymousFunction(SyntaxNodeAnalysisContext context) {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<MethodDeclarationSyntax> {
+    private class Analyzer : SyntaxNodeAnalyzerBase<SyntaxNode> {
       public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
 
       public override void Analyze() {
@@ -76,8 +83,14 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private bool IsAsyncMethod() {
-        return Node.Modifiers.Any(SyntaxKind.AsyncKeyword)
-          || IsTaskTyped(Node.ReturnType);
+        return Node.IsMethodOrFunctionWithAsyncModifier()
+          || IsMethodOrFunctionReturningTask();
+      }
+
+      private bool IsMethodOrFunctionReturningTask() {
+        return SemanticModel.TryGetMethodSymbolFromMethodOrFunctionDeclaration(Node, out var method, CancellationToken)
+          && method!.ReturnType != null
+          && IsTaskType(method!.ReturnType);
       }
 
       private bool IsTaskType(ITypeSymbol type) {
@@ -92,13 +105,15 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private IEnumerable<InvocationExpressionSyntax> GetTaskWaitInvocations() {
-        return Node.DescendantNodes().WithCancellation(CancellationToken)
+        return Node.DescendantNodesInSameActivationFrame()
+          .WithCancellation(CancellationToken)
           .OfType<InvocationExpressionSyntax>()
           .Where(invocation => IsTaskMemberAccess(invocation.Expression, WaitMethod));
       }
 
       private IEnumerable<MemberAccessExpressionSyntax> GetTaskResultAccesses() {
-        return Node.DescendantNodes().WithCancellation(CancellationToken)
+        return Node.DescendantNodesInSameActivationFrame()
+          .WithCancellation(CancellationToken)
           .OfType<MemberAccessExpressionSyntax>()
           .Where(memberAccess => IsTaskMemberAccess(memberAccess, ResultProperty));
       }
