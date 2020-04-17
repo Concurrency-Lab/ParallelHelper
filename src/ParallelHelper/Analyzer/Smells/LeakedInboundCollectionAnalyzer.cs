@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using ParallelHelper.Extensions;
 using ParallelHelper.Util;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -18,9 +19,9 @@ namespace ParallelHelper.Analyzer.Smells {
   ///   private readonly object syncObject = new object();
   ///   private readonly ISet&lt;string&gt; entries = new HashSet&lt;string&gt;();
   /// 
-  ///   public ISet&lt;string&gt; GetAll() {
+  ///   public void SetAll(ISet&lt;string&gt; entries) {
   ///     lock(syncObject) {
-  ///       return entries;
+  ///       this.entries = entries;
   ///     }
   ///   }
   /// }
@@ -28,13 +29,13 @@ namespace ParallelHelper.Analyzer.Smells {
   /// </example>
   /// </summary>
   [DiagnosticAnalyzer(LanguageNames.CSharp)]
-  public class LeakedOutboundCollectionAnalyzer : DiagnosticAnalyzer {
-    public const string DiagnosticId = "PH_S027";
+  public class LeakedInboundCollectionAnalyzer : DiagnosticAnalyzer {
+    public const string DiagnosticId = "PH_S028";
 
     private const string Category = "Concurrency";
 
-    private static readonly LocalizableString Title = "Leaked Outbound Collection";
-    private static readonly LocalizableString MessageFormat = "Returning a reference to the collection '{0}' allows unsynchronized accesses to it; return a copy of it instead.";
+    private static readonly LocalizableString Title = "Leaked Inbound Collection";
+    private static readonly LocalizableString MessageFormat = "Taking a reference to the collection '{0}' allows unsynchronized accesses to it; create a copy of it instead.";
     private static readonly LocalizableString Description = "";
 
     private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
@@ -98,11 +99,23 @@ namespace ParallelHelper.Analyzer.Smells {
         }
       }
 
-      public override void VisitReturnStatement(ReturnStatementSyntax node) {
-        var field = TryGetFieldSymbol(node.Expression);
-        if (field != null && IsInsideLock && _unsafeCollectionFields!.Contains(field)) {
-          Context.ReportDiagnostic(Diagnostic.Create(Rule, node.Expression.GetLocation(), field.Name));
+      public override void VisitAssignmentExpression(AssignmentExpressionSyntax node) {
+        var field = TryGetFieldSymbol(node.Left);
+        if (field != null && IsInsideLock && _unsafeCollectionFields!.Contains(field) && IsParameterAndNoSafeCollection(node.Right)) {
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, node.GetLocation(), field.Name));
         }
+      }
+
+      private bool IsParameterAndNoSafeCollection(ExpressionSyntax? expression) {
+        return expression != null
+          && SemanticModel.GetSymbolInfo(expression, CancellationToken).Symbol is IParameterSymbol parameter
+          && !_collectionAnalysis.IsImmutableCollection(parameter.Type);
+      }
+
+      private IEnumerable<ClassDeclarationSyntax> GetClassDeclarations() {
+        return Root.DescendantNodesAndSelf()
+          .WithCancellation(CancellationToken)
+          .OfType<ClassDeclarationSyntax>();
       }
 
       private IFieldSymbol? TryGetFieldSymbol(ExpressionSyntax? expression) {
@@ -110,12 +123,6 @@ namespace ParallelHelper.Analyzer.Smells {
           return null;
         }
         return SemanticModel.GetSymbolInfo(expression, CancellationToken).Symbol as IFieldSymbol;
-      }
-
-      private IEnumerable<ClassDeclarationSyntax> GetClassDeclarations() {
-        return Root.DescendantNodesAndSelf()
-          .WithCancellation(CancellationToken)
-          .OfType<ClassDeclarationSyntax>();
       }
 
       public override void VisitParenthesizedLambdaExpression(ParenthesizedLambdaExpressionSyntax node) {
