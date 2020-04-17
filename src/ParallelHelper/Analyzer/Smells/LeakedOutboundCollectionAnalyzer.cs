@@ -42,24 +42,6 @@ namespace ParallelHelper.Analyzer.Smells {
       isEnabledByDefault: true, description: Description, helpLinkUri: HelpLinkFactory.CreateUri(DiagnosticId)
     );
 
-    private static readonly string[] CollectionBaseTypes = {
-      "System.Collections.ICollection",
-      "System.Collections.Generic.ICollection`1",
-    };
-
-    private static readonly string[] SafeCollectionBaseTypes = {
-      "System.Collections.Immutable.IImmutableDictionary",
-      "System.Collections.Immutable.IImmutableDictionary`2",
-      "System.Collections.Immutable.IImmutableList",
-      "System.Collections.Immutable.IImmutableList`1",
-      "System.Collections.Immutable.IImmutableSet",
-      "System.Collections.Immutable.IImmutableSet`1",
-      "System.Collections.Immutable.IImmutableStack",
-      "System.Collections.Immutable.IImmutableStack`1",
-      "System.Collections.Immutable.IImmutableQueue",
-      "System.Collections.Immutable.IImmutableQueue`1"
-    };
-
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
     public override void Initialize(AnalysisContext context) {
@@ -73,9 +55,12 @@ namespace ParallelHelper.Analyzer.Smells {
     }
 
     private class Analyzer : MonitorAwareSemanticModelAnalyzerWithSyntaxWalkerBase {
+      private readonly CollectionAnalysis _collectionAnalysis;
       private ISet<IFieldSymbol>? _unsafeCollectionFields;
 
-      public Analyzer(SemanticModelAnalysisContext context) : base(context) { }
+      public Analyzer(SemanticModelAnalysisContext context) : base(context) {
+        _collectionAnalysis = new CollectionAnalysis(context.SemanticModel, context.CancellationToken);
+      }
 
       public override void Analyze() {
         foreach(var classDeclaration in GetClassDeclarations()) {
@@ -84,7 +69,7 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private void AnalyzeClassDeclaration(ClassDeclarationSyntax classDeclaration) {
-        _unsafeCollectionFields = GetUnsafeCollectionFields(classDeclaration).ToImmutableHashSet();
+        _unsafeCollectionFields = _collectionAnalysis.GetPotentiallyMutableCollectionFields(classDeclaration).ToImmutableHashSet();
         if(_unsafeCollectionFields.Count == 0) {
           return;
         }
@@ -131,25 +116,6 @@ namespace ParallelHelper.Analyzer.Smells {
         return Root.DescendantNodesAndSelf()
           .WithCancellation(CancellationToken)
           .OfType<ClassDeclarationSyntax>();
-      }
-
-      private IEnumerable<IFieldSymbol> GetUnsafeCollectionFields(ClassDeclarationSyntax classDeclaration) {
-        return classDeclaration.Members.WithCancellation(CancellationToken)
-          .OfType<FieldDeclarationSyntax>()
-          .SelectMany(declaration => declaration.Declaration.Variables)
-          .Select(field => (IFieldSymbol)SemanticModel.GetDeclaredSymbol(field, CancellationToken))
-          .Where(field => IsUnsafeCollection(field.Type));
-      }
-
-      private bool IsUnsafeCollection(ITypeSymbol type) {
-        return !IsAssignableToAnyOf(type, SafeCollectionBaseTypes)
-          && IsAssignableToAnyOf(type, CollectionBaseTypes);
-      }
-
-      private bool IsAssignableToAnyOf(ITypeSymbol type, string[] targetTypes) {
-        return targetTypes
-          .SelectMany(targetType => SemanticModel.GetTypesByName(targetType))
-          .Any(targetType => type.AllInterfaces.Any(type => type.IsEqualType(targetType)));
       }
 
       public override void VisitParenthesizedLambdaExpression(ParenthesizedLambdaExpressionSyntax node) {
