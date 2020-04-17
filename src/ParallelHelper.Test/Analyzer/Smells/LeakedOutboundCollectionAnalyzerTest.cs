@@ -21,6 +21,43 @@ class Test {
 }";
       VerifyDiagnostic(source, new DiagnosticResultLocation(9, 14));
     }
+
+    [TestMethod]
+    public void ReportsRefParameterAssignedUnsafeFieldCollectionInsideLockStatementOfPublicMethod() {
+      const string source = @"
+using System.Collections.Generic;
+
+class Test {
+  private readonly object syncObject = new object();
+  private readonly HashSet<string> entries = new HashSet<string>();
+
+  public void GetContent(ref ISet<string> entries) {
+    lock(syncObject) {
+      entries = this.entries;
+    }
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(9, 17));
+    }
+
+    [TestMethod]
+    public void ReportsOutParameterAssignedUnsafeFieldCollectionInsideLockStatementOfPublicMethod() {
+      const string source = @"
+using System.Collections.Generic;
+
+class Test {
+  private readonly object syncObject = new object();
+  private readonly HashSet<string> entries = new HashSet<string>();
+
+  public void GetContent(out ISet<string> entries) {
+    lock(syncObject) {
+      entries = this.entries;
+    }
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(9, 17));
+    }
+
     [TestMethod]
     public void ReportsReturnedUnsafeFieldCollectionInsideLockStatementOfPublicMethodInNestedClassOnlyOnce() {
       const string source = @"
@@ -60,6 +97,7 @@ class Test {
 }";
       VerifyDiagnostic(source, new DiagnosticResultLocation(10, 16));
     }
+
     [TestMethod]
     public void DoesNotReportEmptyReturnInsideLockStatementOfPublicMethod() {
       const string source = @"
@@ -267,6 +305,80 @@ class Test {
       ISet<string> GetEntries() {
         return entries;
       }
+    }
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportParameterAssignedUnsafeFieldCollectionInsideLockStatementOfPublicMethod() {
+      const string source = @"
+using System.Collections.Generic;
+
+class Test {
+  private readonly object syncObject = new object();
+  private readonly HashSet<string> entries = new HashSet<string>();
+
+  public void GetContent(ISet<string> entries) {
+    lock(syncObject) {
+      entries = this.entries;
+    }
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotRefReportParameterAssignedImmutableFieldCollectionInsideLockStatementOfPublicMethod() {
+      const string source = @"
+using System.Collections.Generic;
+using System.Collections.Immutable;
+
+class Test {
+  private readonly object syncObject = new object();
+  private readonly ImmutableHashSet<string> entries = ImmutableHashSet.Create<string>();
+
+  public void GetContent(ISet<string> entries) {
+    lock(syncObject) {
+      entries = this.entries;
+    }
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportRefParameterAssignedNonCollectionFieldInsideLockStatementOfPublicMethod() {
+      const string source = @"
+using System.Collections.Generic;
+using System.Collections.Immutable;
+
+class Test {
+  private readonly object syncObject = new object();
+  private readonly int state = 1;
+
+  public void GetContent(ref int state) {
+    lock(syncObject) {
+      state = this.state;
+    }
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportRefParameterAssignedCopyOfUnsafeFieldCollectionInsideLockStatementOfPublicMethod() {
+      const string source = @"
+using System.Collections.Generic;
+
+class Test {
+  private readonly object syncObject = new object();
+  private readonly HashSet<string> entries = new HashSet<string>();
+
+  public void GetContent(ref ISet<string> entries) {
+    lock(syncObject) {
+      entries = new HashSet<string>(this.entries);
     }
   }
 }";

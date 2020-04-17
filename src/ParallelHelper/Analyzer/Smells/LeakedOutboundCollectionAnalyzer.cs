@@ -7,6 +7,7 @@ using ParallelHelper.Util;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Reflection.Metadata;
 
 namespace ParallelHelper.Analyzer.Smells {
   /// <summary>
@@ -98,18 +99,35 @@ namespace ParallelHelper.Analyzer.Smells {
         }
       }
 
+      public override void VisitAssignmentExpression(AssignmentExpressionSyntax node) {
+        var field = TryGetUnsafeCollectionFieldSymbol(node.Right);
+        if (field != null && IsInsideLock && IsRefOrOutParameter(node.Left)) {
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, node.Right.GetLocation(), field.Name));
+        }
+      }
+
+      private bool IsRefOrOutParameter(ExpressionSyntax? expression) {
+        return expression != null
+          && SemanticModel.GetSymbolInfo(expression, CancellationToken).Symbol is IParameterSymbol parameter
+          && (parameter.RefKind == RefKind.Ref || parameter.RefKind == RefKind.Out);
+      }
+
       public override void VisitReturnStatement(ReturnStatementSyntax node) {
-        var field = TryGetFieldSymbol(node.Expression);
-        if (field != null && IsInsideLock && _unsafeCollectionFields!.Contains(field)) {
+        var field = TryGetUnsafeCollectionFieldSymbol(node.Expression);
+        if (field != null && IsInsideLock) {
           Context.ReportDiagnostic(Diagnostic.Create(Rule, node.Expression.GetLocation(), field.Name));
         }
       }
 
-      private IFieldSymbol? TryGetFieldSymbol(ExpressionSyntax? expression) {
+      private IFieldSymbol? TryGetUnsafeCollectionFieldSymbol(ExpressionSyntax? expression) {
         if(expression == null) {
           return null;
         }
-        return SemanticModel.GetSymbolInfo(expression, CancellationToken).Symbol as IFieldSymbol;
+        var field = SemanticModel.GetSymbolInfo(expression, CancellationToken).Symbol as IFieldSymbol;
+        if (field == null || !_unsafeCollectionFields!.Contains(field)) {
+          return null;
+        }
+        return field;
       }
 
       private IEnumerable<ClassDeclarationSyntax> GetClassDeclarations() {
