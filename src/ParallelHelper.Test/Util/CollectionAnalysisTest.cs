@@ -2,7 +2,6 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ParallelHelper.Extensions;
-using ParallelHelper.Util;
 using System.Linq;
 
 namespace ParallelHelper.Test.Util {
