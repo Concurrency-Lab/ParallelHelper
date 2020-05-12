@@ -1,4 +1,11 @@
-﻿v2.1.0
+﻿v2.2.0
+
+- Improved Analyzer: PH_S005 - Now ignores interface implementations and method overridings.
+
+
+------------------
+
+v2.1.0
 
 - New Analyzer: PH_P010 - Async Instead of Continuation
 - New Analyzer: PH_S027 - Leaked Outbound Collection
