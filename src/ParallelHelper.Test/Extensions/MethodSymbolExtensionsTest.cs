@@ -18,6 +18,18 @@ namespace ParallelHelper.Test.Extensions {
         .Single();
       return semanticModel.GetDeclaredSymbol(methodDeclaration);
     }
+    private static IMethodSymbol GetMethodOfClass(string source, string className) {
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var methodDeclaration = semanticModel.SyntaxTree
+        .GetRoot()
+        .DescendantNodes()
+        .OfType<ClassDeclarationSyntax>()
+        .Where(declaration => declaration.Identifier.Text == className)
+        .SelectMany(declaration => declaration.Members)
+        .OfType<MethodDeclarationSyntax>()
+        .Single();
+      return semanticModel.GetDeclaredSymbol(methodDeclaration);
+    }
 
     [TestMethod]
     public void GetAllOverloadsReturnsAllAvailableOverloads() {
@@ -86,6 +98,76 @@ public class Test {
 }";
       var symbol = GetParameterLessMethod(source);
       Assert.AreEqual(2, symbol.GetAllOverloads(default).Count());
+    }
+
+    [TestMethod]
+    public void IsInterfaceImplementationReturnsTrueForDirectInterfaceImplementations() {
+      const string source = @"
+public interface ITest {
+  void DoIt(string a, int b, object c);
+}
+
+public class Test : ITest {
+  public void DoIt(string a, int b, object c) { }
+}";
+      var symbol = GetMethodOfClass(source, "Test");
+      Assert.IsTrue(symbol.IsInterfaceImplementation(default));
+    }
+
+    [TestMethod]
+    public void IsInterfaceImplementationReturnsFalseForNotMatchingParameterTypes() {
+      const string source = @"
+public interface ITest {
+  void DoIt(string a, int b, object c);
+}
+
+public class Test : ITest {
+  public void DoIt(string a, int b, string c) { }
+}";
+      var symbol = GetMethodOfClass(source, "Test");
+      Assert.IsFalse(symbol.IsInterfaceImplementation(default));
+    }
+
+    [TestMethod]
+    public void IsInterfaceImplementationReturnsFalseForDifferentMethodNames() {
+      const string source = @"
+public interface ITest {
+  void DoIt(string a, int b, object c);
+}
+
+public class Test : ITest {
+  public void DoIt2(string a, int b, string c) { }
+}";
+      var symbol = GetMethodOfClass(source, "Test");
+      Assert.IsFalse(symbol.IsInterfaceImplementation(default));
+    }
+
+    [TestMethod]
+    public void IsInterfaceImplementationReturnsFalseForDifferentParameterLengths() {
+      const string source = @"
+public interface ITest {
+  void DoIt(string a, int b, object c);
+}
+
+public class Test : ITest {
+  public void DoIt(string a, int b, object c, float x) { }
+}";
+      var symbol = GetMethodOfClass(source, "Test");
+      Assert.IsFalse(symbol.IsInterfaceImplementation(default));
+    }
+
+    [TestMethod]
+    public void IsInterfaceImplementationReturnsFalseNoInterfaceImplementation() {
+      const string source = @"
+public interface ITest {
+  void DoIt(string a, int b, object c);
+}
+
+public class Test {
+  public void DoIt(string a, int b, object c) { }
+}";
+      var symbol = GetMethodOfClass(source, "Test");
+      Assert.IsFalse(symbol.IsInterfaceImplementation(default));
     }
   }
 }
