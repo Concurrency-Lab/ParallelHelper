@@ -82,8 +82,8 @@ namespace ParallelHelper.Analyzer.Smells {
         var returnType = SemanticModel.GetTypeInfo(Node.ReturnType, CancellationToken).Type;
         return returnType != null
           && TaskTypes
-            .WithCancellation(CancellationToken)
-            .Any(taskType => SemanticModel.IsEqualType(returnType, taskType));
+              .WithCancellation(CancellationToken)
+              .Any(taskType => SemanticModel.IsEqualType(returnType, taskType));
       }
 
       private bool ReturnsCpuBoundTask() {
@@ -106,9 +106,9 @@ namespace ParallelHelper.Analyzer.Smells {
       private bool IsTaskStart(InvocationExpressionSyntax invocationExpression) {
         return SemanticModel.GetSymbolInfo(invocationExpression, CancellationToken).Symbol is IMethodSymbol method
           && TaskStartMethods
-            .WithCancellation(CancellationToken)
-            .Where(descriptor => SemanticModel.IsEqualType(method.ContainingType, descriptor.Type))
-            .Any(descriptor => method.Name.Equals(descriptor.Method));
+              .WithCancellation(CancellationToken)
+              .Where(descriptor => SemanticModel.IsEqualType(method.ContainingType, descriptor.Type))
+              .Any(descriptor => method.Name.Equals(descriptor.Method));
       }
     }
 
