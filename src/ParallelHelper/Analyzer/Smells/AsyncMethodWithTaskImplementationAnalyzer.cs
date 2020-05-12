@@ -64,7 +64,7 @@ namespace ParallelHelper.Analyzer.Smells {
       public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
 
       public override void Analyze() {
-        if(!HasMethodBody() || !IsMethodWithAsyncSuffix() || !ReturnsTaskObject() || !ReturnsCpuBoundTask()) {
+        if(!HasMethodBody() || !IsMethodWithAsyncSuffix() || !ReturnsTaskObject() || !ReturnsCpuBoundTask() || IsInterfaceImplementationOrOverride()) {
           return;
         }
         Context.ReportDiagnostic(Diagnostic.Create(Rule, Node.GetSignatureLocation()));
@@ -76,6 +76,11 @@ namespace ParallelHelper.Analyzer.Smells {
 
       private bool IsMethodWithAsyncSuffix() {
         return Node.Identifier.Text.EndsWith(AsyncSuffix);
+      }
+
+      private bool IsInterfaceImplementationOrOverride() {
+        var method = SemanticModel.GetDeclaredSymbol(Node, CancellationToken);
+        return method.IsOverride || method.IsInterfaceImplementation(CancellationToken);
       }
 
       private bool ReturnsTaskObject() {
