@@ -109,5 +109,39 @@ class Test {
 }";
       VerifyDiagnostic(source);
     }
+
+    [TestMethod]
+    public void DoesNotReportTaskRunForInterfaceImplementation() {
+      const string source = @"
+using System.Threading.Tasks;
+
+interface ITest {
+  Task DoItAsync();
+}
+
+class Test : ITest {
+  public Task DoItAsync() {
+    return Task.Run(() => {});
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportTaskRunForMethodOverridingImplementation() {
+      const string source = @"
+using System.Threading.Tasks;
+
+class TestBase {
+  public virtual Task DoItAsync() { return Task.CompletedTask; }
+}
+
+class Test : TestBase {
+  public override Task DoItAsync() {
+    return Task.Run(() => {});
+  }
+}";
+      VerifyDiagnostic(source);
+    }
   }
 }

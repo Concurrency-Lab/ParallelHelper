@@ -11,18 +11,13 @@
 
   <PropertyGroup>
     <PackageId>ParallelHelper</PackageId>
-    <Version>2.1.0</Version>
+    <Version>2.2.0</Version>
     <Authors>Christoph Amrein</Authors>
     <PackageProjectUrl>https://github.com/Concurrency-Lab/ParallelHelper</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Concurrency-Lab/ParallelHelper</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Description>ParallelHelper is a static code analyzer that helps to identify concurrency related issues. Moreover, it provides hints to improve the robustness of code with concurrency in mind.</Description>
-    <PackageReleaseNotes>- New Analyzer: PH_P010 - Async Instead of Continuation
-- New Analyzer: PH_S027 - Leaked Outbound Collection
-- New Analyzer: PH_S028 - Leaked Inbound Collection
-- Adapted Analyzer: PH_B008 - Now only reports unsafe LINQ operations for ConcurrentDictionary
-- Improved Analyzer: PH_S014 - Now reports all task returning delegates
-- Improved Analyzer: PH_S026 - Now supports lambda expressions and respects activation frames</PackageReleaseNotes>
+    <PackageReleaseNotes>- Improved Analyzer: PH_S005 - Now ignores interface implementations and method overridings.</PackageReleaseNotes>
     <Copyright>Copyright (C) 2019 - 2020 Christoph Amrein, Concurrency Lab, HSR Hochschule fuer Technik Rapperswil, Switzerland</Copyright>
     <PackageTags>C#, Parallel, Asynchronous, Concurrency, Bugs, Best Practices, TPL, Task, QC, Static Analysis</PackageTags>
     <NoPackageAnalysis>true</NoPackageAnalysis>
