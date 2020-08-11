@@ -30,6 +30,7 @@ namespace ParallelHelper.Analyzer.Smells {
   /// </summary>
   [DiagnosticAnalyzer(LanguageNames.CSharp)]
   public class BlockingWaitInAsyncMethodAnalyzer : DiagnosticAnalyzer {
+    // TODO Using a DFA to refine the exclusion of previously awaited tasks can reduce the number of false negatives.
     public const string DiagnosticId = "PH_S026";
 
     private const string Category = "Concurrency";
@@ -50,6 +51,8 @@ namespace ParallelHelper.Analyzer.Smells {
 
     private const string WaitMethod = "Wait";
     private const string ResultProperty = "Result";
+
+    private static readonly string[] WhenMethods = { "WhenAll", "WhenAny" };
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
@@ -99,34 +102,70 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private IEnumerable<ExpressionSyntax> GetBlockingTaskUsages() {
-        return GetTaskWaitInvocations()
+        var awaitedTasks = GetAllAwaitedTasks().ToImmutableHashSet();
+        return GetTaskWaitInvocationsWithout(awaitedTasks)
           .Cast<ExpressionSyntax>()
-          .Concat(GetTaskResultAccesses());
+          .Concat(GetTaskResultAccessesWithout(awaitedTasks));
       }
 
-      private IEnumerable<InvocationExpressionSyntax> GetTaskWaitInvocations() {
+      private IEnumerable<InvocationExpressionSyntax> GetTaskWaitInvocationsWithout(ISet<ISymbol> excludedTasks) {
         return Node.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<InvocationExpressionSyntax>()
-          .Where(invocation => IsTaskMemberAccess(invocation.Expression, WaitMethod));
+          .Where(invocation => IsNotExcludedTaskMemberAccess(invocation.Expression, WaitMethod, excludedTasks));
       }
 
-      private IEnumerable<MemberAccessExpressionSyntax> GetTaskResultAccesses() {
+      private IEnumerable<MemberAccessExpressionSyntax> GetTaskResultAccessesWithout(ISet<ISymbol> excludedTasks) {
         return Node.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<MemberAccessExpressionSyntax>()
-          .Where(memberAccess => IsTaskMemberAccess(memberAccess, ResultProperty));
+          .Where(memberAccess => IsNotExcludedTaskMemberAccess(memberAccess, ResultProperty, excludedTasks));
       }
 
-      private bool IsTaskMemberAccess(ExpressionSyntax expression, string memberName) {
-        return expression is MemberAccessExpressionSyntax memberAccess
-          && memberAccess.Name.Identifier.Text.Equals(memberName)
-          && IsTaskTyped(memberAccess.Expression);
+      private bool IsNotExcludedTaskMemberAccess(ExpressionSyntax expression, string memberName, ISet<ISymbol> excludedTasks) {
+        var memberAccess = expression as MemberAccessExpressionSyntax;
+        if(memberAccess == null || memberAccess.Name.Identifier.Text != memberName || !IsTaskTyped(memberAccess.Expression)) {
+          return false;
+        }
+        var symbol = SemanticModel.GetSymbolInfo(memberAccess.Expression, CancellationToken).Symbol;
+        return symbol != null && !excludedTasks.Contains(symbol);
       }
 
       private bool IsTaskTyped(ExpressionSyntax expression) {
         var returnType = SemanticModel.GetTypeInfo(expression, CancellationToken).Type;
         return returnType != null && IsTaskType(returnType);
+      }
+
+      private IEnumerable<ISymbol> GetAllAwaitedTasks() {
+        return Node.DescendantNodesInSameActivationFrame()
+          .OfType<AwaitExpressionSyntax>()
+          .SelectMany(GetTasksAwaitedByAwaitExpression);
+      }
+
+      private IEnumerable<ISymbol> GetTasksAwaitedByAwaitExpression(AwaitExpressionSyntax awaitExpression) {
+        var expression = awaitExpression.Expression;
+        if (expression is InvocationExpressionSyntax invocation && IsTaskWhenMethodInvocation(invocation)) {
+          return GetPassedTaskVariables(invocation);
+        }
+        var symbol = SemanticModel.GetSymbolInfo(expression, CancellationToken).Symbol;
+        if(symbol.IsVariable()) {
+          return new [] { symbol };
+        }
+        return Enumerable.Empty<ISymbol>();
+      }
+
+      private IEnumerable<ISymbol> GetPassedTaskVariables(InvocationExpressionSyntax invocation) {
+        return invocation.ArgumentList.Arguments
+          .WithCancellation(CancellationToken)
+          .Select(argument => argument.Expression)
+          .Select(expression => SemanticModel.GetSymbolInfo(expression, CancellationToken).Symbol)
+          .Where(symbol => symbol.IsVariable());
+      }
+
+      private bool IsTaskWhenMethodInvocation(InvocationExpressionSyntax invocation) {
+        return SemanticModel.GetSymbolInfo(invocation, CancellationToken).Symbol is IMethodSymbol method
+          && WhenMethods.Any(name => name == method.Name)
+          && IsTaskType(method.ContainingType);
       }
     }
   }
