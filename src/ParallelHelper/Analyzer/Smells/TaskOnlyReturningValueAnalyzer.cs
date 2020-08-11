@@ -108,7 +108,7 @@ namespace ParallelHelper.Analyzer.Smells {
 
       private bool IsVariable(ExpressionSyntax expression) {
         var symbol = SemanticModel.GetSymbolInfo(expression, CancellationToken).Symbol;
-        return symbol is IFieldSymbol || symbol is ILocalSymbol || symbol is IParameterSymbol;
+        return symbol.IsVariable();
       }
     }
 
