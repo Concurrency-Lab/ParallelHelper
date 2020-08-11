@@ -97,6 +97,42 @@ class Test {
     }
 
     [TestMethod]
+    public void ReportsTaskMethodWaitInAsyncMethodWhenMethodWasAwaitedBefore() {
+      const string source = @"
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    await DoWorkInternalAsync();
+    DoWorkInternalAsync().Wait();
+  }
+
+  private Task DoWorkInternalAsync() {
+    return Task.CompletedTask;
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(6, 5));
+    }
+
+    [TestMethod]
+    public void ReportsTaskMethodResultInAsyncMethodWhenMethodWasAwaitedBefore() {
+      const string source = @"
+using System.Threading.Tasks;
+
+class Test {
+  public async Task<int> DoWorkAsync() {
+    await DoWorkInternalAsync();
+    return DoWorkInternalAsync().Result;
+  }
+
+  private Task<int> DoWorkInternalAsync() {
+    return Task.FromResult(1);
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(6, 12));
+    }
+
+    [TestMethod]
     public void DoesNotReportTaskResultInNonAsyncMethod() {
       const string source = @"
 using System.Threading.Tasks;
