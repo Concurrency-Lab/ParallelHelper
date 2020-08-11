@@ -3,6 +3,7 @@
 - New Analyzer: PH_S029 - ThreadLocal in Async Method
 - New Analyzer: PH_S030 - Async Void Method Invocation
 - Improved Analyzer: PH_S005 - Now ignores interface implementations and method overridings.
+- Improved Analyzer: PH_S026 - Now ignores tasks that have been potentially awaited before.
 
 
 ------------------

@@ -19,7 +19,8 @@
     <Description>ParallelHelper is a static code analyzer that helps to identify concurrency related issues. Moreover, it provides hints to improve the robustness of code with concurrency in mind.</Description>
     <PackageReleaseNotes>- New Analyzer: PH_S029 - ThreadLocal in Async Method
 - New Analyzer: PH_S030 - Async Void Method Invocation
-- Improved Analyzer: PH_S005 - Now ignores interface implementations and method overridings.</PackageReleaseNotes>
+- Improved Analyzer: PH_S005 - Now ignores interface implementations and method overridings.
+- Improved Analyzer: PH_S026 - Now ignores tasks that have been potentially awaited before.</PackageReleaseNotes>
     <Copyright>Copyright (C) 2019 - 2020 Christoph Amrein, Concurrency Lab, HSR Hochschule fuer Technik Rapperswil, Switzerland</Copyright>
     <PackageTags>C#, Parallel, Asynchronous, Concurrency, Bugs, Best Practices, TPL, Task, QC, Static Analysis</PackageTags>
     <NoPackageAnalysis>true</NoPackageAnalysis>
