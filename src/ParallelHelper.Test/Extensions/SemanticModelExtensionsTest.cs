@@ -384,5 +384,171 @@ public class Test {
         .Single();
       semanticModel.TryGetMethodSymbolFromMethodOrFunctionDeclaration(method, out var _, default);
     }
+
+    [TestMethod]
+    public void IsVariableReturnsTrueForLocalVariables() {
+      const string source = @"
+public class Test {
+  public int GetIt() {
+    var x = 1;
+    return x;
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var expression = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<ReturnStatementSyntax>()
+        .Select(statement => statement.Expression)
+        .Single();
+      Assert.IsTrue(semanticModel.IsVariable(expression, default));
+    }
+
+    [TestMethod]
+    public void IsVariableReturnsTrueForFields() {
+      const string source = @"
+public class Test {
+  private int x = 1;
+
+  public int GetIt() {
+    return x;
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var expression = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<ReturnStatementSyntax>()
+        .Select(statement => statement.Expression)
+        .Single();
+      Assert.IsTrue(semanticModel.IsVariable(expression, default));
+    }
+
+    [TestMethod]
+    public void IsVariableReturnsTrueForParameters() {
+      const string source = @"
+public class Test {
+  public int GetIt(int x) {
+    return x;
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var expression = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<ReturnStatementSyntax>()
+        .Select(statement => statement.Expression)
+        .Single();
+      Assert.IsTrue(semanticModel.IsVariable(expression, default));
+    }
+
+    [TestMethod]
+    public void IsVariableReturnsFalseForProperties() {
+      const string source = @"
+public class Test {
+  private int X { get; set };
+
+  public int GetIt() {
+    return X;
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var expression = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<ReturnStatementSyntax>()
+        .Select(statement => statement.Expression)
+        .Single();
+      Assert.IsFalse(semanticModel.IsVariable(expression, default));
+    }
+
+    [TestMethod]
+    public void IsVariableReturnsFalseForMethods() {
+      const string source = @"
+public class Test {
+  public int GetIt() {
+    return GetItInternal();
+  }
+
+  private int GetItInternal() => 1;
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var expression = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<ReturnStatementSyntax>()
+        .Select(statement => statement.Expression)
+        .Single();
+      Assert.IsFalse(semanticModel.IsVariable(expression, default));
+    }
+
+    [TestMethod]
+    public void IsVariableReturnsFalseForLiterals() {
+      const string source = @"
+public class Test {
+  public int GetIt() {
+    return 1;
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var expression = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<ReturnStatementSyntax>()
+        .Select(statement => statement.Expression)
+        .Single();
+      Assert.IsFalse(semanticModel.IsVariable(expression, default));
+    }
+
+    [TestMethod]
+    public void IsVariableReturnsFalseForUnresolvableIdentifiers() {
+      const string source = @"
+public class Test {
+  public int GetIt() {
+    return notExistant;
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var expression = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<ReturnStatementSyntax>()
+        .Select(statement => statement.Expression)
+        .Single();
+      Assert.IsFalse(semanticModel.IsVariable(expression, default));
+    }
+
+    [TestMethod]
+    public void IsVariableReturnsFalseForClassNames() {
+      const string source = @"
+using System;
+
+public class Test {
+  public Type GetIt() {
+    return typeof(Test);
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var expression = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<TypeOfExpressionSyntax>()
+        .Select(expression => expression.Type)
+        .Single();
+      Assert.IsFalse(semanticModel.IsVariable(expression, default));
+    }
+
+    [TestMethod]
+    public void IsVariableReturnsFalseForMethodNames() {
+      const string source = @"
+using System;
+
+public class Test {
+  public Action GetIt() {
+    return GetItInternal;
+  }
+
+  private void GetItInternal() { }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var expression = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<ReturnStatementSyntax>()
+        .Select(statement => statement.Expression)
+        .Single();
+      Assert.IsFalse(semanticModel.IsVariable(expression, default));
+    }
   }
 }

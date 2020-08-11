@@ -99,16 +99,11 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private bool IsValueExpression(ExpressionSyntax expression) {
-        return IsConstant(expression) || IsVariable(expression);
+        return IsConstant(expression) || SemanticModel.IsVariable(expression, CancellationToken);
       }
 
       private static bool IsConstant(ExpressionSyntax expression) {
         return expression is LiteralExpressionSyntax;
-      }
-
-      private bool IsVariable(ExpressionSyntax expression) {
-        var symbol = SemanticModel.GetSymbolInfo(expression, CancellationToken).Symbol;
-        return symbol.IsVariable();
       }
     }
 

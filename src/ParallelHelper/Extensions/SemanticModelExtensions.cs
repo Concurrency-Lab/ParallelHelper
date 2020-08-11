@@ -94,5 +94,20 @@ namespace ParallelHelper.Extensions {
       };
       return methodSymbol != null;
     }
+
+    /// <summary>
+    /// Checks if the passed expression represents a variable, i.e., any of the following types: <see cref="ILocalSymbol"/>, <see cref="IFieldSymbol"/>, or <see cref="IParameterSymbol"/>.
+    /// <see cref="IPropertySymbol"/> is not included since it could have some invocation logic associated.
+    /// 
+    /// Note: The method resolves the <see cref="ISymbol"/> of the given expression and uses the extension method <see cref="SymbolExtensions.IsVariable(ISymbol?)"/> for further checks.
+    /// </summary>
+    /// <param name="semanticModel">The semantic model to query.</param>
+    /// <param name="expression">The expression to check.</param>
+    /// <param name="cancellationToken">The cancellation token to use.</param>
+    /// <returns><c>true</c> if the passed symbol represents a variable.</returns>
+    public static bool IsVariable(this SemanticModel semanticModel, ExpressionSyntax expression, CancellationToken cancellationToken) {
+      var symbol = semanticModel.GetSymbolInfo(expression, cancellationToken).Symbol;
+      return symbol.IsVariable();
+    }
   }
 }
