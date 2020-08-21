@@ -57,7 +57,7 @@ namespace ParallelHelper.Analyzer.Bugs {
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
       context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-      context.RegisterSyntaxNodeAction(AnalyzeEqualsExpression, SyntaxKind.EqualsExpression);
+      context.RegisterSyntaxNodeAction(AnalyzeEqualsExpression, SyntaxKind.EqualsExpression, SyntaxKind.NotEqualsExpression);
     }
 
     private static void AnalyzeEqualsExpression(SyntaxNodeAnalysisContext context) {

@@ -23,6 +23,24 @@ class Test {
     }
 
     [TestMethod]
+    public void ReportsNegatedNullCheckAgainstTaskOfAsyncMethod() {
+      const string source = @"
+using System.Threading.Tasks;
+
+class Test {
+  private bool IsNotNull() {
+    return GetValueAsync() != null;
+  }
+
+  private async Task<object> GetValueAsync() {
+    await Task.Delay(100);
+    return new object();
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(5, 12));
+    }
+
+    [TestMethod]
     public void ReportsNullCheckAgainstTaskOfMethodWithAsyncSuffix() {
       const string source = @"
 using System.Threading.Tasks;
