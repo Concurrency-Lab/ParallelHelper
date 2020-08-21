@@ -98,7 +98,7 @@ class Test {
 using System.Threading.Tasks;
 
 class Test {
-  private async bool IsNullAsync() {
+  private async Task<bool> IsNullAsync() {
     return await GetValueAsync() == null;
   }
 
@@ -213,13 +213,13 @@ using System.Threading.Tasks;
 class Test {
   public int X { get; set; }
 
-  private async bool IsNullAsync() {
+  private async Task<bool> IsNullAsync() {
     var task = GetValueAsync();
     await Task.Run(() => SetNull(ref task));
     return task == null;
   }
 
-  private SetNull(ref Task<object> task) {
+  private void SetNull(ref Task<object> task) {
     task = null;
   }
 
