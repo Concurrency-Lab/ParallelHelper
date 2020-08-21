@@ -92,7 +92,6 @@ namespace ParallelHelper.Analyzer.Bugs {
       }
 
       private IEnumerable<(IFieldSymbol Field, Location Location)> GetAllFieldAccessesToReport() {
-        // The output is ordered to have reproducability for the unit tests.
         return GetAllFieldAccessesInsideSameScopeAccessingVariablesAccessedInsideSameLockWithAtLeastOneWriting()
           .Concat(GetAllFieldAccessesInsideSameScopeWithAtLeastOneWritingAccessingVariablesAccessedInsideSameLock())
           .Select(access => (access.Field, Location : access.Access.GetLocation()))
