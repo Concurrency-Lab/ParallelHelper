@@ -93,10 +93,19 @@ namespace ParallelHelper.Analyzer.Bugs {
       }
 
       private IEnumerable<(IFieldSymbol Field, Location Location)> GetAllFieldAccessesToReport() {
+        var fieldsWithSynchronizedAccesses = GetAllFieldsWithAtLeastOneSynchronizedAccess();
         return GetAllFieldAccessesInsideSameScopeAccessingVariablesAccessedInsideSameLockWithAtLeastOneWriting()
           .Concat(GetAllFieldAccessesInsideSameScopeWithAtLeastOneWritingAccessingVariablesAccessedInsideSameLock())
+          .Where(access => fieldsWithSynchronizedAccesses.Contains(access.Field))
           .Select(access => (access.Field, Location : access.Access.GetLocation()))
           .Distinct();
+      }
+
+      private ISet<IFieldSymbol> GetAllFieldsWithAtLeastOneSynchronizedAccess() {
+        return FieldAccesses.WithCancellation(CancellationToken)
+          .Where(access => access.IsInsideLock)
+          .Select(access => access.Field)
+          .ToImmutableHashSet();
       }
 
       private ISet<FieldAccess> GetAllFieldAccessesInsideSameScopeAccessingVariablesAccessedInsideSameLockWithAtLeastOneWriting() {

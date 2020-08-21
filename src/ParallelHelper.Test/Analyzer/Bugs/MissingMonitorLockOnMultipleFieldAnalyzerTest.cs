@@ -232,5 +232,33 @@ class Sample {
 }";
       VerifyDiagnostic(source);
     }
+
+    [TestMethod]
+    public void DoesNotReportAccessesToFieldsThatAreNeverSynchronized() {
+      const string source = @"
+class CombinedSingleton {
+  private static readonly object syncObject = new object();
+  private static CombinedSingleton instance;
+  private static int hashCode;
+  private static bool enabled;
+
+
+  public static CombinedSingleton Instance {
+    get {
+      if(hashCode == 0 && enabled) {
+        lock(syncObject) {
+          var newInstance = new CombinedSingleton();
+          hashCode = newInstance.GetHashCode();
+          instance = newInstance;
+        }
+      }
+      return instance;
+    }
+  }
+}";
+      // The unsynchronized accesses to the variables "hashCode" and "instance" are correctly reported since they
+      // form a combined state. However, the access to "enabled" must not be reported.
+      VerifyDiagnostic(source, new DiagnosticResultLocation(10, 10), new DiagnosticResultLocation(17, 14));
+    }
   }
 }
