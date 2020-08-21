@@ -58,6 +58,24 @@ class Test {
     }
 
     [TestMethod]
+    public void ReportsNullCheckAgainstTaskOfMethodWithAsyncSuffixReferencedByVariable() {
+      const string source = @"
+using System.Threading.Tasks;
+
+class Test {
+  private bool IsNull() {
+    var task = GetValueAsync();
+    return task == null;
+  }
+
+  private Task<object> GetValueAsync() {
+    return Task.FromResult(new object());
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(6, 12));
+    }
+
+    [TestMethod]
     public void DoesNotReportNullCheckAgainstTaskOfMethodWithoutAsyncSuffix() {
       const string source = @"
 using System.Threading.Tasks;
@@ -133,6 +151,76 @@ using System.Threading.Tasks;
 class Test {
   private bool IsSame() {
     return GetValueAsync() == ""123"";
+  }
+
+  private Task<object> GetValueAsync() {
+    return Task.FromResult(new object());
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportNullCheckAgainstTaskOfMethodWithAsyncSuffixReferencedByVariableThatIsPotentiallyNull() {
+      const string source = @"
+using System.Threading.Tasks;
+
+class Test {
+  public int X { get; set; }
+
+  private bool IsNull() {
+    var task = GetValueAsync();
+    if(X > 0) {
+      task = null;
+    }
+    return task == null;
+  }
+
+  private Task<object> GetValueAsync() {
+    return Task.FromResult(new object());
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportNullCheckAgainstTaskOfMethodWithAsyncSuffixReferencedByVariableThatIsPotentiallyNullByAnotherActivationFrame() {
+      const string source = @"
+using System.Threading.Tasks;
+
+class Test {
+  public int X { get; set; }
+
+  private bool IsNull() {
+    var task = GetValueAsync();
+    Task.Run(() => task = null);
+    return task == null;
+  }
+
+  private Task<object> GetValueAsync() {
+    return Task.FromResult(new object());
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportNullCheckAgainstTaskOfMethodWithAsyncSuffixReferencedByVariableThatIsPotentiallyNullByAnotherActivationFrameThroughRef() {
+      const string source = @"
+using System.Threading;
+using System.Threading.Tasks;
+
+class Test {
+  public int X { get; set; }
+
+  private async bool IsNullAsync() {
+    var task = GetValueAsync();
+    await Task.Run(() => SetNull(ref task));
+    return task == null;
+  }
+
+  private SetNull(ref Task<object> task) {
+    task = null;
   }
 
   private Task<object> GetValueAsync() {
