@@ -1,4 +1,11 @@
-﻿v2.2.0
+﻿v2.3.0
+
+- Improved Analyzer: PH_B009 - No longer reports fields that have no synchronized accesses within the document.
+
+
+------------------
+
+v2.2.0
 
 - New Analyzer: PH_S029 - ThreadLocal in Async Method
 - New Analyzer: PH_S030 - Async Void Method Invocation
