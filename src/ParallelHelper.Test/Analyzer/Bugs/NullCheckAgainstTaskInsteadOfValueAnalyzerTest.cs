@@ -80,7 +80,7 @@ class Test {
 using System.Threading.Tasks;
 
 class Test {
-  private bool IsNull() {
+  private async bool IsNullAsync() {
     return await GetValueAsync() == null;
   }
 
@@ -132,7 +132,7 @@ using System.Threading.Tasks;
 
 class Test {
   private bool IsSame() {
-    return GetValueAsync() == """"123"""";
+    return GetValueAsync() == ""123"";
   }
 
   private Task<object> GetValueAsync() {
