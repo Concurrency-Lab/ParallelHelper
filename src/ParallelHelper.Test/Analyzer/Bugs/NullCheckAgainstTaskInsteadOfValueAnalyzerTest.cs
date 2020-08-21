@@ -107,5 +107,22 @@ class Test {
 }";
       VerifyDiagnostic(source);
     }
+
+    [TestMethod]
+    public void DoesNotReportCheckAgainstOtherTasks() {
+      const string source = @"
+using System.Threading.Tasks;
+
+class Test {
+  private bool IsSame() {
+    return GetValueAsync() == Task.FromResult(new object());
+  }
+
+  private Task<object> GetValueAsync() {
+    return Task.FromResult(new object());
+  }
+}";
+      VerifyDiagnostic(source);
+    }
   }
 }
