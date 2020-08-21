@@ -11,7 +11,7 @@ using System.Linq;
 namespace ParallelHelper.Analyzer.Bugs {
   /// <summary>
   /// Analyzer that analyzes the source for classes that incorporate only a partial monitor synchornization, i.e. blocks
-  /// that are missing the lock-statement when accessing a multiple fields.
+  /// that are missing the lock-statement when accessing multiple fields.
   /// 
   /// <example>A class with a method that locks prior field access and another that doesn't.
   /// <code>
@@ -101,7 +101,7 @@ namespace ParallelHelper.Analyzer.Bugs {
 
       private ISet<FieldAccess> GetAllFieldAccessesInsideSameScopeAccessingVariablesAccessedInsideSameLockWithAtLeastOneWriting() {
         var accessesByScope = GetAllAccessesOutsideLockByScope();
-        var fieldsByLockWithOneWritten = GetAllFieldsAccessesByLock()
+        var fieldsByLockWithOneWritten = GetAllFieldAccessesByLock()
           .Where(accesses => accesses.Any(access => access.IsWriting))
           .SelectMany(accesses => accesses.Select(access => access.Field))
           .ToImmutableHashSet();
@@ -115,7 +115,7 @@ namespace ParallelHelper.Analyzer.Bugs {
         var accessesByScopeWithOneWriting = GetAllAccessesOutsideLockByScope()
           .Where(accesses => accesses.Any(access => access.IsWriting))
           .ToImmutableHashSet();
-        var fieldsByLock = GetAllFieldsAccessesByLock()
+        var fieldsByLock = GetAllFieldAccessesByLock()
           .SelectMany(accesses => accesses.Select(access => access.Field))
           .ToImmutableHashSet();
         return accessesByScopeWithOneWriting
@@ -134,7 +134,7 @@ namespace ParallelHelper.Analyzer.Bugs {
           .ToImmutableHashSet();
       }
 
-      private ISet<ISet<FieldAccess>> GetAllFieldsAccessesByLock() {
+      private ISet<ISet<FieldAccess>> GetAllFieldAccessesByLock() {
         return FieldAccesses
           .WithCancellation(CancellationToken)
           .Where(access => access.IsInsideLock)
