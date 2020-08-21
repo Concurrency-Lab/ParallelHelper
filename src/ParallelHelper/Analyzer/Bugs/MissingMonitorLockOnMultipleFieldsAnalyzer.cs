@@ -41,6 +41,8 @@ namespace ParallelHelper.Analyzer.Bugs {
   /// </summary>
   [DiagnosticAnalyzer(LanguageNames.CSharp)]
   public class MissingMonitorLockOnMultipleFieldAnalyzer : DiagnosticAnalyzer {
+    // TODO also exclude readonly fields?
+    // TODO Possible analysis refinement: Treat all fields that are accessed within a lock as a single combined state.
     public const string DiagnosticId = "PH_B009";
 
     private const string Category = "Concurrency";
@@ -67,7 +69,6 @@ namespace ParallelHelper.Analyzer.Bugs {
     }
 
     private static ISet<IFieldSymbol> GetAllNonConstFields(SemanticModelAnalysisContext context) {
-      // TODO also exclude readonly fields?
       var semanticModel = context.SemanticModel;
       var cancellationToken = context.CancellationToken;
       return semanticModel.SyntaxTree.GetRoot(cancellationToken)
