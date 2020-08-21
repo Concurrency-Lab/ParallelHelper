@@ -124,5 +124,22 @@ class Test {
 }";
       VerifyDiagnostic(source);
     }
+
+    [TestMethod]
+    public void DoesNotReportCheckAgainstOtherLiterals() {
+      const string source = @"
+using System.Threading.Tasks;
+
+class Test {
+  private bool IsSame() {
+    return GetValueAsync() == """"123"""";
+  }
+
+  private Task<object> GetValueAsync() {
+    return Task.FromResult(new object());
+  }
+}";
+      VerifyDiagnostic(source);
+    }
   }
 }
