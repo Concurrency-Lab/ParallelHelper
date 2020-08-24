@@ -130,8 +130,8 @@ namespace ParallelHelper.Analyzer.Bugs {
 
       private IDictionary<ILocalSymbol, int> GetWriteAccessCountPerVariable() {
         return Node.GetAllWrittenExpressions(CancellationToken)
-          .Select(node => SemanticModel.GetSymbolInfo(node, CancellationToken).Symbol as ILocalSymbol)
-          .IsNotNull()
+          .Select(node => SemanticModel.GetSymbolInfo(node, CancellationToken).Symbol)
+          .OfType<ILocalSymbol>()
           .GroupBy(variable => variable)
           .ToDictionary(
             variableGrouping => variableGrouping.Key,

@@ -125,8 +125,8 @@ namespace ParallelHelper.Analyzer.Bugs {
           .WithCancellation(CancellationToken)
           .OfType<MemberAccessExpressionSyntax>()
           .Where(IsStateQueryOnConcurrentCollection)
-          .Select(memberAccess => SemanticModel.GetSymbolInfo(memberAccess.Expression, CancellationToken).Symbol as IFieldSymbol)
-          .IsNotNull()
+          .Select(memberAccess => SemanticModel.GetSymbolInfo(memberAccess.Expression, CancellationToken).Symbol)
+          .OfType<IFieldSymbol>()
           .ToImmutableHashSet();
       }
       
