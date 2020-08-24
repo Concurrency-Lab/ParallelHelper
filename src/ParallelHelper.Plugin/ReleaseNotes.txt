@@ -1,4 +1,11 @@
-﻿v2.2.0
+﻿v2.3.0
+
+- New Analyzer: PH_B013 - Null-Check Against Task Instead of Value
+
+
+------------------
+
+v2.2.0
 
 - New Analyzer: PH_S029 - ThreadLocal in Async Method
 - New Analyzer: PH_S030 - Async Void Method Invocation
