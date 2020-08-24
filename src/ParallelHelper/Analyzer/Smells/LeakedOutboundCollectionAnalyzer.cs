@@ -7,7 +7,6 @@ using ParallelHelper.Util;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Reflection.Metadata;
 
 namespace ParallelHelper.Analyzer.Smells {
   /// <summary>
