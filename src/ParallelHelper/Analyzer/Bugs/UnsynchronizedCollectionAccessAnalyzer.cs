@@ -85,7 +85,6 @@ namespace ParallelHelper.Analyzer.Bugs {
       var root = semanticModel.SyntaxTree.GetRoot(cancellationToken);
       // TODO False positive that can't surpressed with an explicit cast.
       // It appears to be an issue with anonymous types since it thinks it is a non-nullable type.
-#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
       return root.DescendantNodesAndSelf()
         .WithCancellation(cancellationToken)
         .OfType<FieldDeclarationSyntax>()
@@ -95,7 +94,6 @@ namespace ParallelHelper.Analyzer.Bugs {
         .Select(field => new { Field = field, Descriptor = GetCollectionTypeDescriptor(semanticModel, field) })
         .Where(entry => entry.Descriptor != null)
         .ToDictionary(e => e.Field, e => e.Descriptor);
-#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
     }
 
     private static CollectionTypeDescriptor? GetCollectionTypeDescriptor(SemanticModel semanticModel, IFieldSymbol field) {
