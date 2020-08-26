@@ -83,8 +83,6 @@ namespace ParallelHelper.Analyzer.Bugs {
       var cancellationToken = context.CancellationToken;
       var semanticModel = context.SemanticModel;
       var root = semanticModel.SyntaxTree.GetRoot(cancellationToken);
-      // TODO False positive that can't surpressed with an explicit cast.
-      // It appears to be an issue with anonymous types since it thinks it is a non-nullable type.
       return root.DescendantNodesAndSelf()
         .WithCancellation(cancellationToken)
         .OfType<FieldDeclarationSyntax>()
