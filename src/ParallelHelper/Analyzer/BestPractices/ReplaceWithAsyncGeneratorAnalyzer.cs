@@ -30,7 +30,6 @@ namespace ParallelHelper.Analyzer.BestPractices {
   /// </summary>
   [DiagnosticAnalyzer(LanguageNames.CSharp)]
   public class ReplaceWithAsyncGeneratorAnalyzer : DiagnosticAnalyzer {
-    // TODO other collection
     public const string DiagnosticId = "PH_P011";
 
     private const string Category = "Concurrency";
