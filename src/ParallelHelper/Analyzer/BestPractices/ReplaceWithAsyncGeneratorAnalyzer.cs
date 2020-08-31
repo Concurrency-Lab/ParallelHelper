@@ -36,7 +36,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
 
     private const string Category = "Concurrency";
 
-    private static readonly LocalizableString Title = "Replace With Async Generator";
+    private static readonly LocalizableString Title = "Replace With Async Stream";
     private static readonly LocalizableString MessageFormat = "The current implementation makes the consumer await the whole result, although it appears that it can be replaced with an async stream.";
     private static readonly LocalizableString Description = "";
 
