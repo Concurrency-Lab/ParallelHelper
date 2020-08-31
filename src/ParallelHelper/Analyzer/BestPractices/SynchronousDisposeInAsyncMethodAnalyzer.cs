@@ -32,7 +32,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
     private const string Category = "Concurrency";
 
     private static readonly LocalizableString Title = "Synchronous Dispose in Async Method";
-    private static readonly LocalizableString MessageFormat = "The resource is disposed synchronously, although it can be disposed asynchronously be preceding the using-statement with 'await'.";
+    private static readonly LocalizableString MessageFormat = "The resource is disposed synchronously, although it can be disposed asynchronously by preceding the using-statement with 'await'.";
     private static readonly LocalizableString Description = "";
 
     private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
