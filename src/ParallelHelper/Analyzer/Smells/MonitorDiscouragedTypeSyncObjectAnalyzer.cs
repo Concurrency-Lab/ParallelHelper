@@ -123,14 +123,23 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private IEnumerable<ITypeSymbol> GetInitializerTypes(ISymbol symbol) {
-        return symbol.DeclaringSyntaxReferences
+        return GetAllDeclaratorsInsideTheCurrentSyntaxTree(symbol)
           .WithCancellation(CancellationToken)
-          .Select(reference => reference.GetSyntax(CancellationToken))
-          .SelectMany(declaration => declaration.DescendantNodesAndSelf().OfType<VariableDeclaratorSyntax>())
           .Select(declarator => declarator.Initializer?.Value)
           .IsNotNull()
           .Select(expression => SemanticModel.GetTypeInfo(expression, CancellationToken).Type)
           .IsNotNull();
+      }
+
+      private IEnumerable<VariableDeclaratorSyntax> GetAllDeclaratorsInsideTheCurrentSyntaxTree(ISymbol symbol) {
+        // It is possible that a variable is declared outside of the currently analyzed document.
+        // Since the semantic model may only resolve symbols for the same syntax tree, we have to filter
+        // any foreign syntax node.
+        return symbol.DeclaringSyntaxReferences
+          .WithCancellation(CancellationToken)
+          .Where(reference => reference.SyntaxTree == SemanticModel.SyntaxTree)
+          .Select(reference => reference.GetSyntax(CancellationToken))
+          .SelectMany(declaration => declaration.DescendantNodesAndSelf().OfType<VariableDeclaratorSyntax>());
       }
 
       private bool IsDiscouragedType(ITypeSymbol syncObjectType) {

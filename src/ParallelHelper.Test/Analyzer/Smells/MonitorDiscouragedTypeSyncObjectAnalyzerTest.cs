@@ -1,5 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ParallelHelper.Analyzer.Smells;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ParallelHelper.Test.Analyzer.Smells {
   [TestClass]
@@ -142,6 +146,26 @@ class Test {
   }
 }";
       VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public async Task DoesNotCrashWhenUsingVariableOfExternallyDeclaredVariableAsSyncObject() {
+      const string referenced = @"
+public class Foreign {
+  public static readonly object syncObject = new object();
+}";
+      const string source = @"
+class Test {
+  public void DoWork() {
+    lock(Foreign.syncObject) {
+    }
+  }
+}";
+      var compilation = CompilationFactory.CreateCompilation(referenced, source);
+      var diagnostics = await compilation
+        .WithAnalyzers(ImmutableArray.Create<DiagnosticAnalyzer>(new MonitorDiscouragedTypeSyncObjectAnalyzer()))
+        .GetAllDiagnosticsAsync();
+      Assert.AreEqual(0, diagnostics.Length);
     }
   }
 }
