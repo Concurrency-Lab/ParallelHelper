@@ -255,5 +255,28 @@ class Test {
 }";
       VerifyDiagnostic(source);
     }
+
+    [TestMethod]
+    public void DoesNotReportAccessToBlockingMethodWithAsyncCounterPartWhenInSeparateActivationFrame() {
+      const string source = @"
+using System.IO;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    await Task.Run(() => {
+      DoIt();
+    });
+  }
+
+  public void DoIt() {
+  }
+
+  public Task DoItAsync() {
+    return Task.CompletedTask;
+  }
+}";
+      VerifyDiagnostic(source);
+    }
   }
 }

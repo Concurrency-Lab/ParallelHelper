@@ -71,7 +71,6 @@ namespace ParallelHelper.Analyzer.Smells {
 
       public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
 
-
       public override void Analyze() {
         if(!IsAsyncMethod && !IsAsyncAnonymousFunction) {
           return;
@@ -82,7 +81,7 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private IEnumerable<InvocationExpressionSyntax> GetAllInvocations() {
-        return Node.DescendantNodes()
+        return Node.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<InvocationExpressionSyntax>();
       }
