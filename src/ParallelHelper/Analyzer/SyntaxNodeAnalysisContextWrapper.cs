@@ -6,7 +6,7 @@ namespace ParallelHelper.Analyzer {
   /// <summary>
   /// An analysis context wrapper for <see cref="SyntaxNodeAnalysisContext"/>.
   /// </summary>
-  public class SyntaxNodeAnalysisContextWrapper : IAnalysisContextWrapper {
+  public class SyntaxNodeAnalysisContextWrapper : IAnalysisContext {
     private readonly SyntaxNodeAnalysisContext _instance;
 
     public CancellationToken CancellationToken => _instance.CancellationToken;

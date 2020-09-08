@@ -6,7 +6,7 @@ namespace ParallelHelper.Analyzer {
   /// <summary>
   /// An analysis context wrapper for <see cref="SemanticModelAnalysisContext"/>.
   /// </summary>
-  public class SemanticModelAnalysisContextWrapper : IAnalysisContextWrapper {
+  public class SemanticModelAnalysisContextWrapper : IAnalysisContext {
     private readonly SemanticModelAnalysisContext _instance;
 
     public CancellationToken CancellationToken => _instance.CancellationToken;

@@ -3,11 +3,10 @@ using System.Threading;
 
 namespace ParallelHelper.Analyzer {
   /// <summary>
-  /// Since the analysis contexts of roslyn do not share a common base type, this interface provides
-  /// direct access to the necessary analysis context methods to make common analysis classes independent
-  /// of the concrete context types.
+  /// This interface provides access to the required properties and methods of an analysis context.
+  /// The reason for it is that the roslyn provided context types do not share a common base type.
   /// </summary>
-  public interface IAnalysisContextWrapper {
+  public interface IAnalysisContext {
     /// <summary>
     /// Gets the cancellation token of the currently active analysis.
     /// </summary>

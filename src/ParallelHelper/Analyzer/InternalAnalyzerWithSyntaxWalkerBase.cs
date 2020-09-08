@@ -12,7 +12,7 @@ namespace ParallelHelper.Analyzer {
     /// <summary>
     /// Gets the analysis context used during the analysis.
     /// </summary>
-    public IAnalysisContextWrapper Context { get; }
+    public IAnalysisContext Context { get; }
 
     /// <summary>
     /// Gets the cancellation token to respect for cancellations.
@@ -33,7 +33,7 @@ namespace ParallelHelper.Analyzer {
     /// Initializes the analyzer base.
     /// </summary>
     /// <param name="context">The analysis context to use during the analysis.</param>
-    protected InternalAnalyzerWithSyntaxWalkerBase(IAnalysisContextWrapper context) {
+    protected InternalAnalyzerWithSyntaxWalkerBase(IAnalysisContext context) {
       Context = context;
       Root = (TRootNode)context.Root;
     }
