@@ -8,25 +8,28 @@ namespace ParallelHelper.Analyzer {
   /// The <see cref="CSharpSyntaxWalker.Visit(SyntaxNode)"/> method is overriden to respect the context's cancellation token.
   /// </summary>
   /// <typeparam name="TContext">The type of the analysis context.</typeparam>
-  public abstract class InternalAnalyzerWithSyntaxWalkerBase<TContext> : CSharpSyntaxWalker {
+  public abstract class InternalAnalyzerWithSyntaxWalkerBase : CSharpSyntaxWalker {
     /// <summary>
     /// Gets the analysis context used during the analysis.
     /// </summary>
-    public TContext Context { get; }
+    public IAnalysisContextWrapper Context { get; }
 
     /// <summary>
     /// Gets the cancellation token to respect for cancellations.
     /// </summary>
-    public CancellationToken CancellationToken { get; }
+    public CancellationToken CancellationToken => Context.CancellationToken;
+
+    /// <summary>
+    /// Gets the semantic model of the currently analyzed document.
+    /// </summary>
+    public SemanticModel SemanticModel => Context.SemanticModel;
 
     /// <summary>
     /// Initializes the analyzer base.
     /// </summary>
     /// <param name="context">The analysis context to use during the analysis.</param>
-    /// <param name="cancellationToken">The cancellation token to respect for cancellations.</param>
-    protected InternalAnalyzerWithSyntaxWalkerBase(TContext context, CancellationToken cancellationToken) {
+    protected InternalAnalyzerWithSyntaxWalkerBase(IAnalysisContextWrapper context) {
       Context = context;
-      CancellationToken = cancellationToken;
     }
 
     /// <summary>

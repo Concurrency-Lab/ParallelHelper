@@ -6,12 +6,7 @@ namespace ParallelHelper.Analyzer {
   /// Base analyzer for implementations that work with the semantic model analysis context.
   /// </summary>
   internal abstract class SyntaxNodeAnalyzerWithSyntaxWalkerBase<TSyntaxNode>
-      : InternalAnalyzerWithSyntaxWalkerBase<SyntaxNodeAnalysisContext> where TSyntaxNode : SyntaxNode {
-    /// <summary>
-    /// Gets the semantic model used during the analysis.
-    /// </summary>
-    public SemanticModel SemanticModel { get; }
-
+      : InternalAnalyzerWithSyntaxWalkerBase where TSyntaxNode : SyntaxNode {
     /// <summary>
     /// Gets the node the analysis applied to.
     /// </summary>
@@ -21,8 +16,7 @@ namespace ParallelHelper.Analyzer {
     /// Initializes the syntax node analyzer base.
     /// </summary>
     /// <param name="context">The syntax node analysis context to use during the analysis.</param>
-    protected SyntaxNodeAnalyzerWithSyntaxWalkerBase(SyntaxNodeAnalysisContext context) : base(context, context.CancellationToken) {
-      SemanticModel = context.SemanticModel;
+    protected SyntaxNodeAnalyzerWithSyntaxWalkerBase(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) {
       Node = (TSyntaxNode)context.Node;
     }
     /// <summary>
