@@ -77,12 +77,12 @@ namespace ParallelHelper.Analyzer.BestPractices {
       new Analyzer<IPropertySymbol, MemberAccessExpressionSyntax>(context, BlockingProperties, node => node.Expression).Analyze();
     }
 
-    private class Analyzer<TMemberSymbol, TExpression> : SyntaxNodeAnalyzerBase<TExpression> where TMemberSymbol : ISymbol where TExpression : ExpressionSyntax {
+    private class Analyzer<TMemberSymbol, TExpression> : InternalAnalyzerBase<TExpression> where TMemberSymbol : ISymbol where TExpression : ExpressionSyntax {
       private readonly Func<TExpression, ExpressionSyntax?> _getInstanceExpression;
       private readonly IReadOnlyList<BlockingMemberDescriptor> _blockDescriptors;
 
       public Analyzer(SyntaxNodeAnalysisContext context, IReadOnlyList<BlockingMemberDescriptor> blockDescriptors, Func<TExpression, ExpressionSyntax?> getInstanceExpression)
-          : base(context) {
+          : base(new SyntaxNodeAnalysisContextWrapper<TExpression>(context)) {
         _blockDescriptors = blockDescriptors;
         _getInstanceExpression = getInstanceExpression;
       }

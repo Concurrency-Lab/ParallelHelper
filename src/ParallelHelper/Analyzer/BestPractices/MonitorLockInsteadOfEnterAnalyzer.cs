@@ -54,10 +54,10 @@ namespace ParallelHelper.Analyzer.BestPractices {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<InvocationExpressionSyntax> {
+    private class Analyzer : InternalAnalyzerBase<InvocationExpressionSyntax> {
       private readonly MonitorAnalysis _monitorAnalysis;
 
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper<InvocationExpressionSyntax>(context)) {
         _monitorAnalysis = new MonitorAnalysis(SemanticModel, CancellationToken);
       }
 

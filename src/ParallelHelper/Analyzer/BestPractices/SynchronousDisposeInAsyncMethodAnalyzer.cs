@@ -55,13 +55,13 @@ namespace ParallelHelper.Analyzer.BestPractices {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<SyntaxNode> {
+    private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
       private bool IsAsyncMethod => Root is MethodDeclarationSyntax method
         && method.Modifiers.Any(SyntaxKind.AsyncKeyword);
       private bool IsAsyncAnonymousFunction => Root is AnonymousFunctionExpressionSyntax function
         && function.AsyncKeyword.IsKind(SyntaxKind.AsyncKeyword);
 
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper<SyntaxNode>(context)) { }
 
       public override void Analyze() {
         if (!IsAsyncMethod && !IsAsyncAnonymousFunction) {

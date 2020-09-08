@@ -66,8 +66,8 @@ namespace ParallelHelper.Analyzer.Smells {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<ExpressionSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<ExpressionSyntax> {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper<ExpressionSyntax>(context)) { }
 
       public override void Analyze() {
         if(IsParallelQueryExpressionWithSideEffects() || IsParallelMethodInvocationWithSideEffects()) {

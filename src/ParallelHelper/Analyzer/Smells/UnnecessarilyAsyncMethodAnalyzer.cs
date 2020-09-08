@@ -53,8 +53,8 @@ namespace ParallelHelper.Analyzer.Smells {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<MethodDeclarationSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<MethodDeclarationSyntax> {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper<MethodDeclarationSyntax>(context)) { }
 
       public override void Analyze() {
         if(!HasMethodBody() || !IsAsyncMethod() || ReturnsVoid() || !AwaitsOnlyFinalExpression()) {

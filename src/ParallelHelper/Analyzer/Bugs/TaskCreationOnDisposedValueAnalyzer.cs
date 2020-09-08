@@ -57,8 +57,8 @@ namespace ParallelHelper.Analyzer.Bugs {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<StatementSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<StatementSyntax> {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper<StatementSyntax>(context)) { }
 
       public override void Analyze() {
         foreach(var returnStatement in GetReturnStatementsReturningTasksDependingOnVariableFromUsingStatement()) {

@@ -58,8 +58,8 @@ namespace ParallelHelper.Analyzer.Smells {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<ConstructorDeclarationSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<ConstructorDeclarationSyntax> {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper<ConstructorDeclarationSyntax>(context)) { }
 
       public override void Analyze() {
         foreach(var threadStart in GetThreadStartInvocations()) {

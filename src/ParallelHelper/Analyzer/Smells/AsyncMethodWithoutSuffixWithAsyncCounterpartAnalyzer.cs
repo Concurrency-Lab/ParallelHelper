@@ -60,8 +60,8 @@ namespace ParallelHelper.Analyzer.Smells {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<ClassDeclarationSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<ClassDeclarationSyntax> {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper<ClassDeclarationSyntax>(context)) { }
 
       public override void Analyze() {
         foreach(var method in GetAsyncMethodsWithoutAsyncSuffixThatHaveCounterpartWithAsyncSuffix()){

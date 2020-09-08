@@ -54,8 +54,8 @@ namespace ParallelHelper.Analyzer.Smells {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<ExpressionStatementSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<ExpressionStatementSyntax> {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper<ExpressionStatementSyntax>(context)) { }
 
       public override void Analyze() {
         if(Root.Expression is InvocationExpressionSyntax invocation && IsFireAndForgetThread(invocation)) {

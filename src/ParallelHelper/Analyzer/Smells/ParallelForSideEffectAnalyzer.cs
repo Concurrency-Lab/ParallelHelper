@@ -58,10 +58,10 @@ namespace ParallelHelper.Analyzer.Smells {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<InvocationExpressionSyntax> {
+    private class Analyzer : InternalAnalyzerBase<InvocationExpressionSyntax> {
       private readonly ParallelAnalysis _parallelAnalysis;
 
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper<InvocationExpressionSyntax>(context)) {
         _parallelAnalysis = new ParallelAnalysis(SemanticModel, CancellationToken);
       }
 

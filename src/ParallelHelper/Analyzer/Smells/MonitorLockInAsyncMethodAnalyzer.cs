@@ -63,8 +63,8 @@ namespace ParallelHelper.Analyzer.Smells {
       }
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<SyntaxNode> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper<SyntaxNode>(context)) { }
 
       public override void Analyze() {
         foreach(var lockStatement in GetLockStatementsInSameActivationFrame()) {

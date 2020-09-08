@@ -71,8 +71,8 @@ namespace ParallelHelper.Analyzer.Smells {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<WhileStatementSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<WhileStatementSyntax> {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper<WhileStatementSyntax>(context)) { }
 
       public override void Analyze() {
         foreach(var ifStatement in GetAllSleepingAndContinuingIfStatementsInLoop()) {
