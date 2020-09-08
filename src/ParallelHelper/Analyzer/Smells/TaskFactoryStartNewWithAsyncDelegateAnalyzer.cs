@@ -70,16 +70,16 @@ namespace ParallelHelper.Analyzer.Smells {
         if(!IsTaskFactoryStartNew() || !IsInvokingAsyncDelegate()) {
           return;
         }
-        Context.ReportDiagnostic(Diagnostic.Create(Rule, Node.GetLocation()));
+        Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetLocation()));
       }
 
       private bool IsTaskFactoryStartNew() {
-        return SemanticModel.GetSymbolInfo(Node, CancellationToken).Symbol is IMethodSymbol method
+        return SemanticModel.GetSymbolInfo(Root, CancellationToken).Symbol is IMethodSymbol method
           && method.Name.Equals(StartNewMethod) && SemanticModel.IsEqualType(method.ContainingType, TaskFactoryType);
       }
 
       private bool IsInvokingAsyncDelegate() {
-        var arguments = Node.ArgumentList.Arguments;
+        var arguments = Root.ArgumentList.Arguments;
         if(arguments.Count == 0) {
           return false;
         }

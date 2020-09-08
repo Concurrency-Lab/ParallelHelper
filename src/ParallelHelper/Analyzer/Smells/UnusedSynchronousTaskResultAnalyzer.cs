@@ -89,26 +89,26 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private bool ReturnsTaskObjectWithoutValue() {
-        var type = SemanticModel.GetTypeInfo(Node.ReturnType, CancellationToken).Type;
+        var type = SemanticModel.GetTypeInfo(Root.ReturnType, CancellationToken).Type;
         return type != null && SemanticModel.IsEqualType(type, TaskType);
       }
 
       private bool HasMethodBody() {
-        return Node.Body != null || Node.ExpressionBody != null;
+        return Root.Body != null || Root.ExpressionBody != null;
       }
 
       private IEnumerable<ExpressionSyntax> GetReturnValues() {
-        if (Node.ExpressionBody != null) {
-          return new[] { Node.ExpressionBody.Expression };
+        if (Root.ExpressionBody != null) {
+          return new[] { Root.ExpressionBody.Expression };
         }
-        return Node.DescendantNodes()
+        return Root.DescendantNodes()
           .OfType<ReturnStatementSyntax>()
           .Select(returnStatement => returnStatement.Expression)
           .IsNotNull();
       }
 
       private IEnumerable<ExpressionSyntax> GetAwaitStatementExpressions() {
-        return Node.DescendantNodes()
+        return Root.DescendantNodes()
           .OfType<ExpressionStatementSyntax>()
           .Select(expressionStatement => expressionStatement.Expression)
           .OfType<AwaitExpressionSyntax>()

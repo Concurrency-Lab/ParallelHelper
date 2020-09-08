@@ -67,24 +67,24 @@ namespace ParallelHelper.Analyzer.Smells {
         if(!HasMethodBody() || !IsMethodWithAsyncSuffix() || !ReturnsTaskObject() || !ReturnsCpuBoundTask() || IsInterfaceImplementationOrOverride()) {
           return;
         }
-        Context.ReportDiagnostic(Diagnostic.Create(Rule, Node.GetSignatureLocation()));
+        Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetSignatureLocation()));
       }
 
       private bool HasMethodBody() {
-        return Node.Body != null || Node.ExpressionBody != null;
+        return Root.Body != null || Root.ExpressionBody != null;
       }
 
       private bool IsMethodWithAsyncSuffix() {
-        return Node.Identifier.Text.EndsWith(AsyncSuffix);
+        return Root.Identifier.Text.EndsWith(AsyncSuffix);
       }
 
       private bool IsInterfaceImplementationOrOverride() {
-        var method = SemanticModel.GetDeclaredSymbol(Node, CancellationToken);
+        var method = SemanticModel.GetDeclaredSymbol(Root, CancellationToken);
         return method.IsOverride || method.IsInterfaceImplementation(CancellationToken);
       }
 
       private bool ReturnsTaskObject() {
-        var returnType = SemanticModel.GetTypeInfo(Node.ReturnType, CancellationToken).Type;
+        var returnType = SemanticModel.GetTypeInfo(Root.ReturnType, CancellationToken).Type;
         return returnType != null
           && TaskTypes
               .WithCancellation(CancellationToken)
@@ -96,12 +96,12 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private ExpressionSyntax? GetMethodsReturnValue() {
-        if(Node.ExpressionBody != null) {
-          return Node.ExpressionBody.Expression;
+        if(Root.ExpressionBody != null) {
+          return Root.ExpressionBody.Expression;
         }
 
         // TODO: Decide if really only one statement is allowed or any return statement must not return a manually created task.
-        var statements = Node.Body.Statements;
+        var statements = Root.Body.Statements;
         if(statements.Count != 1) {
           return null;
         }

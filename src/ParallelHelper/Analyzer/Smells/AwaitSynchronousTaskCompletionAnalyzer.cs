@@ -59,12 +59,12 @@ namespace ParallelHelper.Analyzer.Smells {
         if(!AwaitsSynchronouslyCompletedTask()) {
           return;
         }
-        Context.ReportDiagnostic(Diagnostic.Create(Rule, Node.GetLocation()));
+        Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetLocation()));
       }
 
       private bool AwaitsSynchronouslyCompletedTask() {
-        return IsTaskFromResult(Node.Expression)
-          || IsCompletedTask(Node.Expression);
+        return IsTaskFromResult(Root.Expression)
+          || IsCompletedTask(Root.Expression);
       }
 
       private bool IsTaskFromResult(ExpressionSyntax expression) {

@@ -63,7 +63,7 @@ namespace ParallelHelper.Analyzer.Smells {
       public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
 
       public override void Analyze() {
-        if(!Node.IsMethodOrFunctionWithAsyncModifier()) {
+        if(!Root.IsMethodOrFunctionWithAsyncModifier()) {
           return;
         }
         foreach(var invocation in GetThreadSleepInvocations()) {
@@ -72,7 +72,7 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private IEnumerable<InvocationExpressionSyntax> GetThreadSleepInvocations() {
-        return Node.DescendantNodesInSameActivationFrame()
+        return Root.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<InvocationExpressionSyntax>()
           .Where(IsThreadSleepInvocation);

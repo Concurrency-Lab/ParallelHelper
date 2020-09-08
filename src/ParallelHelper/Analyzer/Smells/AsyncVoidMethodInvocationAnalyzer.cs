@@ -57,12 +57,12 @@ namespace ParallelHelper.Analyzer.Smells {
 
       public override void Analyze() {
         if(IsAsyncVoidMethod()) {
-          Context.ReportDiagnostic(Diagnostic.Create(Rule, Node.GetLocation()));
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetLocation()));
         }
       }
 
       private bool IsAsyncVoidMethod() {
-        return SemanticModel.GetSymbolInfo(Node, CancellationToken).Symbol is IMethodSymbol method
+        return SemanticModel.GetSymbolInfo(Root, CancellationToken).Symbol is IMethodSymbol method
           && method.ReturnsVoid
           && method.IsAsync;
       }

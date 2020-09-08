@@ -65,20 +65,20 @@ namespace ParallelHelper.Analyzer.Smells {
       public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
 
       public override void Analyze() {
-        if(Node.ArgumentList == null || !IsTimerConstruction()) {
+        if(Root.ArgumentList == null || !IsTimerConstruction()) {
           return;
         }
 
-        var arguments = Node.ArgumentList.Arguments;
+        var arguments = Root.ArgumentList.Arguments;
         if(arguments.Count < 3 || IsInfinite(arguments[DueTimeArgumentPosition])) {
           return;
         }
 
-        Context.ReportDiagnostic(Diagnostic.Create(Rule, Node.GetLocation()));
+        Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetLocation()));
       }
 
       private bool IsTimerConstruction() {
-        var typeSymbol = SemanticModel.GetTypeInfo(Node, CancellationToken).Type;
+        var typeSymbol = SemanticModel.GetTypeInfo(Root, CancellationToken).Type;
         return typeSymbol != null && SemanticModel.IsEqualType(typeSymbol, TimerType);
       }
 

@@ -67,12 +67,12 @@ namespace ParallelHelper.Analyzer.Smells {
 
       public override void Analyze() {
         if(IsParallelMethodWithLockStatement()) {
-          Context.ReportDiagnostic(Diagnostic.Create(Rule, Node.GetLocation()));
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetLocation()));
         }
       }
 
       private bool IsParallelMethodWithLockStatement() {
-        return _parallelAnalysis.TryGetParallelForOrForEachDelegate(Node, out var expression)
+        return _parallelAnalysis.TryGetParallelForOrForEachDelegate(Root, out var expression)
           && ContainsLockStatements(expression!);
       }
 

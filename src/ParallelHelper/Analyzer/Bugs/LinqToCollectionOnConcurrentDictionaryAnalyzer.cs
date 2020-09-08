@@ -72,12 +72,12 @@ namespace ParallelHelper.Analyzer.Bugs {
 
       public override void Analyze() {
         if(IsAccessingConcurrentCollection() && IsLinqOperation()) {
-          Context.ReportDiagnostic(Diagnostic.Create(Rule, Node.GetLocation()));
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetLocation()));
         }
       }
 
       private bool IsAccessingConcurrentCollection() {
-        return Node.Expression is MemberAccessExpressionSyntax memberAccess
+        return Root.Expression is MemberAccessExpressionSyntax memberAccess
           && IsMemberAccessOnConcurrentCollection(memberAccess);
       }
 
@@ -90,7 +90,7 @@ namespace ParallelHelper.Analyzer.Bugs {
       }
 
       private bool IsLinqOperation() {
-        return SemanticModel.GetSymbolInfo(Node, CancellationToken).Symbol is IMethodSymbol method
+        return SemanticModel.GetSymbolInfo(Root, CancellationToken).Symbol is IMethodSymbol method
           && LinqDescriptors
             .WithCancellation(CancellationToken)
             .Any(descriptor => IsLinqDescriptor(method, descriptor));

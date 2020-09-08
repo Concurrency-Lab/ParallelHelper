@@ -73,7 +73,7 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private IEnumerable<LockStatementSyntax> GetLockStatementsInSameActivationFrame() {
-        return Node.DescendantNodesInSameActivationFrame()
+        return Root.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<LockStatementSyntax>();
       }

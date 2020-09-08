@@ -67,12 +67,12 @@ namespace ParallelHelper.Analyzer.Smells {
 
       public override void Analyze() {
         if(IsParallelMethodWithSideEffects()) {
-          Context.ReportDiagnostic(Diagnostic.Create(Rule, Node.GetLocation()));
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetLocation()));
         }
       }
 
       private bool IsParallelMethodWithSideEffects() {
-        return _parallelAnalysis.TryGetParallelForOrForEachDelegate(Node, out var expression)
+        return _parallelAnalysis.TryGetParallelForOrForEachDelegate(Root, out var expression)
           && SemanticModel.HasSideEffects(expression!);
       }
     }

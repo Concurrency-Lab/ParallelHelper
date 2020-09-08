@@ -58,8 +58,8 @@ namespace ParallelHelper.Analyzer.Smells {
       public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
 
       public override void Analyze() {
-        if(Node.Expression is InvocationExpressionSyntax invocation && IsFireAndForgetThread(invocation)) {
-          Context.ReportDiagnostic(Diagnostic.Create(Rule, Node.GetLocation()));
+        if(Root.Expression is InvocationExpressionSyntax invocation && IsFireAndForgetThread(invocation)) {
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetLocation()));
         }
       }
 

@@ -70,7 +70,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
       }
 
       private bool ReceivesCancellationToken() {
-        return Node.ParameterList.Parameters
+        return Root.ParameterList.Parameters
           .WithCancellation(CancellationToken)
           .Select(parameter => SemanticModel.GetDeclaredSymbol(parameter, CancellationToken))
           .Select(parameter => parameter.Type)
@@ -79,7 +79,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
       }
 
       private IEnumerable<InvocationExpressionSyntax> GetAllInvocationsWithMissingCancellationToken() {
-        return Node.DescendantNodes()
+        return Root.DescendantNodes()
           .WithCancellation(CancellationToken)
           .OfType<InvocationExpressionSyntax>()
           .Where(InvocationMissesCancellationToken);

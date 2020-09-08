@@ -70,7 +70,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
 
       public override void Analyze() {
         if(IsAsyncMethod() && ContainsCanceledLoopWithoutThrowingException()) {
-          Context.ReportDiagnostic(Diagnostic.Create(Rule, Node.GetSignatureLocation()));
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetSignatureLocation()));
         }
       }
 
@@ -81,7 +81,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
       }
 
       private bool IsAsyncMethod() {
-        return Node.Modifiers.Any(SyntaxKind.AsyncKeyword);
+        return Root.Modifiers.Any(SyntaxKind.AsyncKeyword);
       }
 
       private bool ContainsCanceledLoop() {
@@ -93,15 +93,15 @@ namespace ParallelHelper.Analyzer.BestPractices {
       }
 
       private IEnumerable<ExpressionSyntax> GetAllLoopConditions() {
-        var whileConditions = Node.DescendantNodes()
+        var whileConditions = Root.DescendantNodes()
           .WithCancellation(CancellationToken)
           .OfType<WhileStatementSyntax>()
           .Select(whileStatement => whileStatement.Condition);
-        var forConditions = Node.DescendantNodes()
+        var forConditions = Root.DescendantNodes()
           .WithCancellation(CancellationToken)
           .OfType<ForStatementSyntax>()
           .Select(forStatement => forStatement.Condition);
-        var doConditions = Node.DescendantNodes()
+        var doConditions = Root.DescendantNodes()
           .WithCancellation(CancellationToken)
           .OfType<DoStatementSyntax>()
           .Select(doStatement => doStatement.Condition);
@@ -115,7 +115,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
       }
 
       private bool InvokesThrowIfCancellationRequested() {
-        return Node.DescendantNodes()
+        return Root.DescendantNodes()
           .WithCancellation(CancellationToken)
           .OfType<InvocationExpressionSyntax>()
           .Any(IsThrowIfCancellationRequestedInvocation);
@@ -128,11 +128,11 @@ namespace ParallelHelper.Analyzer.BestPractices {
       }
 
       private bool ThrowsOperationCanceledException() {
-        var throwExpressions = Node.DescendantNodes()
+        var throwExpressions = Root.DescendantNodes()
           .WithCancellation(CancellationToken)
           .OfType<ThrowExpressionSyntax>()
           .Select(throwExpression => throwExpression.Expression);
-        var throwStatements = Node.DescendantNodes()
+        var throwStatements = Root.DescendantNodes()
           .WithCancellation(CancellationToken)
           .OfType<ThrowStatementSyntax>()
           .Select(throwStatement => throwStatement.Expression)

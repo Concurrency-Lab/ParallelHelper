@@ -88,14 +88,14 @@ namespace ParallelHelper.Analyzer.BestPractices {
       }
 
       public override void Analyze() {
-        if(SemanticModel.GetSymbolInfo(Node, CancellationToken).Symbol is TMemberSymbol member && IsBlockingMemberAccessOnAsyncMethod(member)) {
+        if(SemanticModel.GetSymbolInfo(Root, CancellationToken).Symbol is TMemberSymbol member && IsBlockingMemberAccessOnAsyncMethod(member)) {
           var access = $"{member.ContainingType.Name}.{member.Name}";
-          Context.ReportDiagnostic(Diagnostic.Create(Rule, Node.GetLocation(), access));
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetLocation(), access));
         }
       }
 
       private bool IsBlockingMemberAccessOnAsyncMethod(TMemberSymbol member) {
-        var instanceExpression = _getInstanceExpression(Node);
+        var instanceExpression = _getInstanceExpression(Root);
         return instanceExpression != null
           && IsPotentiallyAsyncMethod(instanceExpression)
           && IsBlockingMemberAccess(member);

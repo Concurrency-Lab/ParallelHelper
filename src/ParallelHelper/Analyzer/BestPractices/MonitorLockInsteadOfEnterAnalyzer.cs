@@ -62,13 +62,13 @@ namespace ParallelHelper.Analyzer.BestPractices {
       }
 
       public override void Analyze() {
-        if(_monitorAnalysis.IsMonitorEnter(Node) && !IsAcceptableEnterOverload()) {
-          Context.ReportDiagnostic(Diagnostic.Create(Rule, Node.GetLocation()));
+        if(_monitorAnalysis.IsMonitorEnter(Root) && !IsAcceptableEnterOverload()) {
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetLocation()));
         }
       }
 
       private bool IsAcceptableEnterOverload() {
-        var arguments = Node.ArgumentList.Arguments;
+        var arguments = Root.ArgumentList.Arguments;
         return arguments.Count >= 2 && IsLockTakenArgument(arguments[1]);
       }
 

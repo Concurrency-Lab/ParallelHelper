@@ -78,7 +78,7 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private IEnumerable<MethodDeclarationSyntax> GetAllMethods() {
-        return Node.Members.WithCancellation(CancellationToken).OfType<MethodDeclarationSyntax>();
+        return Root.Members.WithCancellation(CancellationToken).OfType<MethodDeclarationSyntax>();
       }
 
       private bool IsAsyncMethodWithoutAsyncSuffix(MethodDeclarationSyntax method) {

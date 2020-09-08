@@ -84,7 +84,7 @@ namespace ParallelHelper.Analyzer.Smells {
 
       private IEnumerable<IfStatementSyntax> GetAllSleepingAndContinuingIfStatementsInLoop() {
         // TODO ensure that the continue statement does not belong to another loop.
-        return Node.Statement.DescendantNodesAndSelf()
+        return Root.Statement.DescendantNodesAndSelf()
           .WithCancellation(CancellationToken)
           .OfType<IfStatementSyntax>()
           .Where(ContainsContinueStatement)
