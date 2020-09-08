@@ -11,7 +11,7 @@ using System.Linq;
 namespace ParallelHelper.Test.Analyzer {
   [TestClass]
   public class FieldAccessAwareSemanticModelAnalyzerWithSyntaxWalkerBaseTest {
-    private class TestAnalyzer : FieldAccessAwareSemanticModelAnalyzerWithSyntaxWalkerBase {
+    private class TestAnalyzer : FieldAccessAwareAnalyzerWithSyntaxWalkerBase<SyntaxNode> {
       public static TestAnalyzer Create(string source, params string[] fieldsToTrack) {
         var semanticModel = CompilationFactory.GetSemanticModel(source);
         var context = new SemanticModelAnalysisContext(
@@ -36,7 +36,8 @@ namespace ParallelHelper.Test.Analyzer {
           .ToImmutableHashSet();
       }
 
-      public TestAnalyzer(SemanticModelAnalysisContext context, ISet<IFieldSymbol> fieldsToTrack) : base(context, fieldsToTrack) { }
+      public TestAnalyzer(SemanticModelAnalysisContext context, ISet<IFieldSymbol> fieldsToTrack)
+        : base(new SemanticModelAnalysisContextWrapper(context), fieldsToTrack) { }
     }
 
     [TestMethod]

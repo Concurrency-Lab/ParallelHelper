@@ -1,6 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Diagnostics;
 using ParallelHelper.Util;
 using System.Collections.Generic;
 
@@ -11,7 +10,8 @@ namespace ParallelHelper.Analyzer {
   /// invocation of the <see cref="System.Threading.Monitor.Wait(object)"/> invocation.
   /// </summary>
   /// <typeparam name="TRootNode">The syntax type of the root node of the applied analysis.</typeparam>
-  public abstract class MonitorAwareSemanticModelAnalyzerWithSyntaxWalkerBase : InternalAnalyzerWithSyntaxWalkerBase<SyntaxNode> {
+  public abstract class MonitorAwareAnalyzerWithSyntaxWalkerBase<TRootNode> : InternalAnalyzerWithSyntaxWalkerBase<TRootNode>
+      where TRootNode : SyntaxNode {
     /// <summary>
     /// Gets the analysis instance for monitor based analysis.
     /// </summary>
@@ -46,9 +46,9 @@ namespace ParallelHelper.Analyzer {
     /// <summary>
     /// Initializes the semantic model analyzer with a syntax walker base and its monitor awareness.
     /// </summary>
-    /// <param name="context">The semantic model analysis context to use during the analysis.</param>
-    protected MonitorAwareSemanticModelAnalyzerWithSyntaxWalkerBase(SemanticModelAnalysisContext context)
-        : base(new SemanticModelAnalysisContextWrapper(context)) {
+    /// <param name="context">The analysis context to use during the analysis.</param>
+    protected MonitorAwareAnalyzerWithSyntaxWalkerBase(IAnalysisContextWrapper<TRootNode> context)
+        : base(context) {
       MonitorAnalysis = new MonitorAnalysis(context.SemanticModel, context.CancellationToken);
     }
 

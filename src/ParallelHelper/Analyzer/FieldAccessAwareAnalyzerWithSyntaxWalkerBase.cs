@@ -1,7 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,7 +11,9 @@ namespace ParallelHelper.Analyzer {
   /// invocation of the <see cref="System.Threading.Monitor.Wait(object)"/> invocation. Moreover, it collects any
   /// access to a field.
   /// </summary>
-  public abstract class FieldAccessAwareSemanticModelAnalyzerWithSyntaxWalkerBase : MonitorAwareSemanticModelAnalyzerWithSyntaxWalkerBase {
+  /// <typeparam name="TRootNode">The syntax type of the root node of the applied analysis.</typeparam>
+  public abstract class FieldAccessAwareAnalyzerWithSyntaxWalkerBase<TRootNode> : MonitorAwareAnalyzerWithSyntaxWalkerBase<TRootNode>
+      where TRootNode : SyntaxNode {
     // TODO Detect cyclic access to the same field, i.e. through loops?
     // TODO For the read-only accesses: Is it better to always treat ExpressionSyntax as read-access
     //      and exclude write-only parents instead of manually listing every read-access?
@@ -45,9 +46,10 @@ namespace ParallelHelper.Analyzer {
     /// <summary>
     /// Initializes the semantic model analyzer with a syntax walker base and its monitor awareness.
     /// </summary>
-    /// <param name="context">The semantic model analysis context to use during the analysis.</param>
+    /// <param name="context">The analysis context to use during the analysis.</param>
     /// <param name="fieldsToTrack">The fields whose accesses should be tracked.</param>
-    protected FieldAccessAwareSemanticModelAnalyzerWithSyntaxWalkerBase(SemanticModelAnalysisContext context, ISet<IFieldSymbol> fieldsToTrack) : base(context) {
+    protected FieldAccessAwareAnalyzerWithSyntaxWalkerBase(IAnalysisContextWrapper<TRootNode> context, ISet<IFieldSymbol> fieldsToTrack)
+        : base(context) {
       FieldsToTrack = fieldsToTrack;
     }
 

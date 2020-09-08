@@ -66,10 +66,10 @@ namespace ParallelHelper.Analyzer.Bugs {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : MonitorAwareSemanticModelAnalyzerWithSyntaxWalkerBase {
+    private class Analyzer : MonitorAwareAnalyzerWithSyntaxWalkerBase<SyntaxNode> {
       private readonly ISet<ISymbol> _syncObjectsWithParameterDependantWait = new HashSet<ISymbol>();
 
-      public Analyzer(SemanticModelAnalysisContext context) : base(context) { }
+      public Analyzer(SemanticModelAnalysisContext context) : base(new SemanticModelAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
         base.Analyze();

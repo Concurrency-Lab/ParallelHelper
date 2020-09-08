@@ -7,7 +7,7 @@ namespace ParallelHelper.Analyzer {
   /// An analysis context wrapper for <see cref="SyntaxNodeAnalysisContext"/>.
   /// </summary>
   /// <typeparam name="TRootNode">The syntax type of the root node of the applied analysis.</typeparam>
-  internal class SyntaxNodeAnalysisContextWrapper<TRootNode> : IAnalysisContextWrapper<TRootNode> where TRootNode : SyntaxNode {
+  public class SyntaxNodeAnalysisContextWrapper<TRootNode> : IAnalysisContextWrapper<TRootNode> where TRootNode : SyntaxNode {
     private readonly SyntaxNodeAnalysisContext _instance;
 
     public CancellationToken CancellationToken => _instance.CancellationToken;
