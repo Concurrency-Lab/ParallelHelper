@@ -15,6 +15,10 @@ namespace ParallelHelper.Analyzer {
 
     public SyntaxNode Root => SemanticModel.SyntaxTree.GetRoot(CancellationToken);
 
+    /// <summary>
+    /// Initializes a new instance with the specified semantic model analysis context.
+    /// </summary>
+    /// <param name="context">The semantic model analysis to wrap.</param>
     public SemanticModelAnalysisContextWrapper(SemanticModelAnalysisContext context) {
       _instance = context;
     }

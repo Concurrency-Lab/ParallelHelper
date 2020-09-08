@@ -16,6 +16,10 @@ namespace ParallelHelper.Analyzer {
 
     public TRootNode Root { get; }
 
+    /// <summary>
+    /// Initializes a new instance with the specified syntax node analysis context.
+    /// </summary>
+    /// <param name="context">The syntax node analysis to wrap.</param>
     public SyntaxNodeAnalysisContextWrapper(SyntaxNodeAnalysisContext context) {
       _instance = context;
       Root = (TRootNode)context.Node;
