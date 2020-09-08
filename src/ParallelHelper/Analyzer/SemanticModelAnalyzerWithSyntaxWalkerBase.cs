@@ -11,12 +11,5 @@ namespace ParallelHelper.Analyzer {
     /// </summary>
     /// <param name="context">The semantic model analysis context to use during the analysis.</param>
     protected SemanticModelAnalyzerWithSyntaxWalkerBase(SemanticModelAnalysisContext context) : base(new SemanticModelAnalysisContextWrapper(context)) { }
-
-    /// <summary>
-    /// Applies the analysis by visiting the root node of the semantic model's syntax tree.
-    /// </summary>
-    public override void Analyze() {
-      Visit(Root);
-    }
   }
 }

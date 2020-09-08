@@ -38,9 +38,11 @@ namespace ParallelHelper.Analyzer {
     }
 
     /// <summary>
-    /// Applies the analysis.
+    /// Applies the analysis by visiting the root node of the analysis.
     /// </summary>
-    public abstract void Analyze();
+    public virtual void Analyze() {
+      Visit(Root);
+    }
 
     /// <summary>
     /// Basic visit method that respects the provided cancellation token.

@@ -14,11 +14,5 @@ namespace ParallelHelper.Analyzer {
     /// <param name="context">The syntax node analysis context to use during the analysis.</param>
     protected SyntaxNodeAnalyzerWithSyntaxWalkerBase(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper<TRootNode>(context)) {
     }
-    /// <summary>
-    /// Applies the analysis by visiting the node.
-    /// </summary>
-    public override void Analyze() {
-      Visit(Root);
-    }
   }
 }
