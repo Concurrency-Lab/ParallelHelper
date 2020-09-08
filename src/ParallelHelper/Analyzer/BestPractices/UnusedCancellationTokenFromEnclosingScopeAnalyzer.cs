@@ -111,7 +111,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
       private bool _enclosingScopeIsInstance;
 
       public Analyzer(SyntaxNodeAnalysisContext context, int staticFieldTokens, int instanceFieldTokens)
-          : base(new SyntaxNodeAnalysisContextWrapper<ClassDeclarationSyntax>(context)) {
+          : base(new SyntaxNodeAnalysisContextWrapper(context)) {
         _staticTokensInEnclosingScope = staticFieldTokens;
         _instanceTokensInEnclosingScope = instanceFieldTokens;
       }

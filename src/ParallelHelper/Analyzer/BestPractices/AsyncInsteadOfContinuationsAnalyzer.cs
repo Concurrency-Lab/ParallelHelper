@@ -62,7 +62,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
     }
 
     private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper<SyntaxNode>(context)) { }
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
         if(!IsReturningTask()) {

@@ -62,7 +62,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
     }
 
     private class Analyzer : InternalAnalyzerBase<MethodDeclarationSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper<MethodDeclarationSyntax>(context)) { }
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       private bool IsAsync => Root.Modifiers.Any(SyntaxKind.AsyncKeyword);
 

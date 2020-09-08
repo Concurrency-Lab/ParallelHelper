@@ -64,7 +64,7 @@ namespace ParallelHelper.Analyzer.Smells {
     }
 
     private class Analyzer : InternalAnalyzerBase<InvocationExpressionSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper<InvocationExpressionSyntax>(context)) { }
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
         if(!IsTaskFactoryStartNew() || !IsInvokingAsyncDelegate()) {

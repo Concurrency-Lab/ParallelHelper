@@ -66,7 +66,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
     }
 
     private class Analyzer : InternalAnalyzerBase<MethodDeclarationSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper<MethodDeclarationSyntax>(context)) { }
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
         if(IsAsyncMethod() && ContainsCanceledLoopWithoutThrowingException()) {

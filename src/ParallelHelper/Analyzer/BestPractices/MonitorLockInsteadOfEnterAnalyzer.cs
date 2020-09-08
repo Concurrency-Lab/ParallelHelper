@@ -57,7 +57,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
     private class Analyzer : InternalAnalyzerBase<InvocationExpressionSyntax> {
       private readonly MonitorAnalysis _monitorAnalysis;
 
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper<InvocationExpressionSyntax>(context)) {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) {
         _monitorAnalysis = new MonitorAnalysis(SemanticModel, CancellationToken);
       }
 

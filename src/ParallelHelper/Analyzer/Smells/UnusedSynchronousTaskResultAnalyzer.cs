@@ -57,7 +57,7 @@ namespace ParallelHelper.Analyzer.Smells {
     private class Analyzer : InternalAnalyzerBase<MethodDeclarationSyntax> {
       // TODO async void methods?
       // TODO unnecessary use of Task.FromResult in general?
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper<MethodDeclarationSyntax>(context)) { }
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
         if(!HasMethodBody()) {

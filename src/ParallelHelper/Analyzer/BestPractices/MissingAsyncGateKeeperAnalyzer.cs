@@ -82,7 +82,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
       private readonly IReadOnlyList<BlockingMemberDescriptor> _blockDescriptors;
 
       public Analyzer(SyntaxNodeAnalysisContext context, IReadOnlyList<BlockingMemberDescriptor> blockDescriptors, Func<TExpression, ExpressionSyntax?> getInstanceExpression)
-          : base(new SyntaxNodeAnalysisContextWrapper<TExpression>(context)) {
+          : base(new SyntaxNodeAnalysisContextWrapper(context)) {
         _blockDescriptors = blockDescriptors;
         _getInstanceExpression = getInstanceExpression;
       }

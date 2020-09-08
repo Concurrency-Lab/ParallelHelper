@@ -68,7 +68,7 @@ namespace ParallelHelper.Analyzer.Bugs {
     }
 
     private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper<SyntaxNode>(context)) { }
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
         var onlyInitializedTaskVariables = GetVariablesInitializedWithAsyncMethodInvocation()

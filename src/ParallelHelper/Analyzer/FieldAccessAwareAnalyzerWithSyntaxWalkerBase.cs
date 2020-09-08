@@ -48,7 +48,7 @@ namespace ParallelHelper.Analyzer {
     /// </summary>
     /// <param name="context">The analysis context to use during the analysis.</param>
     /// <param name="fieldsToTrack">The fields whose accesses should be tracked.</param>
-    protected FieldAccessAwareAnalyzerWithSyntaxWalkerBase(IAnalysisContextWrapper<TRootNode> context, ISet<IFieldSymbol> fieldsToTrack)
+    protected FieldAccessAwareAnalyzerWithSyntaxWalkerBase(IAnalysisContextWrapper context, ISet<IFieldSymbol> fieldsToTrack)
         : base(context) {
       FieldsToTrack = fieldsToTrack;
     }

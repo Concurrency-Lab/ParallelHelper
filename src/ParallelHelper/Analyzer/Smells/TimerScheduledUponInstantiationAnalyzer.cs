@@ -62,7 +62,7 @@ namespace ParallelHelper.Analyzer.Smells {
     }
 
     private class Analyzer : InternalAnalyzerBase<ObjectCreationExpressionSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper<ObjectCreationExpressionSyntax>(context)) { }
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
         if(Root.ArgumentList == null || !IsTimerConstruction()) {

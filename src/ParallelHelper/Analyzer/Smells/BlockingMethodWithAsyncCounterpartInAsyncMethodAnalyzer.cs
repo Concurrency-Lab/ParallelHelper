@@ -69,7 +69,7 @@ namespace ParallelHelper.Analyzer.Smells {
       private bool IsAsyncAnonymousFunction => Root is AnonymousFunctionExpressionSyntax function 
         && function.AsyncKeyword.IsKind(SyntaxKind.AsyncKeyword);
 
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper<SyntaxNode>(context)) { }
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
         if(!IsAsyncMethod && !IsAsyncAnonymousFunction) {

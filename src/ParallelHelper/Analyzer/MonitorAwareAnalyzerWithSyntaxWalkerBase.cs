@@ -47,7 +47,7 @@ namespace ParallelHelper.Analyzer {
     /// Initializes the semantic model analyzer with a syntax walker base and its monitor awareness.
     /// </summary>
     /// <param name="context">The analysis context to use during the analysis.</param>
-    protected MonitorAwareAnalyzerWithSyntaxWalkerBase(IAnalysisContextWrapper<TRootNode> context)
+    protected MonitorAwareAnalyzerWithSyntaxWalkerBase(IAnalysisContextWrapper context)
         : base(context) {
       MonitorAnalysis = new MonitorAnalysis(context.SemanticModel, context.CancellationToken);
     }

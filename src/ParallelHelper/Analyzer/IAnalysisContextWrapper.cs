@@ -7,8 +7,7 @@ namespace ParallelHelper.Analyzer {
   /// direct access to the necessary analysis context methods to make common analysis classes independent
   /// of the concrete context types.
   /// </summary>
-  /// <typeparam name="TRootNode">The syntax type of the root node of the applied analysis.</typeparam>
-  public interface IAnalysisContextWrapper<TRootNode> where TRootNode : SyntaxNode {
+  public interface IAnalysisContextWrapper {
     /// <summary>
     /// Gets the cancellation token of the currently active analysis.
     /// </summary>
@@ -22,7 +21,7 @@ namespace ParallelHelper.Analyzer {
     /// <summary>
     /// Gets the root node of the currently applied analysis.
     /// </summary>
-    TRootNode Root { get; }
+    SyntaxNode Root { get; }
 
     /// <summary>
     /// Reports the provided diagnostic.
