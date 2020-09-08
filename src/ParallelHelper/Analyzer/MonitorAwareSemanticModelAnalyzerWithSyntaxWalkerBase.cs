@@ -46,7 +46,7 @@ namespace ParallelHelper.Analyzer {
     /// </summary>
     /// <param name="context">The semantic model analysis context to use during the analysis.</param>
     protected MonitorAwareSemanticModelAnalyzerWithSyntaxWalkerBase(SemanticModelAnalysisContext context) : base(context) {
-      MonitorAnalysis = new MonitorAnalysis(SemanticModel, CancellationToken);
+      MonitorAnalysis = new MonitorAnalysis(context.SemanticModel, context.CancellationToken);
     }
 
     public override void VisitLockStatement(LockStatementSyntax node) {
