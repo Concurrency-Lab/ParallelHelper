@@ -7,12 +7,12 @@ namespace ParallelHelper.Analyzer {
   /// Base analyzer implementation to share common context information.
   /// The <see cref="CSharpSyntaxWalker.Visit(SyntaxNode)"/> method is overriden to respect the context's cancellation token.
   /// </summary>
-  /// <typeparam name="TContext">The type of the analysis context.</typeparam>
-  public abstract class InternalAnalyzerWithSyntaxWalkerBase : CSharpSyntaxWalker {
+  /// <typeparam name="TRootNode">The syntax type of the root node of the applied analysis.</typeparam>
+  public abstract class InternalAnalyzerWithSyntaxWalkerBase<TRootNode> : CSharpSyntaxWalker where TRootNode : SyntaxNode {
     /// <summary>
     /// Gets the analysis context used during the analysis.
     /// </summary>
-    public IAnalysisContextWrapper Context { get; }
+    public IAnalysisContextWrapper<TRootNode> Context { get; }
 
     /// <summary>
     /// Gets the cancellation token to respect for cancellations.
@@ -25,10 +25,15 @@ namespace ParallelHelper.Analyzer {
     public SemanticModel SemanticModel => Context.SemanticModel;
 
     /// <summary>
+    /// Gets the root node of the currently applied analysis.
+    /// </summary>
+    public TRootNode Root => Context.Root;
+
+    /// <summary>
     /// Initializes the analyzer base.
     /// </summary>
     /// <param name="context">The analysis context to use during the analysis.</param>
-    protected InternalAnalyzerWithSyntaxWalkerBase(IAnalysisContextWrapper context) {
+    protected InternalAnalyzerWithSyntaxWalkerBase(IAnalysisContextWrapper<TRootNode> context) {
       Context = context;
     }
 

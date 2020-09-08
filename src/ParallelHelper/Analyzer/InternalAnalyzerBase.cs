@@ -5,12 +5,12 @@ namespace ParallelHelper.Analyzer {
   /// <summary>
   /// Base analyzer implementation to share common context information.
   /// </summary>
-  /// <typeparam name="TContext">The type of the analysis context.</typeparam>
-  internal abstract class InternalAnalyzerBase {
+  /// <typeparam name="TRootNode">The syntax type of the root node of the applied analysis.</typeparam>
+  internal abstract class InternalAnalyzerBase<TRootNode> where TRootNode : SyntaxNode {
     /// <summary>
     /// Gets the analysis context used during the analysis.
     /// </summary>
-    public IAnalysisContextWrapper Context { get; }
+    public IAnalysisContextWrapper<TRootNode> Context { get; }
 
     /// <summary>
     /// Gets the cancellation token to respect for cancellations.
@@ -23,10 +23,15 @@ namespace ParallelHelper.Analyzer {
     public SemanticModel SemanticModel => Context.SemanticModel;
 
     /// <summary>
+    /// Gets the root node of the currently applied analysis.
+    /// </summary>
+    public TRootNode Root => Context.Root;
+
+    /// <summary>
     /// Initializes the analyzer base.
     /// </summary>
     /// <param name="context">The analysis context to use during the analysis.</param>
-    protected InternalAnalyzerBase(IAnalysisContextWrapper context) {
+    protected InternalAnalyzerBase(IAnalysisContextWrapper<TRootNode> context) {
       Context = context;
     }
 

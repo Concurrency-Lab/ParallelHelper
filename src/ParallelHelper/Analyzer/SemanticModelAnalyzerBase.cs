@@ -5,12 +5,7 @@ namespace ParallelHelper.Analyzer {
   /// <summary>
   /// Base analyzer for implementations that work with the semantic model analysis context.
   /// </summary>
-  internal abstract class SemanticModelAnalyzerBase : InternalAnalyzerBase {
-    /// <summary>
-    /// Gets the root node of the semantic model.
-    /// </summary>
-    public SyntaxNode Root => SemanticModel.SyntaxTree.GetRoot(CancellationToken);
-
+  internal abstract class SemanticModelAnalyzerBase : InternalAnalyzerBase<SyntaxNode> {
     /// <summary>
     /// Initializes the semantic model analyzer base.
     /// </summary>

@@ -6,12 +6,14 @@ namespace ParallelHelper.Analyzer {
   /// <summary>
   /// An analysis context wrapper for <see cref="SemanticModelAnalysisContext"/>.
   /// </summary>
-  internal class SemanticModelAnalysisContextWrapper : IAnalysisContextWrapper {
+  internal class SemanticModelAnalysisContextWrapper : IAnalysisContextWrapper<SyntaxNode> {
     private readonly SemanticModelAnalysisContext _instance;
 
     public CancellationToken CancellationToken => _instance.CancellationToken;
 
     public SemanticModel SemanticModel => _instance.SemanticModel;
+
+    public SyntaxNode Root => SemanticModel.SyntaxTree.GetRoot(CancellationToken);
 
     public SemanticModelAnalysisContextWrapper(SemanticModelAnalysisContext context) {
       _instance = context;
