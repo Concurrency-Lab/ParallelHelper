@@ -256,5 +256,34 @@ class BankAccount {
 }";
       VerifyDiagnostic(source);
     }
+
+    [TestMethod]
+    public void DoesNotReportDoubleReadAccessOnFieldWrittenInsideLockForFieldsOfForeignClass() {
+      const string source = @"
+class BankAccount {
+  private readonly object syncObject = new object();
+  private volatile BalanceHolder balance = new BalanceHolder();
+  
+  public int Balance {
+    set {
+      lock(syncObject) {
+        balance = new BalanceHolder();
+        balance.Value = value;
+      }
+    }
+    get { return balance.Value; }
+  }
+
+  public bool CanWithDrawAny(int amount1, int amount2) {
+    var current = balance;
+    return amount1 <= current.Value || amount2 <= current.Value;
+  }
+
+  private class BalanceHolder {
+    public int Value;
+  }
+}";
+      VerifyDiagnostic(source);
+    }
   }
 }

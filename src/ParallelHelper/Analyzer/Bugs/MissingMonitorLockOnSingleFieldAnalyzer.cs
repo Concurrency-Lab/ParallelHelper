@@ -55,18 +55,18 @@ namespace ParallelHelper.Analyzer.Bugs {
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
       context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-      context.RegisterSemanticModelAction(AnalyzeSemanticModel);
+      context.RegisterSyntaxNodeAction(AnalyzeClassDeclaration, SyntaxKind.ClassDeclaration);
     }
 
-    private static void AnalyzeSemanticModel(SemanticModelAnalysisContext context) {
+    private static void AnalyzeClassDeclaration(SyntaxNodeAnalysisContext context) {
       new Analyzer(context, GetAllFields(context)).Analyze();
     }
 
-    private static ISet<IFieldSymbol> GetAllFields(SemanticModelAnalysisContext context) {
+    private static ISet<IFieldSymbol> GetAllFields(SyntaxNodeAnalysisContext context) {
+      var classDeclaration = (ClassDeclarationSyntax)context.Node;
       var semanticModel = context.SemanticModel;
       var cancellationToken = context.CancellationToken;
-      return semanticModel.SyntaxTree.GetRoot(cancellationToken)
-        .DescendantNodesAndSelf()
+      return classDeclaration.Members
         .WithCancellation(cancellationToken)
         .OfType<FieldDeclarationSyntax>()
         .SelectMany(declaration => declaration.Declaration.Variables)
@@ -75,9 +75,9 @@ namespace ParallelHelper.Analyzer.Bugs {
         .ToImmutableHashSet();
     }
 
-    private class Analyzer : FieldAccessAwareAnalyzerWithSyntaxWalkerBase<SyntaxNode> {
-      public Analyzer(SemanticModelAnalysisContext context, ISet<IFieldSymbol> declaredFields)
-        : base(new SemanticModelAnalysisContextWrapper(context), declaredFields) { }
+    private class Analyzer : FieldAccessAwareAnalyzerWithSyntaxWalkerBase<ClassDeclarationSyntax> {
+      public Analyzer(SyntaxNodeAnalysisContext context, ISet<IFieldSymbol> declaredFields)
+        : base(new SyntaxNodeAnalysisContextWrapper(context), declaredFields) { }
 
       public override void Analyze() {
         base.Analyze();
