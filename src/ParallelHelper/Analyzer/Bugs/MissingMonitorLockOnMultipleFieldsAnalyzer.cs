@@ -63,8 +63,7 @@ namespace ParallelHelper.Analyzer.Bugs {
     }
 
     private static void AnalyzeClassDeclaration(SyntaxNodeAnalysisContext context) {
-      var nonConstFields = GetAllNonConstFields(context);
-      new Analyzer(context, nonConstFields).Analyze();
+      new Analyzer(context, GetAllNonConstFields(context)).Analyze();
     }
 
     private static ISet<IFieldSymbol> GetAllNonConstFields(SyntaxNodeAnalysisContext context) {
