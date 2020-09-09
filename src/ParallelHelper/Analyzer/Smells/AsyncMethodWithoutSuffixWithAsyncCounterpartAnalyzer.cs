@@ -60,8 +60,8 @@ namespace ParallelHelper.Analyzer.Smells {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<ClassDeclarationSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<ClassDeclarationSyntax> {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
         foreach(var method in GetAsyncMethodsWithoutAsyncSuffixThatHaveCounterpartWithAsyncSuffix()){
@@ -78,7 +78,7 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private IEnumerable<MethodDeclarationSyntax> GetAllMethods() {
-        return Node.Members.WithCancellation(CancellationToken).OfType<MethodDeclarationSyntax>();
+        return Root.Members.WithCancellation(CancellationToken).OfType<MethodDeclarationSyntax>();
       }
 
       private bool IsAsyncMethodWithoutAsyncSuffix(MethodDeclarationSyntax method) {

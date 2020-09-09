@@ -77,25 +77,25 @@ namespace ParallelHelper.Analyzer.BestPractices {
       new Analyzer<IPropertySymbol, MemberAccessExpressionSyntax>(context, BlockingProperties, node => node.Expression).Analyze();
     }
 
-    private class Analyzer<TMemberSymbol, TExpression> : SyntaxNodeAnalyzerBase<TExpression> where TMemberSymbol : ISymbol where TExpression : ExpressionSyntax {
+    private class Analyzer<TMemberSymbol, TExpression> : InternalAnalyzerBase<TExpression> where TMemberSymbol : ISymbol where TExpression : ExpressionSyntax {
       private readonly Func<TExpression, ExpressionSyntax?> _getInstanceExpression;
       private readonly IReadOnlyList<BlockingMemberDescriptor> _blockDescriptors;
 
       public Analyzer(SyntaxNodeAnalysisContext context, IReadOnlyList<BlockingMemberDescriptor> blockDescriptors, Func<TExpression, ExpressionSyntax?> getInstanceExpression)
-          : base(context) {
+          : base(new SyntaxNodeAnalysisContextWrapper(context)) {
         _blockDescriptors = blockDescriptors;
         _getInstanceExpression = getInstanceExpression;
       }
 
       public override void Analyze() {
-        if(SemanticModel.GetSymbolInfo(Node, CancellationToken).Symbol is TMemberSymbol member && IsBlockingMemberAccessOnAsyncMethod(member)) {
+        if(SemanticModel.GetSymbolInfo(Root, CancellationToken).Symbol is TMemberSymbol member && IsBlockingMemberAccessOnAsyncMethod(member)) {
           var access = $"{member.ContainingType.Name}.{member.Name}";
-          Context.ReportDiagnostic(Diagnostic.Create(Rule, Node.GetLocation(), access));
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetLocation(), access));
         }
       }
 
       private bool IsBlockingMemberAccessOnAsyncMethod(TMemberSymbol member) {
-        var instanceExpression = _getInstanceExpression(Node);
+        var instanceExpression = _getInstanceExpression(Root);
         return instanceExpression != null
           && IsPotentiallyAsyncMethod(instanceExpression)
           && IsBlockingMemberAccess(member);

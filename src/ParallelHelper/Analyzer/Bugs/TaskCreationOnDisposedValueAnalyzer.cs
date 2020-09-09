@@ -57,8 +57,8 @@ namespace ParallelHelper.Analyzer.Bugs {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<StatementSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<StatementSyntax> {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
         foreach(var returnStatement in GetReturnStatementsReturningTasksDependingOnVariableFromUsingStatement()) {
@@ -67,12 +67,12 @@ namespace ParallelHelper.Analyzer.Bugs {
       }
 
       private IEnumerable<ReturnStatementSyntax> GetReturnStatementsReturningTasksDependingOnVariableFromUsingStatement() {
-        if (Node is UsingStatementSyntax usingStatement) {
+        if (Root is UsingStatementSyntax usingStatement) {
           var disposedVariables = GetDisposedVariablesFromUsingStatement(usingStatement).ToImmutableHashSet();
-          return GetReturnStatementsReturningTasksDependingOnVariable(Node, disposedVariables);
-        } else if(Node is LocalDeclarationStatementSyntax localDeclaration) {
+          return GetReturnStatementsReturningTasksDependingOnVariable(Root, disposedVariables);
+        } else if(Root is LocalDeclarationStatementSyntax localDeclaration) {
           var disposedVariables = GetDisposedVariablesFromLocalDeclaration(localDeclaration).ToImmutableHashSet();
-          return GetReturnStatementsReturningTasksDependingOnVariable(Node.Parent, disposedVariables);
+          return GetReturnStatementsReturningTasksDependingOnVariable(Root.Parent, disposedVariables);
         }
         return Enumerable.Empty<ReturnStatementSyntax>();
       }

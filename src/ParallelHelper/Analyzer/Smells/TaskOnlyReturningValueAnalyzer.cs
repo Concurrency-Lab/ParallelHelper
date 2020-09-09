@@ -53,22 +53,22 @@ namespace ParallelHelper.Analyzer.Smells {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<InvocationExpressionSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<InvocationExpressionSyntax> {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
         if(!IsGenericTaskFactory()) {
           return;
         }
-        var arguments = Node.ArgumentList.Arguments;
+        var arguments = Root.ArgumentList.Arguments;
         if (arguments.Count == 0 || !IsExpressionOnlyReturningValue(arguments[0].Expression)) {
           return;
         }
-        Context.ReportDiagnostic(Diagnostic.Create(Rule, Node.GetLocation()));
+        Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetLocation()));
       }
 
       private bool IsGenericTaskFactory() {
-        return SemanticModel.GetSymbolInfo(Node, CancellationToken).Symbol is IMethodSymbol method
+        return SemanticModel.GetSymbolInfo(Root, CancellationToken).Symbol is IMethodSymbol method
           && TaskFactoryDescriptors.Any(d => IsTaskFactory(d, method))
           && IsGenericTaskType(method.ReturnType);
       }

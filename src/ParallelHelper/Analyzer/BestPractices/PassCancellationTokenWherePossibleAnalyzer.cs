@@ -58,8 +58,8 @@ namespace ParallelHelper.Analyzer.BestPractices {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<MethodDeclarationSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<MethodDeclarationSyntax> {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
         if(ReceivesCancellationToken()) {
@@ -70,7 +70,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
       }
 
       private bool ReceivesCancellationToken() {
-        return Node.ParameterList.Parameters
+        return Root.ParameterList.Parameters
           .WithCancellation(CancellationToken)
           .Select(parameter => SemanticModel.GetDeclaredSymbol(parameter, CancellationToken))
           .Select(parameter => parameter.Type)
@@ -79,7 +79,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
       }
 
       private IEnumerable<InvocationExpressionSyntax> GetAllInvocationsWithMissingCancellationToken() {
-        return Node.DescendantNodes()
+        return Root.DescendantNodes()
           .WithCancellation(CancellationToken)
           .OfType<InvocationExpressionSyntax>()
           .Where(InvocationMissesCancellationToken);

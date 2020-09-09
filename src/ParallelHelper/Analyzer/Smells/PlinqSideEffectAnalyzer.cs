@@ -66,24 +66,24 @@ namespace ParallelHelper.Analyzer.Smells {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<ExpressionSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<ExpressionSyntax> {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
         if(IsParallelQueryExpressionWithSideEffects() || IsParallelMethodInvocationWithSideEffects()) {
-          Context.ReportDiagnostic(Diagnostic.Create(Rule, Node.GetLocation()));
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetLocation()));
         }
       }
 
       private bool IsParallelQueryExpressionWithSideEffects() {
-        return Node is QueryExpressionSyntax query
+        return Root is QueryExpressionSyntax query
           && IsParallelQuery(query.FromClause.Expression)
           && GetExpressionsFromQueryBody(query.Body).Any(SemanticModel.HasSideEffects);
       }
 
       private bool IsParallelMethodInvocationWithSideEffects() {
         // If the result of an invocation of the type ParallelQuery, a PLINQ method was used.
-        return Node is InvocationExpressionSyntax invocation
+        return Root is InvocationExpressionSyntax invocation
           && IsParallelQuery(invocation)
           && invocation.ArgumentList.Arguments.Any(a => SemanticModel.HasSideEffects(a.Expression));
       }

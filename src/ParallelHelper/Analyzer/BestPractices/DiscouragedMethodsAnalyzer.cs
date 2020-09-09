@@ -56,13 +56,13 @@ namespace ParallelHelper.Analyzer.BestPractices {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<InvocationExpressionSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<InvocationExpressionSyntax> {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
-        if(SemanticModel.GetSymbolInfo(Node, CancellationToken).Symbol is IMethodSymbol method && IsDiscouragedMethod(method)) {
+        if(SemanticModel.GetSymbolInfo(Root, CancellationToken).Symbol is IMethodSymbol method && IsDiscouragedMethod(method)) {
           var methodName = $"{method.ContainingType.Name}.{method.Name}";
-          Context.ReportDiagnostic(Diagnostic.Create(Rule, Node.GetLocation(), methodName));
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetLocation(), methodName));
         }
       }
 

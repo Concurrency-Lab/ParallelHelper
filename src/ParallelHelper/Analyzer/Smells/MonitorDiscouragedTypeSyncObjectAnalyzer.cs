@@ -76,8 +76,8 @@ namespace ParallelHelper.Analyzer.Smells {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SemanticModelAnalyzerBase {
-      public Analyzer(SemanticModelAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
+      public Analyzer(SemanticModelAnalysisContext context) : base(new SemanticModelAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
         foreach(var statement in GetLockStatementsInside(Root)) {

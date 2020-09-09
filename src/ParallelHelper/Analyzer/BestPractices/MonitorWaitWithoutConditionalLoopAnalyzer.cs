@@ -50,8 +50,8 @@ namespace ParallelHelper.Analyzer.BestPractices {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : MonitorAwareSemanticModelAnalyzerWithSyntaxWalkerBase {
-      public Analyzer(SemanticModelAnalysisContext context) : base(context) { }
+    private class Analyzer : MonitorAwareAnalyzerWithSyntaxWalkerBase<SyntaxNode> {
+      public Analyzer(SemanticModelAnalysisContext context) : base(new SemanticModelAnalysisContextWrapper(context)) { }
 
       public override void VisitInvocationExpression(InvocationExpressionSyntax node) {
         if(IsInsideLock && !IsInsideLoopEnclosedByLock && MonitorAnalysis.IsMonitorWait(node)) {

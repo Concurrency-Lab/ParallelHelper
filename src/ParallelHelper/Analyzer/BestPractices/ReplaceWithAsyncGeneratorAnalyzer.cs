@@ -61,10 +61,10 @@ namespace ParallelHelper.Analyzer.BestPractices {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<MethodDeclarationSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<MethodDeclarationSyntax> {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
-      private bool IsAsync => Node.Modifiers.Any(SyntaxKind.AsyncKeyword);
+      private bool IsAsync => Root.Modifiers.Any(SyntaxKind.AsyncKeyword);
 
       public override void Analyze() {
         if (!IsAsync || !IsAsyncEnumerableTypeAvailable() || !ReturnsEnumerableInTask()) {
@@ -72,7 +72,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
         }
         var collectionVariables = GetReturnedCollectionVariables().ToImmutableHashSet();
         if(ContainsLoopThatAsynchronouslyPopulatesAnyCollection(collectionVariables)) {
-          Context.ReportDiagnostic(Diagnostic.Create(Rule, Node.GetSignatureLocation()));
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetSignatureLocation()));
         }
       }
 
@@ -81,7 +81,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
       }
 
       private bool ReturnsEnumerableInTask() {
-        return Node.ReturnType is GenericNameSyntax genericType
+        return Root.ReturnType is GenericNameSyntax genericType
           && IsEnumerableInTask(genericType);
       }
 
@@ -96,7 +96,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
       }
 
       private IEnumerable<ILocalSymbol> GetReturnedCollectionVariables() {
-        return Node.DescendantNodesInSameActivationFrame()
+        return Root.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<ReturnStatementSyntax>()
           .Select(statement => statement.Expression)
@@ -128,7 +128,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
       }
 
       private IEnumerable<SyntaxNode> GetLoopBodies() {
-        return Node.DescendantNodesInSameActivationFrame()
+        return Root.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .Select(TryGetLoopBody)
           .IsNotNull();
