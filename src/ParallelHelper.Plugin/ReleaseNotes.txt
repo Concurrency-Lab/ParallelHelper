@@ -3,6 +3,8 @@
 - New Analyzer: PH_B013 - Null-Check Against Task Instead of Value
 - New Analyzer: PH_P011 - Replace With Async Stream
 - Improved Analyzer: PH_S019 - Now respects activation frames
+- Improved Analyzer: PH_B009 - Now ignores fields of foreign classes
+- Improved Analyzer: PH_B010 - Now ignores fields of foreign classes
 - Fixed Analyzer: PH_S002 - No longer crashes when the sync object is declared in a foreign file
 
 
