@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using ParallelHelper.Extensions;
 using ParallelHelper.Util;
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -60,21 +59,17 @@ namespace ParallelHelper.Analyzer.Bugs {
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
       context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-      context.RegisterSemanticModelAction(AnalyzeSemanticModel);
+      context.RegisterSyntaxNodeAction(AnalyzeClassDeclaration, SyntaxKind.ClassDeclaration);
     }
 
-    private static void AnalyzeSemanticModel(SemanticModelAnalysisContext context) {
-      var semanticModel = context.SemanticModel;
-      var cancellationToken = context.CancellationToken;
-      var root = semanticModel.SyntaxTree.GetRoot(cancellationToken);
-      foreach (var classDeclaration in root.DescendantNodesAndSelf().OfType<ClassDeclarationSyntax>()) {
-        var nonConstFields = GetAllNonConstFields(classDeclaration, context);
-        new Analyzer(context, nonConstFields).Analyze(classDeclaration);
-      }
+    private static void AnalyzeClassDeclaration(SyntaxNodeAnalysisContext context) {
+      var nonConstFields = GetAllNonConstFields(context);
+      new Analyzer(context, nonConstFields).Analyze();
     }
 
-    private static ISet<IFieldSymbol> GetAllNonConstFields(ClassDeclarationSyntax classDeclaration, SemanticModelAnalysisContext context) {
+    private static ISet<IFieldSymbol> GetAllNonConstFields(SyntaxNodeAnalysisContext context) {
       // TODO also exclude readonly fields?
+      var classDeclaration = (ClassDeclarationSyntax)context.Node;
       var semanticModel = context.SemanticModel;
       var cancellationToken = context.CancellationToken;
       return classDeclaration.Members
@@ -87,12 +82,12 @@ namespace ParallelHelper.Analyzer.Bugs {
         .ToImmutableHashSet();
     }
 
-    private class Analyzer : FieldAccessAwareAnalyzerWithSyntaxWalkerBase<SyntaxNode> {
-      public Analyzer(SemanticModelAnalysisContext context, ISet<IFieldSymbol> declaredFields)
-        : base(new SemanticModelAnalysisContextWrapper(context), declaredFields) { }
+    private class Analyzer : FieldAccessAwareAnalyzerWithSyntaxWalkerBase<ClassDeclarationSyntax> {
+      public Analyzer(SyntaxNodeAnalysisContext context, ISet<IFieldSymbol> declaredFields)
+        : base(new SyntaxNodeAnalysisContextWrapper(context), declaredFields) { }
 
-      public void Analyze(ClassDeclarationSyntax classDeclaration) {
-        base.VisitClassDeclaration(classDeclaration);
+      public override void Analyze() {
+        base.VisitClassDeclaration(Root);
         foreach (var (field, location) in GetAllFieldAccessesToReport()) {
           Context.ReportDiagnostic(Diagnostic.Create(Rule, location, field.Name));
         }
@@ -100,7 +95,6 @@ namespace ParallelHelper.Analyzer.Bugs {
 
       public override void VisitClassDeclaration(ClassDeclarationSyntax node) {
         // Do not analyze nested classes.
-        Console.WriteLine("test");
       }
 
       private IEnumerable<(IFieldSymbol Field, Location Location)> GetAllFieldAccessesToReport() {
