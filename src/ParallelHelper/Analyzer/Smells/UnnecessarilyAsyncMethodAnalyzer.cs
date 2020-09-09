@@ -53,22 +53,22 @@ namespace ParallelHelper.Analyzer.Smells {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<MethodDeclarationSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<MethodDeclarationSyntax> {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
         if(!HasMethodBody() || !IsAsyncMethod() || ReturnsVoid() || !AwaitsOnlyFinalExpression()) {
           return;
         }
-        Context.ReportDiagnostic(Diagnostic.Create(Rule, Node.GetSignatureLocation()));
+        Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetSignatureLocation()));
       }
 
       private bool HasMethodBody() {
-        return Node.Body != null || Node.ExpressionBody != null;
+        return Root.Body != null || Root.ExpressionBody != null;
       }
 
       private bool IsAsyncMethod() {
-        return Node.Modifiers.WithCancellation(CancellationToken).Any(modifier => modifier.IsKind(SyntaxKind.AsyncKeyword));
+        return Root.Modifiers.WithCancellation(CancellationToken).Any(modifier => modifier.IsKind(SyntaxKind.AsyncKeyword));
       }
 
       private bool ReturnsVoid() {
@@ -76,23 +76,23 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private ITypeSymbol GetReturnType() {
-        return SemanticModel.GetTypeInfo(Node.ReturnType, CancellationToken).Type;
+        return SemanticModel.GetTypeInfo(Root.ReturnType, CancellationToken).Type;
       }
 
       private bool AwaitsOnlyFinalExpression() {
-        if(Node.ExpressionBody != null) {
+        if(Root.ExpressionBody != null) {
           return IsAwaitOnlyExpressionBody();
         } else if(!IsAsyncMethodReturningValues()) {
           return HasAtMostOneAwaitInBody() && IsFinalStatementAwait();
         }
 
         var returnOnlyAwaitScanner = new ReturnOnlyAwaitScanner(CancellationToken);
-        returnOnlyAwaitScanner.Visit(Node);
+        returnOnlyAwaitScanner.Visit(Root);
         return returnOnlyAwaitScanner.UsesOnlyUnscopedReturnAwaits;
       }
 
       private bool IsAwaitOnlyExpressionBody() {
-        return Node.ExpressionBody.Expression is AwaitExpressionSyntax awaitExpression && !HasNestedAwait(awaitExpression);
+        return Root.ExpressionBody.Expression is AwaitExpressionSyntax awaitExpression && !HasNestedAwait(awaitExpression);
       }
 
       private bool IsAsyncMethodReturningValues() {
@@ -100,11 +100,11 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private bool HasAtMostOneAwaitInBody() {
-        return Node.Body.DescendantNodes().WithCancellation(CancellationToken).OfType<AwaitExpressionSyntax>().Count() <= 1;
+        return Root.Body.DescendantNodes().WithCancellation(CancellationToken).OfType<AwaitExpressionSyntax>().Count() <= 1;
       }
 
       private bool IsFinalStatementAwait() {
-        var statements = Node.Body.Statements;
+        var statements = Root.Body.Statements;
         return statements.Count > 0 && (statements[statements.Count - 1] as ExpressionStatementSyntax)?.Expression is AwaitExpressionSyntax;
       }
 

@@ -54,11 +54,11 @@ namespace ParallelHelper.Analyzer.Smells {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : MonitorAwareSemanticModelAnalyzerWithSyntaxWalkerBase {
+    private class Analyzer : MonitorAwareAnalyzerWithSyntaxWalkerBase<SyntaxNode> {
       private readonly CollectionAnalysis _collectionAnalysis;
       private ISet<IFieldSymbol>? _unsafeCollectionFields;
 
-      public Analyzer(SemanticModelAnalysisContext context) : base(context) {
+      public Analyzer(SemanticModelAnalysisContext context) : base(new SemanticModelAnalysisContextWrapper(context)) {
         _collectionAnalysis = new CollectionAnalysis(context.SemanticModel, context.CancellationToken);
       }
 

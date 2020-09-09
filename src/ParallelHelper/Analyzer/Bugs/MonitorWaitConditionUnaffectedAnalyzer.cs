@@ -75,7 +75,7 @@ namespace ParallelHelper.Analyzer.Bugs {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : MonitorAwareSemanticModelAnalyzerWithSyntaxWalkerBase {
+    private class Analyzer : MonitorAwareAnalyzerWithSyntaxWalkerBase<SyntaxNode> {
       // TODO support modifications of array elements?
       private readonly IDictionary<ISymbol, IDictionary<InvocationExpressionSyntax, ISet<IFieldSymbol>>> _monitoredFieldsPerSyncObject
         = new Dictionary<ISymbol, IDictionary<InvocationExpressionSyntax, ISet<IFieldSymbol>>>();
@@ -85,7 +85,7 @@ namespace ParallelHelper.Analyzer.Bugs {
       private readonly IDictionary<LockStatementSyntax, ISet<IFieldSymbol>> _fieldChangesPerLock
         = new Dictionary<LockStatementSyntax, ISet<IFieldSymbol>>();
 
-      public Analyzer(SemanticModelAnalysisContext context) : base(context) { }
+      public Analyzer(SemanticModelAnalysisContext context) : base(new SemanticModelAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
         base.Analyze();

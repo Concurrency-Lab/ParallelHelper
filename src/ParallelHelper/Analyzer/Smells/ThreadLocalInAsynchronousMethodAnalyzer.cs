@@ -63,11 +63,11 @@ namespace ParallelHelper.Analyzer.Smells {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<SyntaxNode> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
-        if(!Node.IsMethodOrFunctionWithAsyncModifier()) {
+        if(!Root.IsMethodOrFunctionWithAsyncModifier()) {
           return;
         }
         foreach(var memberAccess in GetThreadLocalValueMemberAccesses()) {
@@ -76,7 +76,7 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private IEnumerable<MemberAccessExpressionSyntax> GetThreadLocalValueMemberAccesses() {
-        return Node.DescendantNodesInSameActivationFrame()
+        return Root.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<MemberAccessExpressionSyntax>()
           .Where(IsThreadLocalValueProperty);

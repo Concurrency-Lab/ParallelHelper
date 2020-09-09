@@ -61,8 +61,8 @@ namespace ParallelHelper.Analyzer.BestPractices {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<SyntaxNode> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
         if(!IsReturningTask()) {
@@ -74,16 +74,16 @@ namespace ParallelHelper.Analyzer.BestPractices {
       }
 
       private bool IsReturningTask() {
-        var method = Node switch {
+        var method = Root switch {
           MethodDeclarationSyntax methodDeclaration => SemanticModel.GetDeclaredSymbol(methodDeclaration, CancellationToken),
           LocalFunctionStatementSyntax localFunction => (IMethodSymbol)SemanticModel.GetDeclaredSymbol(localFunction, CancellationToken),
-          _ => (IMethodSymbol)SemanticModel.GetSymbolInfo(Node, CancellationToken).Symbol
+          _ => (IMethodSymbol)SemanticModel.GetSymbolInfo(Root, CancellationToken).Symbol
         };
         return method != null && IsTaskType(method.ReturnType);
       }
 
       private IEnumerable<InvocationExpressionSyntax> GetContinuationsInSameActivationFrame() {
-        return Node.DescendantNodesInSameActivationFrame()
+        return Root.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<InvocationExpressionSyntax>()
           .Where(IsContinuation);

@@ -65,10 +65,11 @@ namespace ParallelHelper.Analyzer.Bugs {
         .ToImmutableHashSet();
     }
 
-    private class Analyzer : MonitorAwareSemanticModelAnalyzerWithSyntaxWalkerBase {
+    private class Analyzer : MonitorAwareAnalyzerWithSyntaxWalkerBase<SyntaxNode> {
       private readonly ISet<IFieldSymbol> _volatileFields;
 
-      public Analyzer(SemanticModelAnalysisContext context, ISet<IFieldSymbol> volatileFields) : base(context) {
+      public Analyzer(SemanticModelAnalysisContext context, ISet<IFieldSymbol> volatileFields)
+          : base(new SemanticModelAnalysisContextWrapper(context)) {
         _volatileFields = volatileFields;
       }
 

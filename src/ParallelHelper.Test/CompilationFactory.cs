@@ -36,9 +36,9 @@ namespace ParallelHelper.Test {
     private static readonly CSharpCompilationOptions CompilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
     private const string TestSourceFilePath = "Test.cs";
 
-    public static Compilation CreateCompilation(string source) {
-      var syntaxTree = CSharpSyntaxTree.ParseText(source, default, TestSourceFilePath);
-      return CSharpCompilation.Create("Test.dll", new[] { syntaxTree }, References, CompilationOptions);
+    public static Compilation CreateCompilation(params string[] sources) {
+      var syntaxTrees = sources.Select(source => CSharpSyntaxTree.ParseText(source, default, TestSourceFilePath));
+      return CSharpCompilation.Create("Test.dll", syntaxTrees, References, CompilationOptions);
     }
 
     public static IEnumerable<TSyntaxNode> GetNodesOfType<TSyntaxNode>(string source) where TSyntaxNode : SyntaxNode {

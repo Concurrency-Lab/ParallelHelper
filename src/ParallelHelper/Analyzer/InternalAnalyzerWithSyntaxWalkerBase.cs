@@ -7,32 +7,43 @@ namespace ParallelHelper.Analyzer {
   /// Base analyzer implementation to share common context information.
   /// The <see cref="CSharpSyntaxWalker.Visit(SyntaxNode)"/> method is overriden to respect the context's cancellation token.
   /// </summary>
-  /// <typeparam name="TContext">The type of the analysis context.</typeparam>
-  public abstract class InternalAnalyzerWithSyntaxWalkerBase<TContext> : CSharpSyntaxWalker {
+  /// <typeparam name="TRootNode">The syntax type of the root node of the applied analysis.</typeparam>
+  public abstract class InternalAnalyzerWithSyntaxWalkerBase<TRootNode> : CSharpSyntaxWalker where TRootNode : SyntaxNode {
     /// <summary>
     /// Gets the analysis context used during the analysis.
     /// </summary>
-    public TContext Context { get; }
+    public IAnalysisContext Context { get; }
 
     /// <summary>
     /// Gets the cancellation token to respect for cancellations.
     /// </summary>
-    public CancellationToken CancellationToken { get; }
+    public CancellationToken CancellationToken => Context.CancellationToken;
+
+    /// <summary>
+    /// Gets the semantic model of the currently analyzed document.
+    /// </summary>
+    public SemanticModel SemanticModel => Context.SemanticModel;
+
+    /// <summary>
+    /// Gets the root node of the currently applied analysis.
+    /// </summary>
+    public TRootNode Root { get; }
 
     /// <summary>
     /// Initializes the analyzer base.
     /// </summary>
     /// <param name="context">The analysis context to use during the analysis.</param>
-    /// <param name="cancellationToken">The cancellation token to respect for cancellations.</param>
-    protected InternalAnalyzerWithSyntaxWalkerBase(TContext context, CancellationToken cancellationToken) {
+    protected InternalAnalyzerWithSyntaxWalkerBase(IAnalysisContext context) {
       Context = context;
-      CancellationToken = cancellationToken;
+      Root = (TRootNode)context.Root;
     }
 
     /// <summary>
-    /// Applies the analysis.
+    /// Applies the analysis by visiting the root node of the analysis.
     /// </summary>
-    public abstract void Analyze();
+    public virtual void Analyze() {
+      Visit(Root);
+    }
 
     /// <summary>
     /// Basic visit method that respects the provided cancellation token.

@@ -73,8 +73,8 @@ namespace ParallelHelper.Analyzer.Smells {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<SyntaxNode> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
         if(!IsAsyncMethod()) {
@@ -86,12 +86,12 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private bool IsAsyncMethod() {
-        return Node.IsMethodOrFunctionWithAsyncModifier()
+        return Root.IsMethodOrFunctionWithAsyncModifier()
           || IsMethodOrFunctionReturningTask();
       }
 
       private bool IsMethodOrFunctionReturningTask() {
-        return SemanticModel.TryGetMethodSymbolFromMethodOrFunctionDeclaration(Node, out var method, CancellationToken)
+        return SemanticModel.TryGetMethodSymbolFromMethodOrFunctionDeclaration(Root, out var method, CancellationToken)
           && method!.ReturnType != null
           && IsTaskType(method!.ReturnType);
       }
@@ -109,14 +109,14 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private IEnumerable<InvocationExpressionSyntax> GetTaskWaitInvocationsWithout(ISet<ISymbol> excludedTasks) {
-        return Node.DescendantNodesInSameActivationFrame()
+        return Root.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<InvocationExpressionSyntax>()
           .Where(invocation => IsNotExcludedTaskMemberAccess(invocation.Expression, WaitMethod, excludedTasks));
       }
 
       private IEnumerable<MemberAccessExpressionSyntax> GetTaskResultAccessesWithout(ISet<ISymbol> excludedTasks) {
-        return Node.DescendantNodesInSameActivationFrame()
+        return Root.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<MemberAccessExpressionSyntax>()
           .Where(memberAccess => IsNotExcludedTaskMemberAccess(memberAccess, ResultProperty, excludedTasks));
@@ -137,7 +137,7 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private IEnumerable<ISymbol> GetAllAwaitedTasks() {
-        return Node.DescendantNodesInSameActivationFrame()
+        return Root.DescendantNodesInSameActivationFrame()
           .OfType<AwaitExpressionSyntax>()
           .SelectMany(GetTasksAwaitedByAwaitExpression);
       }

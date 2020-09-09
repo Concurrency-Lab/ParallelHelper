@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,10 +17,10 @@ namespace ParallelHelper.Test.Analyzer {
     /// <summary>
     /// Analyzes the given source.
     /// </summary>
-    /// <param name="source">The source code to analyze.</param>
+    /// <param name="sources">The source codes to analyze.</param>
     /// <returns>The diagnostics returned by the analysis.</returns>
-    public ImmutableArray<Diagnostic> Analyze(string source) {
-      var compilation = CompilationFactory.CreateCompilation(source);
+    public ImmutableArray<Diagnostic> Analyze(params string[] sources) {
+      var compilation = CompilationFactory.CreateCompilation(sources);
       var diagnostics = Task.Run(async () => await GetDiagnosticsAsync(compilation)).Result;
       foreach(var compilationDiagnostic in diagnostics.Compilation) {
         Console.WriteLine(compilationDiagnostic);
@@ -47,7 +48,16 @@ namespace ParallelHelper.Test.Analyzer {
     /// <param name="source">The source to analyze.</param>
     /// <param name="expectedDiagnostics">The expected diagnostics.</param>
     public void VerifyDiagnostic(string source, params DiagnosticResultLocation[] expectedDiagnostics) {
-      var diagnosticResults = Analyze(source);
+      VerifyDiagnostic(new[] { source }, expectedDiagnostics);
+    }
+
+    /// <summary>
+    /// Verifies that the given diagnostics are reported when analyzing the given collection of sources.
+    /// </summary>
+    /// <param name="sources">The sources to analyze.</param>
+    /// <param name="expectedDiagnostics">The expected diagnostics.</param>
+    public void VerifyDiagnostic(IReadOnlyCollection<string> sources, params DiagnosticResultLocation[] expectedDiagnostics) {
+      var diagnosticResults = Analyze(sources.ToArray());
       Assert.AreEqual(expectedDiagnostics.Length, diagnosticResults.Length, "Invalid diagnostics count");
 
       for(var i = 0; i < expectedDiagnostics.Length; ++i) {

@@ -69,10 +69,10 @@ namespace ParallelHelper.Analyzer.Smells {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SemanticModelAnalyzerBase {
+    private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
       private readonly MonitorAnalysis _monitorAnalysis;
 
-      public Analyzer(SemanticModelAnalysisContext context) : base(context) {
+      public Analyzer(SemanticModelAnalysisContext context) : base(new SemanticModelAnalysisContextWrapper(context)) {
         _monitorAnalysis = new MonitorAnalysis(SemanticModel, CancellationToken);
       }
 

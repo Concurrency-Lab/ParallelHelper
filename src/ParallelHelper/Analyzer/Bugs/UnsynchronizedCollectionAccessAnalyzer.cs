@@ -100,13 +100,14 @@ namespace ParallelHelper.Analyzer.Bugs {
         .SingleOrDefault();
     }
 
-    private class Analyzer : MonitorAwareSemanticModelAnalyzerWithSyntaxWalkerBase {
+    private class Analyzer : MonitorAwareAnalyzerWithSyntaxWalkerBase<SyntaxNode> {
       private readonly IDictionary<IFieldSymbol, CollectionTypeDescriptor> _collectionTypeDescriptorPerField;
       private readonly IDictionary<IFieldSymbol, ISet<SyntaxNode>> _synchronizedWriteAccessesPerField;
       private readonly IDictionary<IFieldSymbol, ISet<SyntaxNode>> _unsynchronizedReadAccessesPerField;
 
       public Analyzer(SemanticModelAnalysisContext context,
-          IDictionary<IFieldSymbol, CollectionTypeDescriptor> collectionTypeDescriptorPerField) : base(context) {
+          IDictionary<IFieldSymbol, CollectionTypeDescriptor> collectionTypeDescriptorPerField)
+          : base(new SemanticModelAnalysisContextWrapper(context)) {
         _collectionTypeDescriptorPerField = collectionTypeDescriptorPerField;
         _synchronizedWriteAccessesPerField = CreateFieldCollection(collectionTypeDescriptorPerField.Keys);
         _unsynchronizedReadAccessesPerField = CreateFieldCollection(collectionTypeDescriptorPerField.Keys);

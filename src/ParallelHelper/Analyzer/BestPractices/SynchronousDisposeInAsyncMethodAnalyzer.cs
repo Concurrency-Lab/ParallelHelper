@@ -55,13 +55,13 @@ namespace ParallelHelper.Analyzer.BestPractices {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<SyntaxNode> {
-      private bool IsAsyncMethod => Node is MethodDeclarationSyntax method
+    private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
+      private bool IsAsyncMethod => Root is MethodDeclarationSyntax method
         && method.Modifiers.Any(SyntaxKind.AsyncKeyword);
-      private bool IsAsyncAnonymousFunction => Node is AnonymousFunctionExpressionSyntax function
+      private bool IsAsyncAnonymousFunction => Root is AnonymousFunctionExpressionSyntax function
         && function.AsyncKeyword.IsKind(SyntaxKind.AsyncKeyword);
 
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
         if (!IsAsyncMethod && !IsAsyncAnonymousFunction) {
@@ -91,7 +91,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
       }
 
       private IEnumerable<UsingStatementSyntax> GetUsingStatementsThatCanBeAsynchronous() {
-        return Node.DescendantNodesInSameActivationFrame()
+        return Root.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<UsingStatementSyntax>()
           .Where(statement => !statement.AwaitKeyword.IsKind(SyntaxKind.AwaitKeyword))
@@ -101,7 +101,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
       }
 
       private IEnumerable<LocalDeclarationStatementSyntax> GetLocalUsingDeclarationsThatCanBeAsynchronous() {
-        return Node.DescendantNodesInSameActivationFrame()
+        return Root.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<LocalDeclarationStatementSyntax>()
           .Where(statement => statement.UsingKeyword.IsKind(SyntaxKind.UsingKeyword))

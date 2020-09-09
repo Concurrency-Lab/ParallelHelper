@@ -67,8 +67,8 @@ namespace ParallelHelper.Analyzer.Bugs {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<SyntaxNode> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
         var onlyInitializedTaskVariables = GetVariablesInitializedWithAsyncMethodInvocation()
@@ -89,7 +89,7 @@ namespace ParallelHelper.Analyzer.Bugs {
       private IEnumerable<ExpressionSyntax> GetAllAssignedExpressions() {
         // The activation frame is not respected here to account for the possibility that the
         // captured variable may change through another activation frame.
-        return Node.DescendantNodes()
+        return Root.DescendantNodes()
           .WithCancellation(CancellationToken)
           .OfType<AssignmentExpressionSyntax>()
           .Select(assignment => assignment.Left);
@@ -98,7 +98,7 @@ namespace ParallelHelper.Analyzer.Bugs {
       private IEnumerable<ExpressionSyntax> GetAllNodesWrittenByRef() {
         // The activation frame is not respected here to account for the possibility that the
         // captured variable may change through another activation frame.
-        return Node.DescendantNodes()
+        return Root.DescendantNodes()
           .WithCancellation(CancellationToken)
           .OfType<ArgumentSyntax>()
           .Where(argument => argument.RefKindKeyword.IsKind(SyntaxKind.RefKeyword))
@@ -106,7 +106,7 @@ namespace ParallelHelper.Analyzer.Bugs {
       }
 
       private IEnumerable<ILocalSymbol> GetVariablesInitializedWithAsyncMethodInvocation() {
-        return Node.DescendantNodesInSameActivationFrame()
+        return Root.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<LocalDeclarationStatementSyntax>()
           .SelectMany(declaration => declaration.Declaration.Variables)
@@ -116,7 +116,7 @@ namespace ParallelHelper.Analyzer.Bugs {
       }
 
       private IEnumerable<BinaryExpressionSyntax> GetEqualityCheckBinaryExpressions() {
-        return Node.DescendantNodesInSameActivationFrame()
+        return Root.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<BinaryExpressionSyntax>()
           .Where(binary => binary.IsKind(SyntaxKind.EqualsExpression) || binary.IsKind(SyntaxKind.NotEqualsExpression));

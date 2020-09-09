@@ -87,8 +87,9 @@ namespace ParallelHelper.Analyzer.Bugs {
         .ToImmutableHashSet();
     }
 
-    private class Analyzer : FieldAccessAwareSemanticModelAnalyzerWithSyntaxWalkerBase {
-      public Analyzer(SemanticModelAnalysisContext context, ISet<IFieldSymbol> declaredFields) : base(context, declaredFields) { }
+    private class Analyzer : FieldAccessAwareAnalyzerWithSyntaxWalkerBase<SyntaxNode> {
+      public Analyzer(SemanticModelAnalysisContext context, ISet<IFieldSymbol> declaredFields)
+        : base(new SemanticModelAnalysisContextWrapper(context), declaredFields) { }
 
       public void Analyze(ClassDeclarationSyntax classDeclaration) {
         base.VisitClassDeclaration(classDeclaration);

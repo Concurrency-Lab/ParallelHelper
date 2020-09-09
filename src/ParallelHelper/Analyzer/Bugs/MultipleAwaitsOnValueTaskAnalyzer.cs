@@ -61,11 +61,11 @@ namespace ParallelHelper.Analyzer.Bugs {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<SyntaxNode> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
-        if(!Node.IsMethodOrFunctionWithAsyncModifier()) {
+        if(!Root.IsMethodOrFunctionWithAsyncModifier()) {
           return;
         }
         foreach(var (variable, expression) in GetAllAwaitExpressionsAwaitingCommonVariables()) {
@@ -90,7 +90,7 @@ namespace ParallelHelper.Analyzer.Bugs {
 
 #pragma warning disable CS8619 // The null-check is made within the LINQ expression.
       private IEnumerable<(VariableDeclaratorSyntax Declarator, ILocalSymbol Symbol)> GetAllValueTypedTaskDeclarations() {
-        return Node.DescendantNodesInSameActivationFrame()
+        return Root.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<VariableDeclaratorSyntax>()
           .Select(declarator => (
@@ -109,7 +109,7 @@ namespace ParallelHelper.Analyzer.Bugs {
 
 #pragma warning disable CS8619 // The null-check is made within the LINQ expression.
       private ILookup<ILocalSymbol, AwaitExpressionSyntax> GetAwaitedVariableToAwaitExpressionLookup() {
-        return Node.DescendantNodes()
+        return Root.DescendantNodes()
           .WithCancellation(CancellationToken)
           .OfType<AwaitExpressionSyntax>()
           .Select(expression => (Expression: expression, AwaitedVariable: TryGetAwaitedVariable(expression)))
@@ -129,7 +129,7 @@ namespace ParallelHelper.Analyzer.Bugs {
       }
 
       private IDictionary<ILocalSymbol, int> GetWriteAccessCountPerVariable() {
-        return Node.GetAllWrittenExpressions(CancellationToken)
+        return Root.GetAllWrittenExpressions(CancellationToken)
           .Select(node => SemanticModel.GetSymbolInfo(node, CancellationToken).Symbol)
           .OfType<ILocalSymbol>()
           .GroupBy(variable => variable)

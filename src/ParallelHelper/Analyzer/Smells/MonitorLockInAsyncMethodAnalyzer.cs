@@ -63,8 +63,8 @@ namespace ParallelHelper.Analyzer.Smells {
       }
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<SyntaxNode> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) { }
+    private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
         foreach(var lockStatement in GetLockStatementsInSameActivationFrame()) {
@@ -73,7 +73,7 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private IEnumerable<LockStatementSyntax> GetLockStatementsInSameActivationFrame() {
-        return Node.DescendantNodesInSameActivationFrame()
+        return Root.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<LockStatementSyntax>();
       }

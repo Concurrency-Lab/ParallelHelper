@@ -58,21 +58,21 @@ namespace ParallelHelper.Analyzer.Smells {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerBase<InvocationExpressionSyntax> {
+    private class Analyzer : InternalAnalyzerBase<InvocationExpressionSyntax> {
       private readonly ParallelAnalysis _parallelAnalysis;
 
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(context) {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) {
         _parallelAnalysis = new ParallelAnalysis(SemanticModel, CancellationToken);
       }
 
       public override void Analyze() {
         if(IsParallelMethodWithLockStatement()) {
-          Context.ReportDiagnostic(Diagnostic.Create(Rule, Node.GetLocation()));
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetLocation()));
         }
       }
 
       private bool IsParallelMethodWithLockStatement() {
-        return _parallelAnalysis.TryGetParallelForOrForEachDelegate(Node, out var expression)
+        return _parallelAnalysis.TryGetParallelForOrForEachDelegate(Root, out var expression)
           && ContainsLockStatements(expression!);
       }
 

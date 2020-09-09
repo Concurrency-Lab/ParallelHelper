@@ -92,7 +92,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
       return CancellationTokenTypes.Any(cancellationTokenType => semanticModel.IsEqualType(type, cancellationTokenType));
     }
 
-    private class Analyzer : SyntaxNodeAnalyzerWithSyntaxWalkerBase<ClassDeclarationSyntax> {
+    private class Analyzer : InternalAnalyzerWithSyntaxWalkerBase<ClassDeclarationSyntax> {
       // TODO Do not assume that nested classes share the same scope?
       // TODO Avoid that two analyses of nested classes report the same issue twice.
       private bool EnclosingScopeHasUseableToken {
@@ -111,7 +111,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
       private bool _enclosingScopeIsInstance;
 
       public Analyzer(SyntaxNodeAnalysisContext context, int staticFieldTokens, int instanceFieldTokens)
-          : base(context) {
+          : base(new SyntaxNodeAnalysisContextWrapper(context)) {
         _staticTokensInEnclosingScope = staticFieldTokens;
         _instanceTokensInEnclosingScope = instanceFieldTokens;
       }
