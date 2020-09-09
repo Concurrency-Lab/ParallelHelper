@@ -255,8 +255,8 @@ class Test {
   }
 
   class Item {
-    public readonly int Version;
-    public readonly string Value;
+    public int Version;
+    public string Value;
 
     public Item(int version, string value) {
       Version = version;
