@@ -295,5 +295,39 @@ class Test {
 }";
       VerifyDiagnostic(source);
     }
+
+    [TestMethod]
+    public void DoesNotReportsTaskWaitInAsyncMethodWhenTaskIsAwaitedWithConfigureAwait() {
+      const string source = @"
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    var task = Task.Run(() => { });
+    await task.ConfigureAwait(false);
+    task.Wait();
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportsTaskWaitInAsyncMethodWhenAllTasksAreAwaitedWithWhenAllAndConfigureAwait() {
+      const string source = @"
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    var a = Task.Run(() => {});
+    var b = Task.Run(() => {});
+    var c = Task.Run(() => {});
+    await Task.WhenAll(a, b, c).ConfigureAwait(false);
+    a.Wait();
+    b.Wait();
+    c.Wait();
+  }
+}";
+      VerifyDiagnostic(source);
+    }
   }
 }

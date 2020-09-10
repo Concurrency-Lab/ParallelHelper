@@ -50,6 +50,7 @@ namespace ParallelHelper.Analyzer.Smells {
     };
 
     private const string WaitMethod = "Wait";
+    private const string ConfigureAwaitMethod = "ConfigureAwait";
     private const string ResultProperty = "Result";
 
     private static readonly string[] WhenMethods = { "WhenAll", "WhenAny" };
@@ -143,13 +144,24 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private IEnumerable<ISymbol> GetTasksAwaitedByAwaitExpression(AwaitExpressionSyntax awaitExpression) {
-        var expression = awaitExpression.Expression;
+        return GetTasksFromAwaitedExpression(UnwrapPotentialConfigureAwait(awaitExpression.Expression));
+      }
+
+      private ExpressionSyntax UnwrapPotentialConfigureAwait(ExpressionSyntax expression) {
+        if (expression is InvocationExpressionSyntax invocation && invocation.Expression is MemberAccessExpressionSyntax memberAccess
+            && IsConfigureAwaitInvocation(invocation)) {
+          return memberAccess.Expression;
+        }
+        return expression;
+      }
+
+      private IEnumerable<ISymbol> GetTasksFromAwaitedExpression(ExpressionSyntax expression) {
         if (expression is InvocationExpressionSyntax invocation && IsTaskWhenMethodInvocation(invocation)) {
           return GetPassedTaskVariables(invocation);
         }
         var symbol = SemanticModel.GetSymbolInfo(expression, CancellationToken).Symbol;
-        if(symbol.IsVariable()) {
-          return new [] { symbol };
+        if (symbol.IsVariable()) {
+          return new[] { symbol };
         }
         return Enumerable.Empty<ISymbol>();
       }
@@ -165,6 +177,12 @@ namespace ParallelHelper.Analyzer.Smells {
       private bool IsTaskWhenMethodInvocation(InvocationExpressionSyntax invocation) {
         return SemanticModel.GetSymbolInfo(invocation, CancellationToken).Symbol is IMethodSymbol method
           && WhenMethods.Any(name => name == method.Name)
+          && IsTaskType(method.ContainingType);
+      }
+
+      private bool IsConfigureAwaitInvocation(InvocationExpressionSyntax invocation) {
+        return SemanticModel.GetSymbolInfo(invocation, CancellationToken).Symbol is IMethodSymbol method
+          && ConfigureAwaitMethod == method.Name
           && IsTaskType(method.ContainingType);
       }
     }
