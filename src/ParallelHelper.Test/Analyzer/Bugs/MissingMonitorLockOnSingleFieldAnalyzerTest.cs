@@ -124,6 +124,29 @@ class BankAccount {
     }
 
     [TestMethod]
+    public void ReportsDoubleCheckedLockingWhenFieldIsNotVolatile() {
+      const string source = @"
+class Test {
+  private static readonly object syncObject = new object();
+  private static Test instance;
+  
+  public static Test Instance {
+    get {
+      if(instance == null) {
+        lock(syncObject) {
+          if(instance == null) {
+            instance = new Test();
+          }
+        }
+      }
+      return instance;
+    }
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(7, 10), new DiagnosticResultLocation(14, 14));
+    }
+
+    [TestMethod]
     public void DoesReportDoubleReadAccessInsideLockOnFieldWrittenInsideLock() {
       const string source = @"
 class BankAccount {
@@ -281,6 +304,29 @@ class BankAccount {
 
   private class BalanceHolder {
     public int Value;
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportDoubleCheckedLockingWhenFieldIsVolatile() {
+      const string source = @"
+class Test {
+  private static readonly object syncObject = new object();
+  private static volatile Test instance;
+  
+  public static Test Instance {
+    get {
+      if(instance == null) {
+        lock(syncObject) {
+          if(instance == null) {
+            instance = new Test();
+          }
+        }
+      }
+      return instance;
+    }
   }
 }";
       VerifyDiagnostic(source);

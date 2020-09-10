@@ -59,16 +59,17 @@ namespace ParallelHelper.Analyzer.Bugs {
     }
 
     private static void AnalyzeClassDeclaration(SyntaxNodeAnalysisContext context) {
-      new Analyzer(context, GetAllFields(context)).Analyze();
+      new Analyzer(context, GetAllNonVolatileFields(context)).Analyze();
     }
 
-    private static ISet<IFieldSymbol> GetAllFields(SyntaxNodeAnalysisContext context) {
+    private static ISet<IFieldSymbol> GetAllNonVolatileFields(SyntaxNodeAnalysisContext context) {
       var classDeclaration = (ClassDeclarationSyntax)context.Node;
       var semanticModel = context.SemanticModel;
       var cancellationToken = context.CancellationToken;
       return classDeclaration.Members
         .WithCancellation(cancellationToken)
         .OfType<FieldDeclarationSyntax>()
+        .Where(declaration => !declaration.Modifiers.Any(SyntaxKind.VolatileKeyword))
         .SelectMany(declaration => declaration.Declaration.Variables)
         .Select(variable => (IFieldSymbol)semanticModel.GetDeclaredSymbol(variable, cancellationToken))
         .IsNotNull()
