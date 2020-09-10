@@ -12,11 +12,11 @@ class BankAccount {
   private int balance;
   
   public int Balance {
-    set { lock { balance = value; } };
-    get { lock { return balance; } };
+    set { lock(syncObject) { balance = value; } }
+    get { lock(syncObject) { return balance; } }
   }
 
-  public int CanWithDrawAny(int amount1, int amount2) {
+  public bool CanWithDrawAny(int amount1, int amount2) {
     return amount1 <= balance || amount2 <= balance;
   }
 }";
@@ -31,11 +31,11 @@ class BankAccount {
   private int balance;
   
   public int Balance {
-    set { balance = value; };
-    get { return balance; };
+    set { balance = value; }
+    get { return balance; }
   }
 
-  public int CanWithDrawAny(int amount1, int amount2) {
+  public bool CanWithDrawAny(int amount1, int amount2) {
     lock(syncObject) {
       return amount1 <= balance || amount2 <= balance;
     }
@@ -52,8 +52,8 @@ class BankAccount {
   private int balance;
   
   public int Balance {
-    set { lock { balance = value; } };
-    get { lock { return balance; } };
+    set { lock(syncObject) { balance = value; } }
+    get { lock(syncObject) { return balance; } }
   }
 
   public void Increment() {
@@ -71,8 +71,8 @@ class BankAccount {
   private int balance;
   
   public int Balance {
-    set { lock { balance = value; } };
-    get { lock { return balance; } };
+    set { lock(syncObject) { balance = value; } }
+    get { lock(syncObject) { return balance; } }
   }
 
   public void Deposit(int amount) {
@@ -90,8 +90,8 @@ class BankAccount {
   private int balance;
   
   public int Balance {
-    set { lock { balance = value; } };
-    get { lock { return balance; } };
+    set { lock(syncObject) { balance = value; } }
+    get { lock(syncObject) { return balance; } }
   }
 
   public int GetMaxWithrawal(int amount) {
@@ -112,8 +112,8 @@ class BankAccount {
   private int balance;
   
   public int Balance {
-    set { lock { balance = value; } };
-    get { lock { return balance; } };
+    set { lock(syncObject) { balance = value; } }
+    get { lock(syncObject) { return balance; } }
   }
 
   public int GetMaxWithrawal(int amount) {
@@ -252,6 +252,35 @@ class BankAccount {
   
   public void SetBalance(int balance) {
     this.balance = balance;
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportDoubleReadAccessOnFieldWrittenInsideLockForFieldsOfForeignClass() {
+      const string source = @"
+class BankAccount {
+  private readonly object syncObject = new object();
+  private volatile BalanceHolder balance = new BalanceHolder();
+  
+  public int Balance {
+    set {
+      lock(syncObject) {
+        balance = new BalanceHolder();
+        balance.Value = value;
+      }
+    }
+    get { return balance.Value; }
+  }
+
+  public bool CanWithDrawAny(int amount1, int amount2) {
+    var current = balance;
+    return amount1 <= current.Value || amount2 <= current.Value;
+  }
+
+  private class BalanceHolder {
+    public int Value;
   }
 }";
       VerifyDiagnostic(source);

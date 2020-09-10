@@ -232,5 +232,41 @@ class Sample {
 }";
       VerifyDiagnostic(source);
     }
+
+    [TestMethod]
+    public void DoesNotReportReadAndWriteAccessesOfFieldsNotPartOfTheClass() {
+      const string source = @"
+class Test {
+  private readonly object syncObject = new object();
+  private volatile Item item;
+
+  public void Update(string value) {
+    lock(syncObject) {
+      item = new Item(item.Version + 1, value);
+    }
+  }
+
+  public string GetIfNewer(int version) {
+    var current = item;
+    if(current.Version > version) {
+      return current.Value;
+    }
+    return null;
+  }
+
+  class Item {
+    public int Version;
+    public string Value;
+
+    public Item(int version, string value) {
+      Version = version;
+      Value = value;
+    }
+  }
+}
+
+";
+      VerifyDiagnostic(source);
+    }
   }
 }

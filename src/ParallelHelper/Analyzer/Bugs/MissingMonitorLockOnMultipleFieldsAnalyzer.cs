@@ -59,19 +59,19 @@ namespace ParallelHelper.Analyzer.Bugs {
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
       context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-      context.RegisterSemanticModelAction(AnalyzeSemanticModel);
+      context.RegisterSyntaxNodeAction(AnalyzeClassDeclaration, SyntaxKind.ClassDeclaration);
     }
 
-    private static void AnalyzeSemanticModel(SemanticModelAnalysisContext context) {
+    private static void AnalyzeClassDeclaration(SyntaxNodeAnalysisContext context) {
       new Analyzer(context, GetAllNonConstFields(context)).Analyze();
     }
 
-    private static ISet<IFieldSymbol> GetAllNonConstFields(SemanticModelAnalysisContext context) {
+    private static ISet<IFieldSymbol> GetAllNonConstFields(SyntaxNodeAnalysisContext context) {
       // TODO also exclude readonly fields?
+      var classDeclaration = (ClassDeclarationSyntax)context.Node;
       var semanticModel = context.SemanticModel;
       var cancellationToken = context.CancellationToken;
-      return semanticModel.SyntaxTree.GetRoot(cancellationToken)
-        .DescendantNodesAndSelf()
+      return classDeclaration.Members
         .WithCancellation(cancellationToken)
         .OfType<FieldDeclarationSyntax>()
         .Where(declaration => !declaration.Modifiers.Any(SyntaxKind.ConstKeyword))
@@ -81,22 +81,26 @@ namespace ParallelHelper.Analyzer.Bugs {
         .ToImmutableHashSet();
     }
 
-    private class Analyzer : FieldAccessAwareAnalyzerWithSyntaxWalkerBase<SyntaxNode> {
-      public Analyzer(SemanticModelAnalysisContext context, ISet<IFieldSymbol> declaredFields)
-        : base(new SemanticModelAnalysisContextWrapper(context), declaredFields) { }
+    private class Analyzer : FieldAccessAwareAnalyzerWithSyntaxWalkerBase<ClassDeclarationSyntax> {
+      public Analyzer(SyntaxNodeAnalysisContext context, ISet<IFieldSymbol> declaredFields)
+        : base(new SyntaxNodeAnalysisContextWrapper(context), declaredFields) { }
 
       public override void Analyze() {
-        base.Analyze();
-        foreach(var (field, location) in GetAllFieldAccessesToReport()) {
+        base.VisitClassDeclaration(Root);
+        foreach (var (field, location) in GetAllFieldAccessesToReport()) {
           Context.ReportDiagnostic(Diagnostic.Create(Rule, location, field.Name));
         }
+      }
+
+      public override void VisitClassDeclaration(ClassDeclarationSyntax node) {
+        // Do not analyze nested classes.
       }
 
       private IEnumerable<(IFieldSymbol Field, Location Location)> GetAllFieldAccessesToReport() {
         // The output is ordered to have reproducability for the unit tests.
         return GetAllFieldAccessesInsideSameScopeAccessingVariablesAccessedInsideSameLockWithAtLeastOneWriting()
           .Concat(GetAllFieldAccessesInsideSameScopeWithAtLeastOneWritingAccessingVariablesAccessedInsideSameLock())
-          .Select(access => (access.Field, Location : access.Access.GetLocation()))
+          .Select(access => (access.Field, Location: access.Access.GetLocation()))
           .Distinct();
       }
 
