@@ -550,5 +550,57 @@ public class Test {
         .Single();
       Assert.IsFalse(semanticModel.IsVariable(expression, default));
     }
+
+    [TestMethod]
+    public void GetResolvableDeclaringSyntaxReferencesReturnsDeclarationsOfSameDocument() {
+      const string source = @"
+using System;
+
+public class Test {
+  public Action GetIt() {
+    return GetItInternal;
+  }
+
+  private void GetItInternal() { }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var method = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<ReturnStatementSyntax>()
+        .Select(statement => statement.Expression)
+        .Select(expression => semanticModel.GetSymbolInfo(expression).Symbol)
+        .OfType<IMethodSymbol>()
+        .Single();
+      Assert.AreEqual(1, semanticModel.GetResolvableDeclaringSyntaxes(method, default).Count());
+    }
+
+    [TestMethod]
+    public void GetResolvableDeclaringSyntaxReferencesDoesNotReturnDeclarationOfForeignDocument() {
+      const string referenced = @"
+public class Foreign {
+  public static void DoIt() { }
+}";
+      const string source = @"
+using System;
+
+public class Test {
+  public Action GetIt() {
+    return Foreign.DoIt;
+  }
+}";
+      var compilation = CompilationFactory.CreateCompilation(referenced, source);
+      var syntaxTree = compilation.SyntaxTrees
+        .Where(tree => tree.GetRoot().DescendantNodesAndSelf().OfType<ClassDeclarationSyntax>().Single().Identifier.Text == "Test")
+        .Single();
+      var semanticModel = compilation.GetSemanticModel(syntaxTree);
+      var method = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<ReturnStatementSyntax>()
+        .Select(statement => statement.Expression)
+        .Select(expression => semanticModel.GetSymbolInfo(expression).Symbol)
+        .OfType<IMethodSymbol>()
+        .Single();
+      Assert.AreEqual(0, semanticModel.GetResolvableDeclaringSyntaxes(method, default).Count());
+    }
   }
 }
