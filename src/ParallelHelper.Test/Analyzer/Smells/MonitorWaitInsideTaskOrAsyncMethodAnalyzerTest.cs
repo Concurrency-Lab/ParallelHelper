@@ -147,5 +147,23 @@ class Test {
 }";
       VerifyDiagnostic(source);
     }
+
+    [TestMethod]
+    public void DoesNotReportMonitorWaitWhenTaskRunDelegateIsUnresolvable() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  private readonly object syncObject = new object();
+
+  private Action action;
+
+  public async Task DoItAsync() {
+    Task.Run(action);
+  }
+}";
+      VerifyDiagnostic(source);
+    }
   }
 }
