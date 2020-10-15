@@ -1,4 +1,11 @@
-﻿v2.3.0
+﻿v2.4.0
+
+- New Analyzer: PH_B014 - Await On Conditional Access
+
+
+------------------
+
+v2.3.0
 
 - New Analyzer: PH_B013 - Null-Check Against Task Instead of Value
 - New Analyzer: PH_P011 - Replace With Async Stream
