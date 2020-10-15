@@ -14,12 +14,14 @@ namespace ParallelHelper.Analyzer.Bugs {
   /// class Sample {
   ///   private readonly object syncObject = new object();
   ///   
-  ///   public async DoWork(Sample other) {
-  ///     lock(syncObject) {
-  ///       lock(other.syncObject) {
-  ///         // ...
-  ///       }
-  ///     }
+  ///   public async DoWork() {
+  ///     var nested = new Nested();
+  ///     await nested.Other?.Task;
+  ///   }
+  ///   
+  ///   private class Nested {
+  ///     public Nested Other { get; }
+  ///     public Task Task { get; }
   ///   }
   /// }
   /// </code>
