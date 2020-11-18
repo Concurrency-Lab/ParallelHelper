@@ -1,6 +1,7 @@
 ﻿v2.4.0
 
 - New Analyzer: PH_B014 - Await On Conditional Access
+- New Analyzer: PH_S032 - Throws in Potentially Async Method
 
 
 ------------------
