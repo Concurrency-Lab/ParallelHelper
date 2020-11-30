@@ -42,7 +42,7 @@ namespace ParallelHelper.Extensions {
       }
       return method.Parameters
         .WithCancellation(cancellationToken)
-        .Zip(other.Parameters, (a, b) => a.Type.Equals(b.Type))
+        .Zip(other.Parameters, (a, b) => a.Type.Equals(b.Type, SymbolEqualityComparer.Default))
         .All(parametersAreEqual => parametersAreEqual);
     }
   }

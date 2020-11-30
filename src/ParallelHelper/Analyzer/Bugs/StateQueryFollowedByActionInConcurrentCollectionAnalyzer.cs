@@ -158,12 +158,12 @@ namespace ParallelHelper.Analyzer.Bugs {
           .WithCancellation(CancellationToken)
           .OfType<ElementAccessExpressionSyntax>()
           .Where(IsElementAccessOnConcurrentCollectionWithIndexer)
-          .Where(elementAccess => field.Equals(SemanticModel.GetSymbolInfo(elementAccess.Expression, CancellationToken).Symbol));
+          .Where(elementAccess => field.Equals(SemanticModel.GetSymbolInfo(elementAccess.Expression, CancellationToken).Symbol, SymbolEqualityComparer.Default));
       }
 
       private bool IsMemberInvocationOfField(InvocationExpressionSyntax invocation, IFieldSymbol field) {
         return invocation.Expression is MemberAccessExpressionSyntax memberAccess
-          && field.Equals(SemanticModel.GetSymbolInfo(memberAccess.Expression, CancellationToken).Symbol);
+          && field.Equals(SemanticModel.GetSymbolInfo(memberAccess.Expression, CancellationToken).Symbol, SymbolEqualityComparer.Default);
       }
 
       private bool IsActionOnConcurrentCollection(InvocationExpressionSyntax invocation) {

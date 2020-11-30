@@ -81,7 +81,8 @@ namespace ParallelHelper.Analyzer.Bugs {
       }
 
       public bool CanDeadlock(LockStatementSyntax outerLockStatement, IFieldSymbol outerSyncObject, LockStatementSyntax innerLockStatement, IFieldSymbol innerSyncObject) {
-        return outerSyncObject.Equals(innerSyncObject) && UseDifferentInstances(outerLockStatement, innerLockStatement);
+        return outerSyncObject.Equals(innerSyncObject, SymbolEqualityComparer.Default)
+          && UseDifferentInstances(outerLockStatement, innerLockStatement);
       }
 
       private IFieldSymbol? GetSyncObject(LockStatementSyntax lockStatement) {

@@ -117,7 +117,7 @@ namespace ParallelHelper.Analyzer.Smells {
         return Root.DescendantNodesAndSelf()
           .WithCancellation(CancellationToken)
           .OfType<AssignmentExpressionSyntax>()
-          .Where(assignment => symbol.Equals(SemanticModel.GetSymbolInfo(assignment.Left, CancellationToken).Symbol))
+          .Where(assignment => symbol.Equals(SemanticModel.GetSymbolInfo(assignment.Left, CancellationToken).Symbol, SymbolEqualityComparer.Default))
           .Select(assignment => SemanticModel.GetTypeInfo(assignment.Right, CancellationToken).Type)
           .IsNotNull();
       }
