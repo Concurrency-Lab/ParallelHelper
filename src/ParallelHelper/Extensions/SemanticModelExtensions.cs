@@ -34,7 +34,7 @@ namespace ParallelHelper.Extensions {
       // - The defined type Task<TResult> is not equal to the type Task<string>.
       // - However, the original definition of Task<string> is Task<TResult>.
       // TODO: Maybe adapt the method's name.
-      return type.OriginalDefinition.Equals(other);
+      return type.OriginalDefinition.Equals(other, SymbolEqualityComparer.Default);
     }
 
     /// <summary>

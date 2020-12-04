@@ -11,7 +11,7 @@
 
   <PropertyGroup>
     <PackageId>ParallelHelper</PackageId>
-    <Version>2.4.0</Version>
+    <Version>3.0.0</Version>
     <Authors>Christoph Amrein</Authors>
     <PackageProjectUrl>https://github.com/Concurrency-Lab/ParallelHelper</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Concurrency-Lab/ParallelHelper</RepositoryUrl>
@@ -33,7 +33,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.0.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.3.1" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
