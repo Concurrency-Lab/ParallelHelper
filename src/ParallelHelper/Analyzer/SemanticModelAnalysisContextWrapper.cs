@@ -15,6 +15,8 @@ namespace ParallelHelper.Analyzer {
 
     public SyntaxNode Root => SemanticModel.SyntaxTree.GetRoot(CancellationToken);
 
+    public AnalyzerConfigOptions Options => _instance.Options.AnalyzerConfigOptionsProvider.GetOptions(SemanticModel.SyntaxTree);
+
     /// <summary>
     /// Initializes a new instance with the specified semantic model analysis context.
     /// </summary>
