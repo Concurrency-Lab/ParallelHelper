@@ -36,5 +36,14 @@ class Test {
 }";
       VerifyDiagnostic(source);
     }
+
+    [TestMethod]
+    public void DoesNotReportCreationOfUnresolvableType() {
+      const string source = @"
+class Test {
+  private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+}";
+      VerifyDiagnostic(source);
+    }
   }
 }
