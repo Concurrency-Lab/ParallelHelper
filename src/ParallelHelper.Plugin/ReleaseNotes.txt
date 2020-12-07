@@ -4,6 +4,7 @@
 - Raised the minimum required Visual Studio version to 16.3
 - New Analyzer: PH_B014 - Await On Conditional Access
 - New Analyzer: PH_S032 - Throws in Potentially Async Method
+- New Analyzer: PH_P012 - Prefer Slim Synchronization
 
 
 ------------------
