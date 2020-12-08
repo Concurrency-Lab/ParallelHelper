@@ -63,13 +63,15 @@ namespace ParallelHelper.Analyzer.BestPractices {
     private class Analyzer : InternalAnalyzerBase<ObjectCreationExpressionSyntax> {
       public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
+      private bool IsReportNamedEnabled => Context.Options.GetConfig(Rule, "named", "ignore") == "report";
+
       public override void Analyze() {
         var method = (IMethodSymbol)SemanticModel.GetSymbolInfo(Root, CancellationToken).Symbol;
         if(method == null) {
           return;
         }
         var primitive = GetUsedSynchronizationPrimitive(method);
-        if(primitive != null && !IsConstructingNamedPrimitive(method)) {
+        if(primitive != null && (IsReportNamedEnabled || !IsConstructingNamedPrimitive(method))) {
           Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetLocation(), primitive.FatType, primitive.SlimType));
         }
       }
