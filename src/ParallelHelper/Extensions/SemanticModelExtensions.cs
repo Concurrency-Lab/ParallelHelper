@@ -34,7 +34,7 @@ namespace ParallelHelper.Extensions {
       // - The defined type Task<TResult> is not equal to the type Task<string>.
       // - However, the original definition of Task<string> is Task<TResult>.
       // TODO: Maybe adapt the method's name.
-      return type.OriginalDefinition.Equals(other);
+      return type.OriginalDefinition.Equals(other, SymbolEqualityComparer.Default);
     }
 
     /// <summary>
@@ -108,6 +108,23 @@ namespace ParallelHelper.Extensions {
     public static bool IsVariable(this SemanticModel semanticModel, ExpressionSyntax expression, CancellationToken cancellationToken) {
       var symbol = semanticModel.GetSymbolInfo(expression, cancellationToken).Symbol;
       return symbol.IsVariable();
+    }
+
+    /// <summary>
+    /// Gets all declaring syntaxes of the given symbol that can be safely resolved.
+    /// </summary>
+    /// <param name="semanticModel">The semantic model of the currently analyzed document.</param>
+    /// <param name="symbol">The symbol from which all the references should be resolved.</param>
+    /// <param name="cancellationToken">The cancellation token to use.</param>
+    /// <returns>All resolved syntax nodes that can be safely processed further.</returns>
+    public static IEnumerable<SyntaxNode> GetResolvableDeclaringSyntaxes(this SemanticModel semanticModel, ISymbol symbol, CancellationToken cancellationToken) {
+      // It is possible that a variable is declared outside of the currently analyzed document.
+      // Since the semantic model may only resolve symbols for the same syntax tree, we have to filter
+      // any foreign syntax node.
+      return symbol.DeclaringSyntaxReferences
+        .WithCancellation(cancellationToken)
+        .Where(reference => reference.SyntaxTree == semanticModel.SyntaxTree)
+        .Select(reference => reference.GetSyntax(cancellationToken));
     }
   }
 }

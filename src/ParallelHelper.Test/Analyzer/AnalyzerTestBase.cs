@@ -13,24 +13,25 @@ namespace ParallelHelper.Test.Analyzer {
   /// </summary>
   /// <typeparam name="TAnalyzer">The type of the analyzer under test.</typeparam>
   public class AnalyzerTestBase<TAnalyzer> where TAnalyzer : DiagnosticAnalyzer, new() {
-
-    /// <summary>
-    /// Analyzes the given source.
-    /// </summary>
-    /// <param name="sources">The source codes to analyze.</param>
-    /// <returns>The diagnostics returned by the analysis.</returns>
-    public ImmutableArray<Diagnostic> Analyze(params string[] sources) {
+    private ImmutableArray<Diagnostic> Analyze(string[] sources, ImmutableDictionary<string, string> analyzerOptions) {
       var compilation = CompilationFactory.CreateCompilation(sources);
-      var diagnostics = Task.Run(async () => await GetDiagnosticsAsync(compilation)).Result;
+      var diagnostics = Task.Run(async () => await GetDiagnosticsAsync(compilation, analyzerOptions)).Result;
       foreach(var compilationDiagnostic in diagnostics.Compilation) {
         Console.WriteLine(compilationDiagnostic);
       }
       return diagnostics.Analyzer;
     }
 
-    private async Task<(ImmutableArray<Diagnostic> Analyzer, ImmutableArray<Diagnostic> Compilation)> GetDiagnosticsAsync(Compilation compilation) {
+    private async Task<(ImmutableArray<Diagnostic> Analyzer, ImmutableArray<Diagnostic> Compilation)> GetDiagnosticsAsync(
+      Compilation compilation,
+      ImmutableDictionary<string, string> analyzerOptions
+    ) {
+      var optionsProvider = new TestAnalyzerConfigOptionsProvider(analyzerOptions);
       var analyzerDiagnostics = await compilation
-          .WithAnalyzers(ImmutableArray.Create<DiagnosticAnalyzer>(new TAnalyzer()))
+          .WithAnalyzers(
+            ImmutableArray.Create<DiagnosticAnalyzer>(new TAnalyzer()),
+            new AnalyzerOptions(ImmutableArray<AdditionalText>.Empty, optionsProvider)
+          )
           .GetAnalyzerDiagnosticsAsync();
       // The result is ordered for better reproducability.
       return (
@@ -52,12 +53,40 @@ namespace ParallelHelper.Test.Analyzer {
     }
 
     /// <summary>
+    /// Verifies that the given diagnostics are reported when analyzing the given source.
+    /// </summary>
+    /// <param name="source">The source to analyze.</param>
+    /// <param name="analyzerOptions">The analyzer options (.editorconfig settings) to pass to the analyzer.</param>
+    /// <param name="expectedDiagnostics">The expected diagnostics.</param>
+    public void VerifyDiagnostic(
+      string source,
+      ImmutableDictionary<string, string> analyzerOptions,
+      params DiagnosticResultLocation[] expectedDiagnostics
+    ) {
+      VerifyDiagnostic(new[] { source }, analyzerOptions, expectedDiagnostics);
+    }
+
+    /// <summary>
     /// Verifies that the given diagnostics are reported when analyzing the given collection of sources.
     /// </summary>
     /// <param name="sources">The sources to analyze.</param>
     /// <param name="expectedDiagnostics">The expected diagnostics.</param>
     public void VerifyDiagnostic(IReadOnlyCollection<string> sources, params DiagnosticResultLocation[] expectedDiagnostics) {
-      var diagnosticResults = Analyze(sources.ToArray());
+      VerifyDiagnostic(sources, ImmutableDictionary<string, string>.Empty, expectedDiagnostics);
+    }
+
+    /// <summary>
+    /// Verifies that the given diagnostics are reported when analyzing the given collection of sources.
+    /// </summary>
+    /// <param name="sources">The sources to analyze.</param>
+    /// <param name="analyzerOptions">The analyzer options (.editorconfig settings) to pass to the analyzer.</param>
+    /// <param name="expectedDiagnostics">The expected diagnostics.</param>
+    public void VerifyDiagnostic(
+      IReadOnlyCollection<string> sources,
+      ImmutableDictionary<string, string> analyzerOptions,
+      params DiagnosticResultLocation[] expectedDiagnostics
+    ) {
+      var diagnosticResults = Analyze(sources.ToArray(), analyzerOptions);
       Assert.AreEqual(expectedDiagnostics.Length, diagnosticResults.Length, "Invalid diagnostics count");
 
       for(var i = 0; i < expectedDiagnostics.Length; ++i) {

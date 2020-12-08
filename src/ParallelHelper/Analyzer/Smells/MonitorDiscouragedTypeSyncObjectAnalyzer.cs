@@ -117,7 +117,7 @@ namespace ParallelHelper.Analyzer.Smells {
         return Root.DescendantNodesAndSelf()
           .WithCancellation(CancellationToken)
           .OfType<AssignmentExpressionSyntax>()
-          .Where(assignment => symbol.Equals(SemanticModel.GetSymbolInfo(assignment.Left, CancellationToken).Symbol))
+          .Where(assignment => symbol.Equals(SemanticModel.GetSymbolInfo(assignment.Left, CancellationToken).Symbol, SymbolEqualityComparer.Default))
           .Select(assignment => SemanticModel.GetTypeInfo(assignment.Right, CancellationToken).Type)
           .IsNotNull();
       }
@@ -132,13 +132,7 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private IEnumerable<VariableDeclaratorSyntax> GetAllDeclaratorsInsideTheCurrentSyntaxTree(ISymbol symbol) {
-        // It is possible that a variable is declared outside of the currently analyzed document.
-        // Since the semantic model may only resolve symbols for the same syntax tree, we have to filter
-        // any foreign syntax node.
-        return symbol.DeclaringSyntaxReferences
-          .WithCancellation(CancellationToken)
-          .Where(reference => reference.SyntaxTree == SemanticModel.SyntaxTree)
-          .Select(reference => reference.GetSyntax(CancellationToken))
+        return SemanticModel.GetResolvableDeclaringSyntaxes(symbol, CancellationToken)
           .SelectMany(declaration => declaration.DescendantNodesAndSelf().OfType<VariableDeclaratorSyntax>());
       }
 

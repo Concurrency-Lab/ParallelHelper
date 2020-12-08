@@ -1,7 +1,19 @@
-﻿v2.3.0
+﻿v3.0.0
+
+- Upgraded the .NET Compiler Platform (Roslyn) to version 3.3.1
+- Raised the minimum required Visual Studio version to 16.3
+- New Analyzer: PH_B014 - Await On Conditional Access
+- New Analyzer: PH_S032 - Throws in Potentially Async Method
+- New Analyzer: PH_P012 - Prefer Slim Synchronization
+
+
+------------------
+
+v2.3.0
 
 - New Analyzer: PH_B013 - Null-Check Against Task Instead of Value
 - New Analyzer: PH_P011 - Replace With Async Stream
+- New Analyzer: PH_S031 - Monitor.Wait Inside Async Method or Task
 - Improved Analyzer: PH_S019 - Now respects activation frames
 - Improved Analyzer: PH_B009 - Now ignores fields of foreign classes
 - Improved Analyzer: PH_B010 - Now ignores fields of foreign classes

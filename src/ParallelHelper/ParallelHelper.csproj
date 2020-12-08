@@ -11,18 +11,17 @@
 
   <PropertyGroup>
     <PackageId>ParallelHelper</PackageId>
-    <Version>2.3.0</Version>
+    <Version>3.0.0</Version>
     <Authors>Christoph Amrein</Authors>
     <PackageProjectUrl>https://github.com/Concurrency-Lab/ParallelHelper</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Concurrency-Lab/ParallelHelper</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Description>ParallelHelper is a static code analyzer that helps to identify concurrency related issues. Moreover, it provides hints to improve the robustness of code with concurrency in mind.</Description>
-    <PackageReleaseNotes>- New Analyzer: PH_B013 - Null-Check Against Task Instead of Value
-- New Analyzer: PH_P011 - Replace With Async Stream
-- Improved Analyzer: PH_S019 - Now respects activation frames
-- Improved Analyzer: PH_B009 - Now ignores fields of foreign classes
-- Improved Analyzer: PH_B010 - Now ignores fields of foreign classes
-- Fixed Analyzer: PH_S002 - No longer crashes when the sync object is declared in a foreign file</PackageReleaseNotes>
+    <PackageReleaseNotes>- Upgraded the .NET Compiler Platform (Roslyn) to version 3.3.1
+- Raised the minimum required Visual Studio version to 16.3
+- New Analyzer: PH_B014 - Await On Conditional Access
+- New Analyzer: PH_S032 - Throws in Potentially Async Method
+- New Analyzer: PH_P012 - Prefer Slim Synchronization</PackageReleaseNotes>
     <Copyright>Copyright (C) 2019 - 2020 Christoph Amrein, Concurrency Lab, HSR Hochschule fuer Technik Rapperswil, Switzerland</Copyright>
     <PackageTags>C#, Parallel, Asynchronous, Concurrency, Bugs, Best Practices, TPL, Task, QC, Static Analysis</PackageTags>
     <NoPackageAnalysis>true</NoPackageAnalysis>
@@ -37,7 +36,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.0.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.3.1" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

@@ -15,6 +15,8 @@ namespace ParallelHelper.Analyzer {
 
     public SyntaxNode Root => _instance.Node;
 
+    public AnalyzerConfigOptions Options => _instance.Options.AnalyzerConfigOptionsProvider.GetOptions(Root.SyntaxTree);
+
     /// <summary>
     /// Initializes a new instance with the specified syntax node analysis context.
     /// </summary>

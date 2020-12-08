@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 using System.Threading;
 
 namespace ParallelHelper.Analyzer {
@@ -21,6 +22,11 @@ namespace ParallelHelper.Analyzer {
     /// Gets the root node of the currently applied analysis.
     /// </summary>
     SyntaxNode Root { get; }
+
+    /// <summary>
+    /// Gets the analyzer configuration of the analyzed syntax tree.
+    /// </summary>
+    AnalyzerConfigOptions Options { get; }
 
     /// <summary>
     /// Reports the provided diagnostic.
