@@ -11,6 +11,7 @@ dotnet_diagnostic.PH_P009.severity = warning
 dotnet_diagnostic.PH_P010.severity = warning
 dotnet_diagnostic.PH_P011.severity = warning
 dotnet_diagnostic.PH_P012.severity = warning
+dotnet_diagnostic.PH_P012.named = report
 
 # Smells
 dotnet_diagnostic.PH_S001.severity = warning
