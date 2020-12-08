@@ -1,12 +1,10 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace ParallelHelper.Test.Analyzer {
@@ -74,7 +72,7 @@ namespace ParallelHelper.Test.Analyzer {
     /// <param name="sources">The sources to analyze.</param>
     /// <param name="expectedDiagnostics">The expected diagnostics.</param>
     public void VerifyDiagnostic(IReadOnlyCollection<string> sources, params DiagnosticResultLocation[] expectedDiagnostics) {
-      VerifyDiagnostic(sources, ImmutableDictionary.Create<string, string>(), expectedDiagnostics);
+      VerifyDiagnostic(sources, ImmutableDictionary<string, string>.Empty, expectedDiagnostics);
     }
 
     /// <summary>
