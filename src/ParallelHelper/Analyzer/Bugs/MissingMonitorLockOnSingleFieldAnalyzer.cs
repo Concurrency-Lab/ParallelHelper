@@ -59,17 +59,19 @@ namespace ParallelHelper.Analyzer.Bugs {
     }
 
     private static void AnalyzeClassDeclaration(SyntaxNodeAnalysisContext context) {
-      new Analyzer(context, GetAllNonVolatileFields(context)).Analyze();
+      var contextWrapper = new SyntaxNodeAnalysisContextWrapper(context);
+      bool includeVolatile = contextWrapper.Options.GetConfig(Rule, "volatile", "ignore") == "report";
+      new Analyzer(contextWrapper, GetAllFields(context, includeVolatile)).Analyze();
     }
 
-    private static ISet<IFieldSymbol> GetAllNonVolatileFields(SyntaxNodeAnalysisContext context) {
+    private static ISet<IFieldSymbol> GetAllFields(SyntaxNodeAnalysisContext context, bool includeVolatileFields) {
       var classDeclaration = (ClassDeclarationSyntax)context.Node;
       var semanticModel = context.SemanticModel;
       var cancellationToken = context.CancellationToken;
       return classDeclaration.Members
         .WithCancellation(cancellationToken)
         .OfType<FieldDeclarationSyntax>()
-        .Where(declaration => !declaration.Modifiers.Any(SyntaxKind.VolatileKeyword))
+        .Where(declaration => includeVolatileFields || !declaration.Modifiers.Any(SyntaxKind.VolatileKeyword))
         .SelectMany(declaration => declaration.Declaration.Variables)
         .Select(variable => (IFieldSymbol)semanticModel.GetDeclaredSymbol(variable, cancellationToken))
         .IsNotNull()
@@ -77,8 +79,7 @@ namespace ParallelHelper.Analyzer.Bugs {
     }
 
     private class Analyzer : FieldAccessAwareAnalyzerWithSyntaxWalkerBase<ClassDeclarationSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context, ISet<IFieldSymbol> declaredFields)
-        : base(new SyntaxNodeAnalysisContextWrapper(context), declaredFields) { }
+      public Analyzer(IAnalysisContext context, ISet<IFieldSymbol> declaredFields) : base(context, declaredFields) { }
 
       public override void Analyze() {
         base.Analyze();

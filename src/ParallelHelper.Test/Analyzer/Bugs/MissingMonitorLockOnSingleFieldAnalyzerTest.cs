@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ParallelHelper.Analyzer.Bugs;
+using System.Collections.Immutable;
 
 namespace ParallelHelper.Test.Analyzer.Bugs {
   [TestClass]
@@ -144,6 +145,31 @@ class Test {
   }
 }";
       VerifyDiagnostic(source, new DiagnosticResultLocation(7, 10), new DiagnosticResultLocation(14, 14));
+    }
+
+    [TestMethod]
+    public void ReportsDoubleCheckedLockingWhenFieldIsVolatileIfReportVolatile() {
+      const string source = @"
+class Test {
+  private static readonly object syncObject = new object();
+  private static volatile Test instance;
+  
+  public static Test Instance {
+    get {
+      if(instance == null) {
+        lock(syncObject) {
+          if(instance == null) {
+            instance = new Test();
+          }
+        }
+      }
+      return instance;
+    }
+  }
+}";
+      var options = ImmutableDictionary.Create<string, string>()
+        .Add("dotnet_diagnostic.PH_B010.volatile", "report");
+      VerifyDiagnostic(source, options, new DiagnosticResultLocation(7, 10), new DiagnosticResultLocation(14, 14));
     }
 
     [TestMethod]
@@ -310,7 +336,7 @@ class BankAccount {
     }
 
     [TestMethod]
-    public void DoesNotReportDoubleCheckedLockingWhenFieldIsVolatile() {
+    public void DoesNotReportDoubleCheckedLockingWhenFieldIsVolatileByDefault() {
       const string source = @"
 class Test {
   private static readonly object syncObject = new object();
@@ -330,6 +356,31 @@ class Test {
   }
 }";
       VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportDoubleCheckedLockingWhenFieldIsVolatileIfIgnoreVolatile() {
+      const string source = @"
+class Test {
+  private static readonly object syncObject = new object();
+  private static volatile Test instance;
+  
+  public static Test Instance {
+    get {
+      if(instance == null) {
+        lock(syncObject) {
+          if(instance == null) {
+            instance = new Test();
+          }
+        }
+      }
+      return instance;
+    }
+  }
+}";
+      var options = ImmutableDictionary.Create<string, string>()
+        .Add("dotnet_diagnostic.PH_B010.volatile", "ignore");
+      VerifyDiagnostic(source, options);
     }
   }
 }
