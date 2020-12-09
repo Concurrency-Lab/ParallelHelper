@@ -147,7 +147,7 @@ class Test {
     }
 
     [TestMethod]
-    public void DoesReportDoubleReadAccessInsideLockOnFieldWrittenInsideLock() {
+    public void DoesNotReportDoubleReadAccessInsideLockOnFieldWrittenInsideLock() {
       const string source = @"
 class BankAccount {
   private readonly object syncObject = new object();
