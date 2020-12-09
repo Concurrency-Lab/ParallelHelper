@@ -5,11 +5,9 @@ using System.Linq;
 namespace ParallelHelper.Test {
   internal class CompilationFactory {
     public static Compilation CreateCompilation(params string[] sources) {
-      //var syntaxTrees = sources.Select(source => CSharpSyntaxTree.ParseText(source, default, TestSourceFilePath));
-      //return CSharpCompilation.Create("Test.dll", syntaxTrees, References, CompilationOptions);
-      return CodeTestBuilder.Create()
+      return TestCompilationBuilder.Create()
         .AddSourceTexts(sources)
-        .Compilation;
+        .Build();
     }
 
     public static IEnumerable<TSyntaxNode> GetNodesOfType<TSyntaxNode>(string source) where TSyntaxNode : SyntaxNode {

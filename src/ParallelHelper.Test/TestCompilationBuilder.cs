@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
+using ParallelHelper.Test.Analyzer;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
@@ -13,7 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace ParallelHelper.Test {
-  public class CodeTestBuilder {
+  public class TestCompilationBuilder {
     private const string DefaultSourceFilenamePattern = "Test_{0}.cs";
 
     private static readonly MetadataReference[] References = new[] {
@@ -43,42 +44,67 @@ namespace ParallelHelper.Test {
     );
 
     public CSharpCompilation Compilation { get; private set; } = BaseCompilation;
-    public int SourceCount { get; private set; }
     public ImmutableDictionary<string, string> AnalyzerOptions { get; private set; }
       = ImmutableDictionary.Create<string, string>(AnalyzerConfigOptions.KeyComparer);
+    public ImmutableArray<DiagnosticAnalyzer> Analyzers { get; private set; } = ImmutableArray<DiagnosticAnalyzer>.Empty;
 
-    private CodeTestBuilder() { }
+    private TestCompilationBuilder() { }
 
-    public static CodeTestBuilder Create() {
-      return new CodeTestBuilder();
+    public static TestCompilationBuilder Create() {
+      return new TestCompilationBuilder();
     }
 
-    private CodeTestBuilder(CodeTestBuilder other) {
+    private TestCompilationBuilder(TestCompilationBuilder other) {
       Compilation = other.Compilation;
-      SourceCount = other.SourceCount;
       AnalyzerOptions = other.AnalyzerOptions;
+      Analyzers = other.Analyzers;
     }
 
-    public CodeTestBuilder AddSourceTexts(params string[] sourceTexts) {
+    public TestCompilationBuilder AddSourceTexts(params string[] sourceTexts) {
       var syntaxTrees = sourceTexts.Select((source, index) => CSharpSyntaxTree.ParseText(
-        source, path: string.Format(DefaultSourceFilenamePattern, SourceCount + index)
+        source, path: string.Format(DefaultSourceFilenamePattern, Compilation.SyntaxTrees.Length + index)
       )).ToArray();
-      return new CodeTestBuilder(this) {
+      return new TestCompilationBuilder(this) {
         Compilation = Compilation.AddSyntaxTrees(syntaxTrees),
-        SourceCount = SourceCount + syntaxTrees.Length
       };
     }
 
-    public CodeTestBuilder WithReferences(params MetadataReference[] references) {
-      return new CodeTestBuilder(this) {
-        Compilation = Compilation.WithReferences(references)
+    public TestCompilationBuilder AddReferences(params MetadataReference[] references) {
+      return new TestCompilationBuilder(this) {
+        Compilation = Compilation.AddReferences(references)
       };
     }
 
-    public CodeTestBuilder AddAnalyzerOption(string key, string value) {
-      return new CodeTestBuilder(this) {
+    public TestCompilationBuilder AddAnalyzerOption(string key, string value) {
+      return new TestCompilationBuilder(this) {
         AnalyzerOptions = AnalyzerOptions.Add(key, value)
       };
+    }
+
+    public TestCompilationBuilder WithAnalyzerOptions(ImmutableDictionary<string, string> analyzerOptions) {
+      return new TestCompilationBuilder(this) {
+        AnalyzerOptions = analyzerOptions
+      };
+    }
+
+    public TestCompilationBuilder AddAnalyzers(params DiagnosticAnalyzer[] analyzer) {
+      return new TestCompilationBuilder(this) {
+        Analyzers = Analyzers.AddRange(analyzer)
+      };
+    }
+
+    public CSharpCompilation Build() {
+      return Compilation;
+    }
+
+    public CompilationWithAnalyzers BuildWithAnalyzers() {
+      return Compilation.WithAnalyzers(
+        Analyzers,
+        new AnalyzerOptions(
+          ImmutableArray<AdditionalText>.Empty,
+          new TestAnalyzerConfigOptionsProvider(AnalyzerOptions)
+        )
+      );
     }
   }
 }

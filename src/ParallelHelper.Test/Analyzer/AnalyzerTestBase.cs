@@ -14,8 +14,7 @@ namespace ParallelHelper.Test.Analyzer {
   /// <typeparam name="TAnalyzer">The type of the analyzer under test.</typeparam>
   public class AnalyzerTestBase<TAnalyzer> where TAnalyzer : DiagnosticAnalyzer, new() {
     private ImmutableArray<Diagnostic> Analyze(string[] sources, ImmutableDictionary<string, string> analyzerOptions) {
-      var compilation = CompilationFactory.CreateCompilation(sources);
-      var diagnostics = Task.Run(async () => await GetDiagnosticsAsync(compilation, analyzerOptions)).Result;
+      var diagnostics = Task.Run(async () => await GetDiagnosticsAsync(sources, analyzerOptions)).Result;
       foreach(var compilationDiagnostic in diagnostics.Compilation) {
         Console.WriteLine(compilationDiagnostic);
       }
@@ -23,20 +22,21 @@ namespace ParallelHelper.Test.Analyzer {
     }
 
     private async Task<(ImmutableArray<Diagnostic> Analyzer, ImmutableArray<Diagnostic> Compilation)> GetDiagnosticsAsync(
-      Compilation compilation,
+      string[] sources,
       ImmutableDictionary<string, string> analyzerOptions
     ) {
       var optionsProvider = new TestAnalyzerConfigOptionsProvider(analyzerOptions);
-      var analyzerDiagnostics = await compilation
-          .WithAnalyzers(
-            ImmutableArray.Create<DiagnosticAnalyzer>(new TAnalyzer()),
-            new AnalyzerOptions(ImmutableArray<AdditionalText>.Empty, optionsProvider)
-          )
-          .GetAnalyzerDiagnosticsAsync();
+      var compilationBuilder = TestCompilationBuilder.Create()
+        .AddSourceTexts(sources)
+        .AddAnalyzers(new TAnalyzer())
+        .WithAnalyzerOptions(analyzerOptions);
+      var analyzerDiagnostics = await compilationBuilder
+        .BuildWithAnalyzers()
+        .GetAnalyzerDiagnosticsAsync();
       // The result is ordered for better reproducability.
       return (
         analyzerDiagnostics.OrderBy(diagnostic => diagnostic.Location.SourceSpan).ToImmutableArray(),
-        compilation.GetDiagnostics()
+        compilationBuilder.Build().GetDiagnostics()
           .Where(diagnostic => diagnostic.Severity >= DiagnosticSeverity.Error)
           .OrderBy(diagnostic => diagnostic.Location.SourceSpan)
           .ToImmutableArray()
