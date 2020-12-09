@@ -2,9 +2,11 @@
 
 - Upgraded the .NET Compiler Platform (Roslyn) to version 3.3.1
 - Raised the minimum required Visual Studio version to 16.3
+- Added foundation for more fine-granular analyzer configuration
 - New Analyzer: PH_B014 - Await On Conditional Access
 - New Analyzer: PH_S032 - Throws in Potentially Async Method
 - New Analyzer: PH_P012 - Prefer Slim Synchronization
+- Improved Analyzer: PH_B010 - Now ignores volatile fields by default
 
 
 ------------------
