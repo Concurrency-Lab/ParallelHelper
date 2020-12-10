@@ -4,12 +4,6 @@ using System.Linq;
 
 namespace ParallelHelper.Test {
   internal class CompilationFactory {
-    public static Compilation CreateCompilation(params string[] sources) {
-      return TestCompilationBuilder.Create()
-        .AddSourceTexts(sources)
-        .Build();
-    }
-
     public static IEnumerable<TSyntaxNode> GetNodesOfType<TSyntaxNode>(string source) where TSyntaxNode : SyntaxNode {
       return CreateCompilation(source)
         .SyntaxTrees
@@ -23,6 +17,12 @@ namespace ParallelHelper.Test {
       var compilation = CreateCompilation(source);
       var syntaxTree = compilation.SyntaxTrees.Single();
       return compilation.GetSemanticModel(syntaxTree);
+    }
+
+    private static Compilation CreateCompilation(params string[] sources) {
+      return TestCompilationBuilder.Create()
+        .AddSourceTexts(sources)
+        .Build();
     }
   }
 }
