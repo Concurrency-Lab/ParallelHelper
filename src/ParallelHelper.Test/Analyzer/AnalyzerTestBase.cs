@@ -1,5 +1,4 @@
 ﻿using Microsoft.CodeAnalysis.Diagnostics;
-using System.Collections.Immutable;
 
 namespace ParallelHelper.Test.Analyzer {
   /// <summary>
@@ -24,23 +23,6 @@ namespace ParallelHelper.Test.Analyzer {
     public void VerifyDiagnostic(string source, params DiagnosticResultLocation[] expectedDiagnostics) {
       CreateAnalyzerCompilationBuilder()
         .AddSourceTexts(source)
-        .VerifyDiagnostic(expectedDiagnostics);
-    }
-
-    /// <summary>
-    /// Verifies that the given diagnostics are reported when analyzing the given source.
-    /// </summary>
-    /// <param name="source">The source to analyze.</param>
-    /// <param name="analyzerOptions">The analyzer options (.editorconfig settings) to pass to the analyzer.</param>
-    /// <param name="expectedDiagnostics">The expected diagnostics.</param>
-    public void VerifyDiagnostic(
-      string source,
-      ImmutableDictionary<string, string> analyzerOptions,
-      params DiagnosticResultLocation[] expectedDiagnostics
-    ) {
-      CreateAnalyzerCompilationBuilder()
-        .AddSourceTexts(source)
-        .WithAnalyzerOptions(analyzerOptions)
         .VerifyDiagnostic(expectedDiagnostics);
     }
   }
