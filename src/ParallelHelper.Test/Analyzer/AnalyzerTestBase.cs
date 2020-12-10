@@ -2,7 +2,6 @@
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,7 +18,10 @@ namespace ParallelHelper.Test.Analyzer {
     /// <param name="source">The source to analyze.</param>
     /// <param name="expectedDiagnostics">The expected diagnostics.</param>
     public void VerifyDiagnostic(string source, params DiagnosticResultLocation[] expectedDiagnostics) {
-      VerifyDiagnostic(new[] { source }, ImmutableDictionary<string, string>.Empty, expectedDiagnostics);
+      var compilationBuilder = TestCompilationBuilder.Create()
+        .AddSourceTexts(source)
+        .AddAnalyzers(new TAnalyzer());
+      VerifyDiagnostic(compilationBuilder, expectedDiagnostics);
     }
 
     /// <summary>
@@ -33,21 +35,15 @@ namespace ParallelHelper.Test.Analyzer {
       ImmutableDictionary<string, string> analyzerOptions,
       params DiagnosticResultLocation[] expectedDiagnostics
     ) {
-      VerifyDiagnostic(new[] { source }, analyzerOptions, expectedDiagnostics);
+      var compilationBuilder = TestCompilationBuilder.Create()
+        .AddSourceTexts(source)
+        .AddAnalyzers(new TAnalyzer())
+        .WithAnalyzerOptions(analyzerOptions);
+      VerifyDiagnostic(compilationBuilder, expectedDiagnostics);
     }
 
-    /// <summary>
-    /// Verifies that the given diagnostics are reported when analyzing the given collection of sources.
-    /// </summary>
-    /// <param name="sources">The sources to analyze.</param>
-    /// <param name="analyzerOptions">The analyzer options (.editorconfig settings) to pass to the analyzer.</param>
-    /// <param name="expectedDiagnostics">The expected diagnostics.</param>
-    public void VerifyDiagnostic(
-      IReadOnlyCollection<string> sources,
-      ImmutableDictionary<string, string> analyzerOptions,
-      params DiagnosticResultLocation[] expectedDiagnostics
-    ) {
-      var diagnosticResults = Analyze(sources.ToArray(), analyzerOptions);
+    private void VerifyDiagnostic(TestCompilationBuilder compilationBuilder, DiagnosticResultLocation[] expectedDiagnostics) {
+      var diagnosticResults = Analyze(compilationBuilder);
       Assert.AreEqual(expectedDiagnostics.Length, diagnosticResults.Length, "Invalid diagnostics count");
 
       for(var i = 0; i < expectedDiagnostics.Length; ++i) {
@@ -59,8 +55,8 @@ namespace ParallelHelper.Test.Analyzer {
       }
     }
 
-    private ImmutableArray<Diagnostic> Analyze(string[] sources, ImmutableDictionary<string, string> analyzerOptions) {
-      var diagnostics = Task.Run(async () => await GetDiagnosticsAsync(sources, analyzerOptions)).Result;
+    private ImmutableArray<Diagnostic> Analyze(TestCompilationBuilder compilationBuilder) {
+      var diagnostics = Task.Run(async () => await GetDiagnosticsAsync(compilationBuilder)).Result;
       foreach(var compilationDiagnostic in diagnostics.Compilation) {
         Console.WriteLine(compilationDiagnostic);
       }
@@ -68,14 +64,8 @@ namespace ParallelHelper.Test.Analyzer {
     }
 
     private async Task<(ImmutableArray<Diagnostic> Analyzer, ImmutableArray<Diagnostic> Compilation)> GetDiagnosticsAsync(
-      string[] sources,
-      ImmutableDictionary<string, string> analyzerOptions
+      TestCompilationBuilder compilationBuilder
     ) {
-      var optionsProvider = new TestAnalyzerConfigOptionsProvider(analyzerOptions);
-      var compilationBuilder = TestCompilationBuilder.Create()
-        .AddSourceTexts(sources)
-        .AddAnalyzers(new TAnalyzer())
-        .WithAnalyzerOptions(analyzerOptions);
       var analyzerDiagnostics = await compilationBuilder
         .BuildWithAnalyzers()
         .GetAnalyzerDiagnosticsAsync();
