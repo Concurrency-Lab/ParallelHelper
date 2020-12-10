@@ -588,7 +588,9 @@ public class Test {
     return Foreign.DoIt;
   }
 }";
-      var compilation = CompilationFactory.CreateCompilation(referenced, source);
+      var compilation = TestCompilationBuilder.Create()
+        .AddSourceTexts(referenced, source)
+        .Build();
       var syntaxTree = compilation.SyntaxTrees
         .Where(tree => tree.GetRoot().DescendantNodesAndSelf().OfType<ClassDeclarationSyntax>().Single().Identifier.Text == "Test")
         .Single();

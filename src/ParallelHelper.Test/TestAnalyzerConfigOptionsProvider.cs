@@ -2,7 +2,7 @@
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;
 
-namespace ParallelHelper.Test.Analyzer {
+namespace ParallelHelper.Test {
   /// <summary>
   /// Implementation of <see cref="AnalyzerConfigOptionsProvider"/> to provide analyzer settings
   /// during test executions.
