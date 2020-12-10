@@ -13,6 +13,52 @@ namespace ParallelHelper.Test.Analyzer {
   /// </summary>
   /// <typeparam name="TAnalyzer">The type of the analyzer under test.</typeparam>
   public class AnalyzerTestBase<TAnalyzer> where TAnalyzer : DiagnosticAnalyzer, new() {
+    /// <summary>
+    /// Verifies that the given diagnostics are reported when analyzing the given source.
+    /// </summary>
+    /// <param name="source">The source to analyze.</param>
+    /// <param name="expectedDiagnostics">The expected diagnostics.</param>
+    public void VerifyDiagnostic(string source, params DiagnosticResultLocation[] expectedDiagnostics) {
+      VerifyDiagnostic(new[] { source }, ImmutableDictionary<string, string>.Empty, expectedDiagnostics);
+    }
+
+    /// <summary>
+    /// Verifies that the given diagnostics are reported when analyzing the given source.
+    /// </summary>
+    /// <param name="source">The source to analyze.</param>
+    /// <param name="analyzerOptions">The analyzer options (.editorconfig settings) to pass to the analyzer.</param>
+    /// <param name="expectedDiagnostics">The expected diagnostics.</param>
+    public void VerifyDiagnostic(
+      string source,
+      ImmutableDictionary<string, string> analyzerOptions,
+      params DiagnosticResultLocation[] expectedDiagnostics
+    ) {
+      VerifyDiagnostic(new[] { source }, analyzerOptions, expectedDiagnostics);
+    }
+
+    /// <summary>
+    /// Verifies that the given diagnostics are reported when analyzing the given collection of sources.
+    /// </summary>
+    /// <param name="sources">The sources to analyze.</param>
+    /// <param name="analyzerOptions">The analyzer options (.editorconfig settings) to pass to the analyzer.</param>
+    /// <param name="expectedDiagnostics">The expected diagnostics.</param>
+    public void VerifyDiagnostic(
+      IReadOnlyCollection<string> sources,
+      ImmutableDictionary<string, string> analyzerOptions,
+      params DiagnosticResultLocation[] expectedDiagnostics
+    ) {
+      var diagnosticResults = Analyze(sources.ToArray(), analyzerOptions);
+      Assert.AreEqual(expectedDiagnostics.Length, diagnosticResults.Length, "Invalid diagnostics count");
+
+      for(var i = 0; i < expectedDiagnostics.Length; ++i) {
+        var result = diagnosticResults[i];
+        var expected = expectedDiagnostics[i];
+        var span = result.Location.GetLineSpan();
+        var actual = new DiagnosticResultLocation(span.Path, span.StartLinePosition.Line, span.StartLinePosition.Character + 1);
+        Assert.AreEqual(expected, actual, "Invalid diagnostic");
+      }
+    }
+
     private ImmutableArray<Diagnostic> Analyze(string[] sources, ImmutableDictionary<string, string> analyzerOptions) {
       var diagnostics = Task.Run(async () => await GetDiagnosticsAsync(sources, analyzerOptions)).Result;
       foreach(var compilationDiagnostic in diagnostics.Compilation) {
@@ -41,61 +87,6 @@ namespace ParallelHelper.Test.Analyzer {
           .OrderBy(diagnostic => diagnostic.Location.SourceSpan)
           .ToImmutableArray()
       );
-    }
-
-    /// <summary>
-    /// Verifies that the given diagnostics are reported when analyzing the given source.
-    /// </summary>
-    /// <param name="source">The source to analyze.</param>
-    /// <param name="expectedDiagnostics">The expected diagnostics.</param>
-    public void VerifyDiagnostic(string source, params DiagnosticResultLocation[] expectedDiagnostics) {
-      VerifyDiagnostic(new[] { source }, expectedDiagnostics);
-    }
-
-    /// <summary>
-    /// Verifies that the given diagnostics are reported when analyzing the given source.
-    /// </summary>
-    /// <param name="source">The source to analyze.</param>
-    /// <param name="analyzerOptions">The analyzer options (.editorconfig settings) to pass to the analyzer.</param>
-    /// <param name="expectedDiagnostics">The expected diagnostics.</param>
-    public void VerifyDiagnostic(
-      string source,
-      ImmutableDictionary<string, string> analyzerOptions,
-      params DiagnosticResultLocation[] expectedDiagnostics
-    ) {
-      VerifyDiagnostic(new[] { source }, analyzerOptions, expectedDiagnostics);
-    }
-
-    /// <summary>
-    /// Verifies that the given diagnostics are reported when analyzing the given collection of sources.
-    /// </summary>
-    /// <param name="sources">The sources to analyze.</param>
-    /// <param name="expectedDiagnostics">The expected diagnostics.</param>
-    public void VerifyDiagnostic(IReadOnlyCollection<string> sources, params DiagnosticResultLocation[] expectedDiagnostics) {
-      VerifyDiagnostic(sources, ImmutableDictionary<string, string>.Empty, expectedDiagnostics);
-    }
-
-    /// <summary>
-    /// Verifies that the given diagnostics are reported when analyzing the given collection of sources.
-    /// </summary>
-    /// <param name="sources">The sources to analyze.</param>
-    /// <param name="analyzerOptions">The analyzer options (.editorconfig settings) to pass to the analyzer.</param>
-    /// <param name="expectedDiagnostics">The expected diagnostics.</param>
-    public void VerifyDiagnostic(
-      IReadOnlyCollection<string> sources,
-      ImmutableDictionary<string, string> analyzerOptions,
-      params DiagnosticResultLocation[] expectedDiagnostics
-    ) {
-      var diagnosticResults = Analyze(sources.ToArray(), analyzerOptions);
-      Assert.AreEqual(expectedDiagnostics.Length, diagnosticResults.Length, "Invalid diagnostics count");
-
-      for(var i = 0; i < expectedDiagnostics.Length; ++i) {
-        var result = diagnosticResults[i];
-        var expected = expectedDiagnostics[i];
-        var span = result.Location.GetLineSpan();
-        var actual = new DiagnosticResultLocation(span.Path, span.StartLinePosition.Line, span.StartLinePosition.Character + 1);
-        Assert.AreEqual(expected, actual, "Invalid diagnostic");
-      }
     }
   }
 }
