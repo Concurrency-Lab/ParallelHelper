@@ -1,6 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ParallelHelper.Analyzer.BestPractices;
-using System.Collections.Immutable;
 
 namespace ParallelHelper.Test.Analyzer.BestPractices {
   [TestClass]
@@ -24,9 +23,10 @@ using System.Threading;
 class Test {
   private readonly Semaphore _semaphore = new Semaphore(1, 1, ""access"");
 }";
-      var options = ImmutableDictionary.Create<string, string>()
-        .Add("dotnet_diagnostic.PH_P012.named", "report");
-      VerifyDiagnostic(source, options, new DiagnosticResultLocation(4, 43));
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_P012.named", "report")
+        .VerifyDiagnostic(new DiagnosticResultLocation(4, 43));
     }
 
     [TestMethod]
@@ -37,9 +37,10 @@ using System.Threading;
 class Test {
   private readonly Semaphore _semaphore = new Semaphore(1, 1, ""access"");
 }";
-      var options = ImmutableDictionary.Create<string, string>()
-        .Add("dotnet_diagnostic.PH_P012.named", "ignore");
-      VerifyDiagnostic(source, options);
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_P012.named", "ignore")
+        .VerifyDiagnostic();
     }
 
     [TestMethod]

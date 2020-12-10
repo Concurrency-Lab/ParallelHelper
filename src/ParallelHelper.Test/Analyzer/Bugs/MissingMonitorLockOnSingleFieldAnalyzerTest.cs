@@ -1,6 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ParallelHelper.Analyzer.Bugs;
-using System.Collections.Immutable;
 
 namespace ParallelHelper.Test.Analyzer.Bugs {
   [TestClass]
@@ -167,9 +166,10 @@ class Test {
     }
   }
 }";
-      var options = ImmutableDictionary.Create<string, string>()
-        .Add("dotnet_diagnostic.PH_B010.volatile", "report");
-      VerifyDiagnostic(source, options, new DiagnosticResultLocation(7, 10), new DiagnosticResultLocation(14, 14));
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_B010.volatile", "report")
+        .VerifyDiagnostic(new DiagnosticResultLocation(7, 10), new DiagnosticResultLocation(14, 14));
     }
 
     [TestMethod]
@@ -378,9 +378,10 @@ class Test {
     }
   }
 }";
-      var options = ImmutableDictionary.Create<string, string>()
-        .Add("dotnet_diagnostic.PH_B010.volatile", "ignore");
-      VerifyDiagnostic(source, options);
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_B010.volatile", "ignore")
+        .VerifyDiagnostic();
     }
   }
 }

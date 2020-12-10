@@ -11,7 +11,7 @@ namespace ParallelHelper.Test {
 
     private readonly int _hashCode;
 
-    public DiagnosticResultLocation(int line, int column) : this("Test.cs", line, column) { }
+    public DiagnosticResultLocation(int line, int column) : this("Test_0.cs", line, column) { }
 
     public DiagnosticResultLocation(string path, int line, int column) {
       Path = path;
