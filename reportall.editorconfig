@@ -19,6 +19,7 @@ dotnet_diagnostic.PH_S002.severity = warning
 dotnet_diagnostic.PH_S003.severity = warning
 dotnet_diagnostic.PH_S004.severity = warning
 dotnet_diagnostic.PH_S005.severity = warning
+dotnet_diagnostic.PH_S005.overrides = report
 dotnet_diagnostic.PH_S006.severity = warning
 dotnet_diagnostic.PH_S007.severity = warning
 dotnet_diagnostic.PH_S008.severity = warning

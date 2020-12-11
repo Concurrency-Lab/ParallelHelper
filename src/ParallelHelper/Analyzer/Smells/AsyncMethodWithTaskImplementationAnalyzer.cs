@@ -63,11 +63,16 @@ namespace ParallelHelper.Analyzer.Smells {
     private class Analyzer : InternalAnalyzerBase<MethodDeclarationSyntax> {
       public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
+      private bool IsReportOverridesEnabled => Context.Options.GetConfig(Rule, "overrides", "ignore") == "report";
+
       public override void Analyze() {
-        if(!HasMethodBody() || !IsMethodWithAsyncSuffix() || !ReturnsTaskObject() || !ReturnsCpuBoundTask() || IsInterfaceImplementationOrOverride()) {
-          return;
+        if(IsAsyncMethodWithTaskImplementation() && (IsReportOverridesEnabled || !IsInterfaceImplementationOrOverride())) {
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetSignatureLocation()));
         }
-        Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetSignatureLocation()));
+      }
+
+      private bool IsAsyncMethodWithTaskImplementation() {
+        return HasMethodBody() && IsMethodWithAsyncSuffix() && ReturnsTaskObject() && ReturnsCpuBoundTask();
       }
 
       private bool HasMethodBody() {
