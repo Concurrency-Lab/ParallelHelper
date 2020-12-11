@@ -53,6 +53,45 @@ class Test {
 }";
       VerifyDiagnostic(source, new DiagnosticResultLocation(4, 3));
     }
+    [TestMethod]
+    public void ReportsTaskRunForInterfaceImplementationIfEnabled() {
+      const string source = @"
+using System.Threading.Tasks;
+
+interface ITest {
+  Task DoItAsync();
+}
+
+class Test : ITest {
+  public Task DoItAsync() {
+    return Task.Run(() => {});
+  }
+}";
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_S005.overrides", "report")
+        .VerifyDiagnostic(new DiagnosticResultLocation(8, 3));
+    }
+
+    [TestMethod]
+    public void ReportsTaskRunForMethodOverridesIfEnabled() {
+      const string source = @"
+using System.Threading.Tasks;
+
+class TestBase {
+  public virtual Task DoItAsync() { return Task.CompletedTask; }
+}
+
+class Test : TestBase {
+  public override Task DoItAsync() {
+    return Task.Run(() => {});
+  }
+}";
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_S005.overrides", "report")
+        .VerifyDiagnostic(new DiagnosticResultLocation(8, 3));
+    }
 
     [TestMethod]
     public void DoesNotReportTaskRunWithoutAsyncSuffix() {
@@ -111,7 +150,7 @@ class Test {
     }
 
     [TestMethod]
-    public void DoesNotReportTaskRunForInterfaceImplementation() {
+    public void DoesNotReportTaskRunForInterfaceImplementationByDefault() {
       const string source = @"
 using System.Threading.Tasks;
 
@@ -128,7 +167,27 @@ class Test : ITest {
     }
 
     [TestMethod]
-    public void DoesNotReportTaskRunForMethodOverridingImplementation() {
+    public void DoesNotReportTaskRunForInterfaceImplementationIfDisabled() {
+      const string source = @"
+using System.Threading.Tasks;
+
+interface ITest {
+  Task DoItAsync();
+}
+
+class Test : ITest {
+  public Task DoItAsync() {
+    return Task.Run(() => {});
+  }
+}";
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_S005.overrides", "ignore")
+        .VerifyDiagnostic();
+    }
+
+    [TestMethod]
+    public void DoesNotReportTaskRunForMethodOverridesByDefault() {
       const string source = @"
 using System.Threading.Tasks;
 
@@ -142,6 +201,26 @@ class Test : TestBase {
   }
 }";
       VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportTaskRunForMethodOverridesIfDisabled() {
+      const string source = @"
+using System.Threading.Tasks;
+
+class TestBase {
+  public virtual Task DoItAsync() { return Task.CompletedTask; }
+}
+
+class Test : TestBase {
+  public override Task DoItAsync() {
+    return Task.Run(() => {});
+  }
+}";
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_S005.overrides", "ignore")
+        .VerifyDiagnostic();
     }
   }
 }
