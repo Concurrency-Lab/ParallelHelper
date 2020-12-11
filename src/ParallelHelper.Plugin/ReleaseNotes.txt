@@ -7,6 +7,7 @@
 - New Analyzer: PH_S032 - Throws in Potentially Async Method
 - New Analyzer: PH_P012 - Prefer Slim Synchronization
 - Improved Analyzer: PH_B010 - Now ignores volatile fields by default
+- Improved Analyzer: PH_S005 - Ignoring interface implementations and method overrides is now configurable
 
 
 ------------------

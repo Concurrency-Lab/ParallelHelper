@@ -23,7 +23,8 @@
 - New Analyzer: PH_B014 - Await On Conditional Access
 - New Analyzer: PH_S032 - Throws in Potentially Async Method
 - New Analyzer: PH_P012 - Prefer Slim Synchronization
-- Improved Analyzer: PH_B010 - Now ignores volatile fields by default</PackageReleaseNotes>
+- Improved Analyzer: PH_B010 - Now ignores volatile fields by default
+- Improved Analyzer: PH_S005 - Ignoring interface implementations and method overrides is now configurable</PackageReleaseNotes>
     <Copyright>Copyright (C) 2019 - 2020 Christoph Amrein, Concurrency Lab, HSR Hochschule fuer Technik Rapperswil, Switzerland</Copyright>
     <PackageTags>C#, Parallel, Asynchronous, Concurrency, Bugs, Best Practices, TPL, Task, QC, Static Analysis</PackageTags>
     <NoPackageAnalysis>true</NoPackageAnalysis>
