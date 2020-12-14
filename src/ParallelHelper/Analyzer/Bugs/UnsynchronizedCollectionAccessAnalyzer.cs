@@ -91,7 +91,7 @@ namespace ParallelHelper.Analyzer.Bugs {
         .Select(field => (IFieldSymbol)semanticModel.GetDeclaredSymbol(field, cancellationToken))
         .Select(field => new { Field = field, Descriptor = GetCollectionTypeDescriptor(semanticModel, field) })
         .Where(entry => entry.Descriptor != null)
-        .ToDictionary(e => e.Field, e => e.Descriptor);
+        .ToDictionary(e => e.Field, e => e.Descriptor!);
     }
 
     private static CollectionTypeDescriptor? GetCollectionTypeDescriptor(SemanticModel semanticModel, IFieldSymbol field) {
