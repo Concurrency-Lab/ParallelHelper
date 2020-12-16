@@ -42,11 +42,6 @@ namespace ParallelHelper.Analyzer.Bugs {
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-    private static readonly string[] TaskTypes = {
-      "System.Threading.Tasks.Task",
-      "System.Threading.Tasks.Task`1"
-    };
-
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
       context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
@@ -58,7 +53,11 @@ namespace ParallelHelper.Analyzer.Bugs {
     }
 
     private class Analyzer : InternalAnalyzerBase<StatementSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
+      private readonly TaskAnalysis _taskAnalysis;
+
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) {
+        _taskAnalysis = new TaskAnalysis(context.SemanticModel, context.CancellationToken);
+      }
 
       public override void Analyze() {
         foreach(var returnStatement in GetReturnStatementsReturningTasksDependingOnVariableFromUsingStatement()) {
@@ -119,13 +118,8 @@ namespace ParallelHelper.Analyzer.Bugs {
           .WithCancellation(CancellationToken)
           .OfType<ReturnStatementSyntax>()
           .Where(returnStatement => returnStatement.Expression != null)
-          .Where(returnStatement => IsTaskTyped(returnStatement.Expression))
+          .Where(returnStatement => _taskAnalysis.IsTaskTyped(returnStatement.Expression))
           .Where(returnStatement => IsExpressionUsingMemberAccessOnAnyVariable(returnStatement.Expression, disposedVariables));
-      }
-
-      private bool IsTaskTyped(ExpressionSyntax expression) {
-        var type = SemanticModel.GetTypeInfo(expression, CancellationToken).Type;
-        return type != null && TaskTypes.Any(typeName => SemanticModel.IsEqualType(type, typeName));
       }
 
       private bool IsExpressionUsingMemberAccessOnAnyVariable(ExpressionSyntax expression, ISet<ISymbol> disposedVariables) {

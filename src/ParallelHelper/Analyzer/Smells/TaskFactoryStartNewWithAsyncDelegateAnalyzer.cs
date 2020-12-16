@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using ParallelHelper.Extensions;
 using ParallelHelper.Util;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace ParallelHelper.Analyzer.Smells {
   /// <summary>
@@ -48,11 +47,6 @@ namespace ParallelHelper.Analyzer.Smells {
     private const string TaskFactoryType = "System.Threading.Tasks.TaskFactory";
     private const string StartNewMethod = "StartNew";
 
-    private static readonly string[] TaskTypes = {
-      "System.Threading.Tasks.Task",
-      "System.Threading.Tasks.Task`1"
-    };
-
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
       context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
@@ -64,7 +58,11 @@ namespace ParallelHelper.Analyzer.Smells {
     }
 
     private class Analyzer : InternalAnalyzerBase<InvocationExpressionSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
+      private readonly TaskAnalysis _taskAnalysis;
+
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) {
+        _taskAnalysis = new TaskAnalysis(context.SemanticModel, context.CancellationToken);
+      }
 
       public override void Analyze() {
         if(!IsTaskFactoryStartNew() || !IsInvokingAsyncDelegate()) {
@@ -88,8 +86,7 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private bool IsTaskType(ITypeSymbol? type) {
-        return type != null
-          && TaskTypes.Any(taskType => SemanticModel.IsEqualType(type, taskType));
+        return type != null && _taskAnalysis.IsTaskType(type);
       }
     }
   }

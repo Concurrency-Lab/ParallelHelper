@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using ParallelHelper.Extensions;
 using ParallelHelper.Util;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -49,11 +48,6 @@ namespace ParallelHelper.Analyzer.Bugs {
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-    private static readonly string[] TaskTypes = {
-      "System.Threading.Tasks.Task",
-      "System.Threading.Tasks.Task`1"
-    };
-
     private const string AsyncSuffix = "Async";
 
     public override void Initialize(AnalysisContext context) {
@@ -68,7 +62,11 @@ namespace ParallelHelper.Analyzer.Bugs {
     }
 
     private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
+      private readonly TaskAnalysis _taskAnalysis;
+
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) {
+        _taskAnalysis = new TaskAnalysis(context.SemanticModel, context.CancellationToken);
+      }
 
       public override void Analyze() {
         var onlyInitializedTaskVariables = GetVariablesInitializedWithAsyncMethodInvocation()
@@ -151,13 +149,9 @@ namespace ParallelHelper.Analyzer.Bugs {
       private bool IsAsyncMethodInvocation(ISymbol symbol) {
         if(symbol is IMethodSymbol method) {
           return method.IsAsync
-            || (method.Name.EndsWith(AsyncSuffix) && IsTaskType(method.ReturnType));
+            || (method.Name.EndsWith(AsyncSuffix) && _taskAnalysis.IsTaskType(method.ReturnType));
         }
         return false;
-      }
-
-      private bool IsTaskType(ITypeSymbol type) {
-        return TaskTypes.Any(taskType => SemanticModel.IsEqualType(type, taskType));
       }
     }
   }

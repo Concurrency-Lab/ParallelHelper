@@ -45,11 +45,6 @@ namespace ParallelHelper.Analyzer.Bugs {
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-    private static readonly string[] ValueTaskTypes = {
-      "System.Threading.Tasks.ValueTask",
-      "System.Threading.Tasks.ValueTask`1"
-    };
-
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
       context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
@@ -62,7 +57,11 @@ namespace ParallelHelper.Analyzer.Bugs {
     }
 
     private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
+      private readonly TaskAnalysis _taskAnalysis;
+
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) {
+        _taskAnalysis = new TaskAnalysis(context.SemanticModel, context.CancellationToken);
+      }
 
       public override void Analyze() {
         if(!Root.IsMethodOrFunctionWithAsyncModifier()) {
@@ -103,8 +102,7 @@ namespace ParallelHelper.Analyzer.Bugs {
 #pragma warning restore CS8619
 
       private bool IsValueTaskTypedVariable(ILocalSymbol symbol) {
-        return symbol.Type != null
-          && ValueTaskTypes.Any(valueTaskType => SemanticModel.IsEqualType(symbol.Type, valueTaskType));
+        return symbol.Type != null && _taskAnalysis.IsValueTaskType(symbol.Type);
       }
 
 #pragma warning disable CS8619 // The null-check is made within the LINQ expression.

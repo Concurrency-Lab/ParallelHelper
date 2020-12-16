@@ -45,11 +45,6 @@ namespace ParallelHelper.Analyzer.Smells {
       isEnabledByDefault: true, description: Description, helpLinkUri: HelpLinkFactory.CreateUri(DiagnosticId)
     );
 
-    private static readonly string[] TaskTypes = {
-      "System.Threading.Tasks.Task",
-      "System.Threading.Tasks.Task`1"
-    };
-
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
     public override void Initialize(AnalysisContext context) {
@@ -64,12 +59,16 @@ namespace ParallelHelper.Analyzer.Smells {
     }
 
     private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
+      private readonly TaskAnalysis _taskAnalysis;
+
       private bool IsAsyncMethod => Root is MethodDeclarationSyntax method 
         && method.Modifiers.Any(SyntaxKind.AsyncKeyword);
       private bool IsAsyncAnonymousFunction => Root is AnonymousFunctionExpressionSyntax function 
         && function.AsyncKeyword.IsKind(SyntaxKind.AsyncKeyword);
 
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) {
+        _taskAnalysis = new TaskAnalysis(context.SemanticModel, context.CancellationToken);
+      }
 
       public override void Analyze() {
         if(!IsAsyncMethod && !IsAsyncAnonymousFunction) {
@@ -94,11 +93,7 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private bool IsPotentiallyAsyncMethod(IMethodSymbol method) {
-        return method.IsAsync || method.Name.EndsWith(AsyncSuffix) || IsTaskType(method.ReturnType);
-      }
-
-      private bool IsTaskType(ITypeSymbol type) {
-        return TaskTypes.Any(t => SemanticModel.IsEqualType(type, t));
+        return method.IsAsync || method.Name.EndsWith(AsyncSuffix) || _taskAnalysis.IsTaskType(method.ReturnType);
       }
 
       private static bool TryGetAsyncCounterpart(IMethodSymbol method, out string asyncName) {

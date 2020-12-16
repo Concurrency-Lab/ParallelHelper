@@ -41,11 +41,6 @@ namespace ParallelHelper.Analyzer.Smells {
       isEnabledByDefault: true, description: Description, helpLinkUri: HelpLinkFactory.CreateUri(DiagnosticId)
     );
 
-    private static readonly string[] TaskTypes = {
-      "System.Threading.Tasks.Task",
-      "System.Threading.Tasks.Task`1",
-    };
-
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
     public override void Initialize(AnalysisContext context) {
@@ -59,10 +54,14 @@ namespace ParallelHelper.Analyzer.Smells {
     }
 
     private class Analyzer : InternalAnalyzerBase<MethodDeclarationSyntax> {
+      private readonly TaskAnalysis _taskAnalysis;
+
       private bool IsMethodWithAsyncSuffix => Root.Identifier.Text.EndsWith(AsyncSuffix);
       private bool IsAsyncMethod => Root.Modifiers.Any(SyntaxKind.AsyncKeyword);
 
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) {
+        _taskAnalysis = new TaskAnalysis(context.SemanticModel, context.CancellationToken);
+      }
 
       public override void Analyze() {
         if(!IsPotentiallyAsyncMethod()) {
@@ -81,10 +80,7 @@ namespace ParallelHelper.Analyzer.Smells {
 
       private bool ReturnsTaskObject() {
         var returnType = SemanticModel.GetTypeInfo(Root.ReturnType, CancellationToken).Type;
-        return returnType != null
-          && TaskTypes
-            .WithCancellation(CancellationToken)
-            .Any(taskType => SemanticModel.IsEqualType(returnType, taskType));
+        return returnType != null && _taskAnalysis.IsTaskType(returnType);
       }
 
       private IEnumerable<SyntaxNode> GetAllThrowsStatementsAndExpressionsInSameActivationFrame() {

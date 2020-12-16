@@ -43,11 +43,6 @@ namespace ParallelHelper.Analyzer.Smells {
       new StartDescriptor("System.Threading.Tasks.TaskFactory", "StartNew")
     };
 
-    private static readonly string[] TaskTypes = {
-      "System.Threading.Tasks.Task",
-      "System.Threading.Tasks.Task`1",
-    };
-
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
     public override void Initialize(AnalysisContext context) {
@@ -61,7 +56,11 @@ namespace ParallelHelper.Analyzer.Smells {
     }
 
     private class Analyzer : InternalAnalyzerBase<MethodDeclarationSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
+      private readonly TaskAnalysis _taskAnalysis;
+
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) {
+        _taskAnalysis = new TaskAnalysis(context.SemanticModel, context.CancellationToken);
+      }
 
       private bool IsReportOverridesEnabled => Context.Options.GetConfig(Rule, "overrides", "ignore") == "report";
 
@@ -90,10 +89,7 @@ namespace ParallelHelper.Analyzer.Smells {
 
       private bool ReturnsTaskObject() {
         var returnType = SemanticModel.GetTypeInfo(Root.ReturnType, CancellationToken).Type;
-        return returnType != null
-          && TaskTypes
-              .WithCancellation(CancellationToken)
-              .Any(taskType => SemanticModel.IsEqualType(returnType, taskType));
+        return returnType != null && _taskAnalysis.IsTaskType(returnType);
       }
 
       private bool ReturnsCpuBoundTask() {

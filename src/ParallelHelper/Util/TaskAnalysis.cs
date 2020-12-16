@@ -29,6 +29,11 @@ namespace ParallelHelper.Util {
       "Wait"
     );
 
+
+    private static readonly ISet<string> ContinuationMethods = ImmutableHashSet.Create(
+      "ContinueWith"
+    );
+
     private readonly SemanticModel _semanticModel;
     private readonly CancellationToken _cancellationToken;
 
@@ -91,8 +96,21 @@ namespace ParallelHelper.Util {
     /// <param name="invocation">The method invocation to check.</param>
     /// <returns><c>true</c> if it's a blocking method invocation, <c>false</c> otherwise.</returns>
     public bool IsBlockingMethodInvocation(InvocationExpressionSyntax invocation) {
+      return IsAnyTaskMethodInvocation(invocation, BlockingMethods);
+    }
+
+    /// <summary>
+    /// Checks if the given method invocation is accessing a task method that is blocking.
+    /// </summary>
+    /// <param name="invocation">The method invocation to check.</param>
+    /// <returns><c>true</c> if it's a blocking method invocation, <c>false</c> otherwise.</returns>
+    public bool IsContinuationMethodInvocation(InvocationExpressionSyntax invocation) {
+      return IsAnyTaskMethodInvocation(invocation, ContinuationMethods);
+    }
+
+    private bool IsAnyTaskMethodInvocation(InvocationExpressionSyntax invocation, ICollection<string> taskMembers) {
       return _semanticModel.GetSymbolInfo(invocation, _cancellationToken).Symbol is IMethodSymbol method
-        && IsAnyTaskMember(method, BlockingMethods);
+        && IsAnyTaskMember(method, taskMembers);
     }
 
     private bool IsAnyTaskMember(ISymbol member, ICollection<string> taskMembers) {

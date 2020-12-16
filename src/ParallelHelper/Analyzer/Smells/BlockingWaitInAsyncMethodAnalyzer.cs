@@ -44,11 +44,6 @@ namespace ParallelHelper.Analyzer.Smells {
       isEnabledByDefault: true, description: Description, helpLinkUri: HelpLinkFactory.CreateUri(DiagnosticId)
     );
 
-    private static readonly string[] TaskTypes = {
-      "System.Threading.Tasks.Task",
-      "System.Threading.Tasks.Task`1",
-    };
-
     private const string WaitMethod = "Wait";
     private const string ConfigureAwaitMethod = "ConfigureAwait";
     private const string ResultProperty = "Result";
@@ -75,7 +70,11 @@ namespace ParallelHelper.Analyzer.Smells {
     }
 
     private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
+      private readonly TaskAnalysis _taskAnalysis;
+
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) {
+        _taskAnalysis = new TaskAnalysis(context.SemanticModel, context.CancellationToken);
+      }
 
       public override void Analyze() {
         if(!IsAsyncMethod()) {
@@ -94,12 +93,7 @@ namespace ParallelHelper.Analyzer.Smells {
       private bool IsMethodOrFunctionReturningTask() {
         return SemanticModel.TryGetMethodSymbolFromMethodOrFunctionDeclaration(Root, out var method, CancellationToken)
           && method!.ReturnType != null
-          && IsTaskType(method!.ReturnType);
-      }
-
-      private bool IsTaskType(ITypeSymbol type) {
-          return TaskTypes.WithCancellation(CancellationToken)
-            .Any(typeName => SemanticModel.IsEqualType(type, typeName));
+          && _taskAnalysis.IsTaskType(method!.ReturnType);
       }
 
       private IEnumerable<ExpressionSyntax> GetBlockingTaskUsages() {
@@ -125,16 +119,11 @@ namespace ParallelHelper.Analyzer.Smells {
 
       private bool IsNotExcludedTaskMemberAccess(ExpressionSyntax expression, string memberName, ISet<ISymbol> excludedTasks) {
         var memberAccess = expression as MemberAccessExpressionSyntax;
-        if(memberAccess == null || memberAccess.Name.Identifier.Text != memberName || !IsTaskTyped(memberAccess.Expression)) {
+        if(memberAccess == null || memberAccess.Name.Identifier.Text != memberName || !_taskAnalysis.IsTaskTyped(memberAccess.Expression)) {
           return false;
         }
         var symbol = SemanticModel.GetSymbolInfo(memberAccess.Expression, CancellationToken).Symbol;
         return symbol != null && !excludedTasks.Contains(symbol);
-      }
-
-      private bool IsTaskTyped(ExpressionSyntax expression) {
-        var returnType = SemanticModel.GetTypeInfo(expression, CancellationToken).Type;
-        return returnType != null && IsTaskType(returnType);
       }
 
       private IEnumerable<ISymbol> GetAllAwaitedTasks() {
@@ -177,13 +166,13 @@ namespace ParallelHelper.Analyzer.Smells {
       private bool IsTaskWhenMethodInvocation(InvocationExpressionSyntax invocation) {
         return SemanticModel.GetSymbolInfo(invocation, CancellationToken).Symbol is IMethodSymbol method
           && WhenMethods.Any(name => name == method.Name)
-          && IsTaskType(method.ContainingType);
+          && _taskAnalysis.IsTaskType(method.ContainingType);
       }
 
       private bool IsConfigureAwaitInvocation(InvocationExpressionSyntax invocation) {
         return SemanticModel.GetSymbolInfo(invocation, CancellationToken).Symbol is IMethodSymbol method
           && ConfigureAwaitMethod == method.Name
-          && IsTaskType(method.ContainingType);
+          && _taskAnalysis.IsTaskType(method.ContainingType);
       }
     }
   }
