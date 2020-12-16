@@ -1,3 +1,5 @@
+[*.cs]
+
 # Best practices
 dotnet_diagnostic.PH_P001.severity = warning
 dotnet_diagnostic.PH_P002.severity = warning
