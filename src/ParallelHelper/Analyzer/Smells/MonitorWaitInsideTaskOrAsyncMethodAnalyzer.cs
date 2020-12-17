@@ -43,11 +43,6 @@ namespace ParallelHelper.Analyzer.Smells {
       isEnabledByDefault: true, description: Description, helpLinkUri: HelpLinkFactory.CreateUri(DiagnosticId)
     );
 
-    private static readonly string[] TaskTypes = {
-      "System.Threading.Tasks.Task",
-      "System.Threading.Tasks.Task`1",
-    };
-
     private const string RunMethod = "Run";
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
@@ -64,9 +59,11 @@ namespace ParallelHelper.Analyzer.Smells {
 
     private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
       private readonly MonitorAnalysis _monitorAnalysis;
+      private readonly TaskAnalysis _taskAnalysis;
 
       public Analyzer(SemanticModelAnalysisContext context) : base(new SemanticModelAnalysisContextWrapper(context)) {
         _monitorAnalysis = new MonitorAnalysis(context.SemanticModel, context.CancellationToken);
+        _taskAnalysis = new TaskAnalysis(context.SemanticModel, context.CancellationToken);
       }
 
       public override void Analyze() {
@@ -108,7 +105,7 @@ namespace ParallelHelper.Analyzer.Smells {
       private bool IsTaskRunInvocation(InvocationExpressionSyntax invocation) {
         return SemanticModel.GetSymbolInfo(invocation, CancellationToken).Symbol is IMethodSymbol method
           && method.Name == RunMethod
-          && TaskTypes.Any(type => SemanticModel.IsEqualType(method.ContainingType, type));
+          && _taskAnalysis.IsTaskType(method.ContainingType);
       }
 
       private IEnumerable<SyntaxNode> GetReferencedSyntaxNodes(ExpressionSyntax expression) {

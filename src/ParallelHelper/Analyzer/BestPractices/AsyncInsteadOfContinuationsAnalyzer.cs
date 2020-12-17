@@ -44,12 +44,6 @@ namespace ParallelHelper.Analyzer.BestPractices {
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-    private static readonly string[] TaskTypes = {
-      "System.Threading.Tasks.Task",
-      "System.Threading.Tasks.Task`1"
-    };
-    private const string ContinueWithMethod = "ContinueWith";
-
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
       context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
@@ -62,7 +56,11 @@ namespace ParallelHelper.Analyzer.BestPractices {
     }
 
     private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
+      private readonly TaskAnalysis _taskAnalysis;
+
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) {
+        _taskAnalysis = new TaskAnalysis(context.SemanticModel, context.CancellationToken);
+      }
 
       public override void Analyze() {
         if(!IsReturningTask()) {
@@ -79,24 +77,14 @@ namespace ParallelHelper.Analyzer.BestPractices {
           LocalFunctionStatementSyntax localFunction => (IMethodSymbol)SemanticModel.GetDeclaredSymbol(localFunction, CancellationToken),
           _ => (IMethodSymbol)SemanticModel.GetSymbolInfo(Root, CancellationToken).Symbol
         };
-        return method != null && IsTaskType(method.ReturnType);
+        return method != null && _taskAnalysis.IsTaskType(method.ReturnType);
       }
 
       private IEnumerable<InvocationExpressionSyntax> GetContinuationsInSameActivationFrame() {
         return Root.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<InvocationExpressionSyntax>()
-          .Where(IsContinuation);
-      }
-
-      private bool IsContinuation(InvocationExpressionSyntax invocation) {
-        return SemanticModel.GetSymbolInfo(invocation, CancellationToken).Symbol is IMethodSymbol method
-          && method.Name == ContinueWithMethod
-          && IsTaskType(method.ContainingType);
-      }
-
-      private bool IsTaskType(ITypeSymbol type) {
-        return TaskTypes.Any(typeName => SemanticModel.IsEqualType(type, typeName));
+          .Where(_taskAnalysis.IsContinuationMethodInvocation);
       }
     }
   }
