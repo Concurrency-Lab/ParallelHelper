@@ -1,4 +1,11 @@
-﻿v3.0.0
+﻿v3.1.0
+
+- Improved Analyzer: PH_S007 - Now respects activation frames
+
+
+------------------
+
+v3.0.0
 
 - Upgraded the .NET Compiler Platform (Roslyn) to version 3.3.1
 - Raised the minimum required Visual Studio version to 16.3

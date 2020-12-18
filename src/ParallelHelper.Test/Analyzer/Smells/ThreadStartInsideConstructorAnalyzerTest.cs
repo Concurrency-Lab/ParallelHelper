@@ -62,5 +62,19 @@ class Test {
 }";
       VerifyDiagnostic(source);
     }
+
+    [TestMethod]
+    public void DoesNotReportTaskRunInDifferentActivationFrameInConstructor() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public Test() {
+    Func<Task> start = () => Task.Run(() => {});
+  }
+}";
+      VerifyDiagnostic(source);
+    }
   }
 }
