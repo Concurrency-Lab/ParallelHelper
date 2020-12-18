@@ -68,7 +68,7 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private IEnumerable<InvocationExpressionSyntax> GetThreadStartInvocations() {
-        return Root.DescendantNodes()
+        return Root.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<InvocationExpressionSyntax>()
           .Where(IsThreadStart);
