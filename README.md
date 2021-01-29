@@ -1,7 +1,10 @@
 # Parallel Helper
 
 [![Build status](https://ci.appveyor.com/api/projects/status/dbx476y4pegy8k9t/branch/master?svg=true)](https://ci.appveyor.com/project/camrein/parallelhelper/branch/master)
-[![Code coverage](https://codecov.io/gh/Concurrency-Lab/ParallelHelper/branch/master/graph/badge.svg)](https://codecov.io/gh/Concurrency-Lab/ParallelHelper/branch/master)
+[![code coverage](https://codecov.io/gh/Concurrency-Lab/ParallelHelper/branch/master/graph/badge.svg)](https://codecov.io/gh/Concurrency-Lab/ParallelHelper/branch/master)
+[![VStudio installs](https://img.shields.io/visual-studio-marketplace/i/camrein.ParallelHelper?label=vstudio%20installs)](https://marketplace.visualstudio.com/items?itemName=camrein.ParallelHelper)
+[![NuGet downloads](https://img.shields.io/nuget/dt/ParallelHelper?label=nuget%20downloads)](https://www.nuget.org/packages/ParallelHelper/)
+
 
 *Parallel Helper* is a static code analyzer for C# projects that supports the development of parallel and asynchronous code. The analyzer is built with the help of the [.NET Compiler Platform (Roslyn)](https://github.com/dotnet/roslyn) and is available as a [NuGet package](https://www.nuget.org/packages/ParallelHelper/) as well as a [Visual Studio extension](https://marketplace.visualstudio.com/items?itemName=camrein.ParallelHelper).
 
