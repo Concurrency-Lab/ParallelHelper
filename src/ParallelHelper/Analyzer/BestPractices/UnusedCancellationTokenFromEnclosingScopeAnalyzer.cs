@@ -186,17 +186,21 @@ namespace ParallelHelper.Analyzer.BestPractices {
 
       private bool InvocationMissesCancellationToken(InvocationExpressionSyntax invocation) {
         return SemanticModel.GetSymbolInfo(invocation, CancellationToken).Symbol is IMethodSymbol method
-          && !InvocationUsesCancellationToken(invocation)
+          && !InvocationUsesNonDefaultCancellationToken(invocation)
           && (MethodAcceptsCancellationToken(method) || MethodHasOverloadThatAcceptsCancellationToken(method));
       }
 
-      private bool InvocationUsesCancellationToken(InvocationExpressionSyntax invocation) {
+      private bool InvocationUsesNonDefaultCancellationToken(InvocationExpressionSyntax invocation) {
         return invocation.ArgumentList.Arguments
           .WithCancellation(CancellationToken)
+          .Where(argument => !IsDefaultLiteral(argument.Expression))
           .Select(argument => SemanticModel.GetTypeInfo(argument.Expression, CancellationToken).Type)
           .IsNotNull()
-          .Where(IsCancellationTokenType)
-          .Any();
+          .Any(IsCancellationTokenType);
+      }
+
+      private bool IsDefaultLiteral(ExpressionSyntax expression) {
+        return expression.IsKind(SyntaxKind.DefaultLiteralExpression);
       }
 
       private bool MethodHasOverloadThatAcceptsCancellationToken(IMethodSymbol method) {
