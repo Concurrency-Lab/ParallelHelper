@@ -23,6 +23,24 @@ class Test {
     }
 
     [TestMethod]
+    public void ReportsMissingPassthroughOfCancellationTokenForMethodIfDefaultIsPassed() {
+      const string source = @"
+using System.Threading;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync1(CancellationToken cancellationToken) {
+    await DoWorkAsync2(default);
+  }
+
+  public Task DoWorkAsync2(CancellationToken cancellationToken) {
+    return Task.CompletedTask;
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(6, 11));
+    }
+
+    [TestMethod]
     public void ReportsMissingPassOfFieldCancellationTokenForMethodWithDefaultArguments() {
       const string source = @"
 using System.Threading;
