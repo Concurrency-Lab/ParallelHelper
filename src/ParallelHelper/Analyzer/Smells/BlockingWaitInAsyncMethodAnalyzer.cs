@@ -87,13 +87,7 @@ namespace ParallelHelper.Analyzer.Smells {
 
       private bool IsAsyncMethod() {
         return Root.IsMethodOrFunctionWithAsyncModifier()
-          || IsMethodOrFunctionReturningTask();
-      }
-
-      private bool IsMethodOrFunctionReturningTask() {
-        return SemanticModel.TryGetMethodSymbolFromMethodOrFunctionDeclaration(Root, out var method, CancellationToken)
-          && method!.ReturnType != null
-          && _taskAnalysis.IsTaskType(method!.ReturnType);
+          || _taskAnalysis.IsMethodOrFunctionReturningTask(Root);
       }
 
       private IEnumerable<ExpressionSyntax> GetBlockingTaskUsages() {

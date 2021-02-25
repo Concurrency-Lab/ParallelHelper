@@ -108,6 +108,17 @@ namespace ParallelHelper.Util {
       return IsAnyTaskMethodInvocation(invocation, ContinuationMethods);
     }
 
+    /// <summary>
+    /// CHecks if the given node is a method or function (e.g. lambda) returns a task.
+    /// </summary>
+    /// <param name="node">The node to check.</param>
+    /// <returns><c>true</c> if the underlying method or function returns a task, <c>false</c> otherwise.</returns>
+    public bool IsMethodOrFunctionReturningTask(SyntaxNode node) {
+      return _semanticModel.TryGetMethodSymbolFromMethodOrFunctionDeclaration(node, out var method, _cancellationToken)
+        && method!.ReturnType != null
+        && IsTaskType(method!.ReturnType);
+    }
+
     private bool IsAnyTaskMethodInvocation(InvocationExpressionSyntax invocation, ICollection<string> taskMembers) {
       return _semanticModel.GetSymbolInfo(invocation, _cancellationToken).Symbol is IMethodSymbol method
         && IsAnyTaskMember(method, taskMembers);
