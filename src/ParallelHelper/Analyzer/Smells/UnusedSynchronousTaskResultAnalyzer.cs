@@ -39,8 +39,6 @@ namespace ParallelHelper.Analyzer.Smells {
       isEnabledByDefault: true, description: Description, helpLinkUri: HelpLinkFactory.CreateUri(DiagnosticId)
     );
 
-    private const string FromResultMethod = "FromResult";
-
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
     public override void Initialize(AnalysisContext context) {
@@ -78,7 +76,7 @@ namespace ParallelHelper.Analyzer.Smells {
       private IEnumerable<InvocationExpressionSyntax> GetUnnecessaryFromResultInvocations() {
         return GetFromResultInvocationCandidates()
           .OfType<InvocationExpressionSyntax>()
-          .Where(IsTaskFromResultInvocation);
+          .Where(_taskAnalysis.IsFromResultInvocation);
       }
 
       private IEnumerable<ExpressionSyntax> GetFromResultInvocationCandidates() {
@@ -89,15 +87,9 @@ namespace ParallelHelper.Analyzer.Smells {
         return awaitedTasks.Concat(GetReturnValues());
       }
 
-      private bool IsTaskFromResultInvocation(InvocationExpressionSyntax invocation) {
-        return SemanticModel.GetSymbolInfo(invocation, CancellationToken).Symbol is IMethodSymbol method
-          && method.Name.Equals(FromResultMethod)
-          && _taskAnalysis.IsTaskType(method!.ReturnType);
-      }
-
       private bool ReturnsTaskObjectWithoutValue() {
         return SemanticModel.TryGetMethodSymbolFromMethodOrFunctionDeclaration(Root, out var method, CancellationToken)
-          && _taskAnalysis.IsTaskType(method!.ReturnType);
+          && _taskAnalysis.IsTaskTypeWithoutResult(method!.ReturnType);
       }
 
 

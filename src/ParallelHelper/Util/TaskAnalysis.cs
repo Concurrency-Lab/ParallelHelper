@@ -11,8 +11,9 @@ namespace ParallelHelper.Util {
   /// Tool collection for analysing <see cref="System.Threading.Tasks.Task"/> based patterns.
   /// </summary>
   public class TaskAnalysis {
+    private const string TaskTypeWithoutValue = "System.Threading.Tasks.Task";
     private static readonly string[] TaskTypes = {
-      "System.Threading.Tasks.Task",
+      TaskTypeWithoutValue,
       "System.Threading.Tasks.Task`1"
     };
 
@@ -33,6 +34,8 @@ namespace ParallelHelper.Util {
     private static readonly ISet<string> ContinuationMethods = ImmutableHashSet.Create(
       "ContinueWith"
     );
+
+    private const string FromResultMethod = "FromResult";
 
     private readonly SemanticModel _semanticModel;
     private readonly CancellationToken _cancellationToken;
@@ -59,6 +62,15 @@ namespace ParallelHelper.Util {
     /// <returns><c>true</c> if the given type is a task type, <c>false</c> otherwise.</returns>
     public bool IsTaskType(ITypeSymbol type) {
       return TaskTypes.Any(typeName => _semanticModel.IsEqualType(type, typeName));
+    }
+
+    /// <summary>
+    /// Checks if the given type represents the task type <see cref="System.Threading.Tasks.Task"/>.
+    /// </summary>
+    /// <param name="type">The type symbol to check.</param>
+    /// <returns><c>true</c> if the given type is a task type without a value, <c>false</c> otherwise.</returns>
+    public bool IsTaskTypeWithoutResult(ITypeSymbol type) {
+      return _semanticModel.IsEqualType(type, TaskTypeWithoutValue);
     }
 
     /// <summary>
@@ -109,6 +121,15 @@ namespace ParallelHelper.Util {
     }
 
     /// <summary>
+    /// Checks if the given method invocation is accessing <see cref="System.Threading.Tasks.Task.FromResult{TResult}(TResult)"/>.
+    /// </summary>
+    /// <param name="invocation">The method invocation to check.</param>
+    /// <returns><c>true</c> if it's the invocation of FromResult, <c>false</c> otherwise.</returns>
+    public bool IsFromResultInvocation(InvocationExpressionSyntax invocation) {
+      return IsTaskMethodInvocation(invocation, FromResultMethod);
+    }
+
+    /// <summary>
     /// CHecks if the given node is a method or function (e.g. lambda) returns a task.
     /// </summary>
     /// <param name="node">The node to check.</param>
@@ -126,6 +147,15 @@ namespace ParallelHelper.Util {
 
     private bool IsAnyTaskMember(ISymbol member, ICollection<string> taskMembers) {
       return taskMembers.Contains(member.Name) && IsTaskType(member.ContainingType);
+    }
+
+    private bool IsTaskMethodInvocation(InvocationExpressionSyntax invocation, string taskMember) {
+      return _semanticModel.GetSymbolInfo(invocation, _cancellationToken).Symbol is IMethodSymbol method
+        && IsTaskMember(method, taskMember);
+    }
+
+    private bool IsTaskMember(ISymbol member, string taskMember) {
+      return member.Name == taskMember && IsTaskType(member.ContainingType);
     }
   }
 }
