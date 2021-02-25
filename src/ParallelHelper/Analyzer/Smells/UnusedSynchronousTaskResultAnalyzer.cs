@@ -39,30 +39,35 @@ namespace ParallelHelper.Analyzer.Smells {
       isEnabledByDefault: true, description: Description, helpLinkUri: HelpLinkFactory.CreateUri(DiagnosticId)
     );
 
-    private const string TaskType = "System.Threading.Tasks.Task";
-    private const string FromResultMethod = "FromResult";
-
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
       context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-      context.RegisterSyntaxNodeAction(AnalyzeMethodDeclaration, SyntaxKind.MethodDeclaration);
+      context.RegisterSyntaxNodeAction(
+        AnalyzeMethodOrAnonymousFunction,
+        SyntaxKind.MethodDeclaration,
+        SyntaxKind.SimpleLambdaExpression,
+        SyntaxKind.ParenthesizedLambdaExpression,
+        SyntaxKind.AnonymousMethodExpression,
+        SyntaxKind.LocalFunctionStatement
+      );
     }
 
-    private static void AnalyzeMethodDeclaration(SyntaxNodeAnalysisContext context) {
+    private static void AnalyzeMethodOrAnonymousFunction(SyntaxNodeAnalysisContext context) {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : InternalAnalyzerBase<MethodDeclarationSyntax> {
+    private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
+      private readonly TaskAnalysis _taskAnalysis;
+
       // TODO async void methods?
       // TODO unnecessary use of Task.FromResult in general?
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) {
+        _taskAnalysis = new TaskAnalysis(context.SemanticModel, context.CancellationToken);
+      }
 
       public override void Analyze() {
-        if(!HasMethodBody()) {
-          return;
-        }
         foreach(var unnecessaryFromResult in GetUnnecessaryFromResultInvocations()) {
           Context.ReportDiagnostic(Diagnostic.Create(Rule, unnecessaryFromResult.GetLocation()));
         }
@@ -71,7 +76,7 @@ namespace ParallelHelper.Analyzer.Smells {
       private IEnumerable<InvocationExpressionSyntax> GetUnnecessaryFromResultInvocations() {
         return GetFromResultInvocationCandidates()
           .OfType<InvocationExpressionSyntax>()
-          .Where(IsTaskFromResultInvocation);
+          .Where(_taskAnalysis.IsFromResultInvocation);
       }
 
       private IEnumerable<ExpressionSyntax> GetFromResultInvocationCandidates() {
@@ -82,29 +87,30 @@ namespace ParallelHelper.Analyzer.Smells {
         return awaitedTasks.Concat(GetReturnValues());
       }
 
-      private bool IsTaskFromResultInvocation(InvocationExpressionSyntax invocation) {
-        return SemanticModel.GetSymbolInfo(invocation, CancellationToken).Symbol is IMethodSymbol method
-          && method.Name.Equals(FromResultMethod)
-          && SemanticModel.IsEqualType(method.ContainingType, TaskType);
-      }
-
       private bool ReturnsTaskObjectWithoutValue() {
-        var type = SemanticModel.GetTypeInfo(Root.ReturnType, CancellationToken).Type;
-        return type != null && SemanticModel.IsEqualType(type, TaskType);
+        return SemanticModel.TryGetMethodSymbolFromMethodOrFunctionDeclaration(Root, out var method, CancellationToken)
+          && _taskAnalysis.IsTaskTypeWithoutResult(method!.ReturnType);
       }
 
-      private bool HasMethodBody() {
-        return Root.Body != null || Root.ExpressionBody != null;
-      }
 
       private IEnumerable<ExpressionSyntax> GetReturnValues() {
-        if (Root.ExpressionBody != null) {
-          return new[] { Root.ExpressionBody.Expression };
+        var expressionBody = GetExpressionBodyOfMethodOrFunction(Root);
+        if(expressionBody != null) {
+          return new[] { expressionBody };
         }
         return Root.DescendantNodesInSameActivationFrame()
           .OfType<ReturnStatementSyntax>()
           .Select(returnStatement => returnStatement.Expression)
           .IsNotNull();
+      }
+
+      private ExpressionSyntax? GetExpressionBodyOfMethodOrFunction(SyntaxNode node) {
+        return node switch {
+          BaseMethodDeclarationSyntax method => method.ExpressionBody?.Expression,
+          AnonymousFunctionExpressionSyntax function => function.Body is ExpressionSyntax expression ? expression : null,
+          LocalFunctionStatementSyntax function => function.ExpressionBody?.Expression,
+          _ => null
+        };
       }
 
       private IEnumerable<ExpressionSyntax> GetAwaitStatementExpressions() {

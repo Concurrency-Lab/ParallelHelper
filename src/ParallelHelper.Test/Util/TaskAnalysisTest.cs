@@ -159,6 +159,69 @@ public class Test {
     }
 
     [TestMethod]
+    public void IsTaskTypeWithoutResultReturnsTrueForTaskWithoutResult() {
+      const string source = @"
+using System.Threading.Tasks;
+
+public class Test {
+  public Task DoItAsync() {
+    return Task.CompletedTask;
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var type = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<MethodDeclarationSyntax>()
+        .Select(declaration => declaration.ReturnType)
+        .Select(returnType => semanticModel.GetTypeInfo(returnType).Type)
+        .Single();
+      var analysis = new TaskAnalysis(semanticModel, default);
+      Assert.IsTrue(analysis.IsTaskTypeWithoutResult(type));
+    }
+
+    [TestMethod]
+    public void IsTaskTypeWithoutResultReturnsFalseForTaskWithResult() {
+      const string source = @"
+using System.Threading.Tasks;
+
+public class Test {
+  public Task<int> DoItAsync() {
+    return Task.FromResult(1);
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var type = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<MethodDeclarationSyntax>()
+        .Select(declaration => declaration.ReturnType)
+        .Select(returnType => semanticModel.GetTypeInfo(returnType).Type)
+        .Single();
+      var analysis = new TaskAnalysis(semanticModel, default);
+      Assert.IsFalse(analysis.IsTaskTypeWithoutResult(type));
+    }
+
+    [TestMethod]
+    public void IsTaskTypeWithoutResultReturnsFalseForValueTask() {
+      const string source = @"
+using System.Threading.Tasks;
+
+public class Test {
+  public ValueTask<int> DoItAsync() {
+    return new ValueTask(1);
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var type = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<MethodDeclarationSyntax>()
+        .Select(declaration => declaration.ReturnType)
+        .Select(returnType => semanticModel.GetTypeInfo(returnType).Type)
+        .Single();
+      var analysis = new TaskAnalysis(semanticModel, default);
+      Assert.IsFalse(analysis.IsTaskTypeWithoutResult(type));
+    }
+
+    [TestMethod]
     public void IsValueTaskTypedReturnsTrueForValueTaskVariable() {
       const string source = @"
 using System.Threading.Tasks;
@@ -629,6 +692,153 @@ public class Test {
         .Single();
       var analysis = new TaskAnalysis(semanticModel, default);
       Assert.IsFalse(analysis.IsContinuationMethodInvocation(type));
+    }
+
+    [TestMethod]
+    public void IsMethodOrFunctionReturningTaskReturnsTrueForTaskReturningMethod() {
+      const string source = @"
+using System.Threading.Tasks;
+
+public class Test {
+  public Task DoItAsync() {
+    return Task.CompletedTask;
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var type = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<MethodDeclarationSyntax>()
+        .Single();
+      var analysis = new TaskAnalysis(semanticModel, default);
+      Assert.IsTrue(analysis.IsMethodOrFunctionReturningTask(type));
+    }
+
+    [TestMethod]
+    public void IsMethodOrFunctionReturningTaskReturnsTrueForTaskReturningSimpleLambda() {
+      const string source = @"
+using System.Threading.Tasks;
+
+public class Test {
+  public void DoIt() {
+    Func<Task<int>> test = () => Task.FromResult(1);
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var type = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<LambdaExpressionSyntax>()
+        .Single();
+      var analysis = new TaskAnalysis(semanticModel, default);
+      Assert.IsTrue(analysis.IsMethodOrFunctionReturningTask(type));
+    }
+
+    [TestMethod]
+    public void IsMethodOrFunctionReturningTaskReturnsFalseForVoidMethod() {
+      const string source = @"
+using System.Threading.Tasks;
+
+public class Test {
+  public void DoIt() {
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var type = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<MethodDeclarationSyntax>()
+        .Single();
+      var analysis = new TaskAnalysis(semanticModel, default);
+      Assert.IsFalse(analysis.IsMethodOrFunctionReturningTask(type));
+    }
+
+    [TestMethod]
+    public void IsMethodOrFunctionReturningTaskReturnsFalseForMethodWithUnresolvableReturnType() {
+      const string source = @"
+public class Test {
+  public Task DoIt() {
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var type = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<MethodDeclarationSyntax>()
+        .Single();
+      var analysis = new TaskAnalysis(semanticModel, default);
+      Assert.IsFalse(analysis.IsMethodOrFunctionReturningTask(type));
+    }
+
+    [TestMethod]
+    public void IsMethodOrFunctionReturningTaskReturnsFalseForNonTaskReturningMethod() {
+      const string source = @"
+public class Test {
+  public int DoIt() {
+    return 1;
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var type = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<MethodDeclarationSyntax>()
+        .Single();
+      var analysis = new TaskAnalysis(semanticModel, default);
+      Assert.IsFalse(analysis.IsMethodOrFunctionReturningTask(type));
+    }
+
+    [TestMethod]
+    public void IsFromResultInvocationReturnsTrueForInvokingTaskFromResult() {
+      const string source = @"
+using System.Threading.Tasks;
+
+public class Test {
+  public void DoIt() {
+    var task = Task.FromResult(1);
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var invocation = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<InvocationExpressionSyntax>()
+        .Single();
+      var analysis = new TaskAnalysis(semanticModel, default);
+      Assert.IsTrue(analysis.IsFromResultInvocation(invocation));
+    }
+
+    [TestMethod]
+    public void IsFromResultInvocationReturnsFalseForInvokingUnknownTaskMethod() {
+      const string source = @"
+using System.Threading.Tasks;
+
+public class Test {
+  public void DoIt() {
+    var task = Task.SomeNotExistantMethod(1);
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var invocation = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<InvocationExpressionSyntax>()
+        .Single();
+      var analysis = new TaskAnalysis(semanticModel, default);
+      Assert.IsFalse(analysis.IsFromResultInvocation(invocation));
+    }
+
+    [TestMethod]
+    public void IsFromResultInvocationReturnsFalseForInvokingDifferentMethod() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+public class Test {
+  public void DoIt() {
+    var task = Task.FromException(new Exception());
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var invocation = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<InvocationExpressionSyntax>()
+        .Single();
+      var analysis = new TaskAnalysis(semanticModel, default);
+      Assert.IsFalse(analysis.IsFromResultInvocation(invocation));
     }
   }
 }

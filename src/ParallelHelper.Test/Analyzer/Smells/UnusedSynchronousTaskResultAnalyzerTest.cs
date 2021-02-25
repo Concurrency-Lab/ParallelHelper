@@ -73,6 +73,82 @@ class Test {
     }
 
     [TestMethod]
+    public void ReportsFromResultInsideSimpleLambdaInMethodWithoutReturnValue() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    Func<Task> f = () => Task.FromResult(0);
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(6, 26));
+    }
+
+    [TestMethod]
+    public void ReportsAwaitOnFromResultInsideLambdaInMethodWithoutReturnValue() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    Func<Task> f = async () => {
+      await Task.FromResult(0);
+    };
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(7, 13));
+    }
+
+    [TestMethod]
+    public void ReportsAwaitOnFromResultInsideLocalFunctionWithoutReturnValue() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    async Task DoIt() {
+      await Task.FromResult(0);
+    }
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(7, 13));
+    }
+
+    [TestMethod]
+    public void ReportsReturnFromResultInsideLocalFunctionWithoutReturnValue() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    Task DoIt() {
+      return Task.FromResult(0);
+    }
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(7, 14));
+    }
+
+    [TestMethod]
+    public void ReportsFromResultInsideExpressionBodiedLocalFunctionWithoutReturnValue() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    Task DoIt() => Task.FromResult(0);
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(6, 20));
+    }
+
+    [TestMethod]
     public void DoesNotReportReturnFromResultOnTaskMethodWithReturnValue() {
       const string source = @"
 using System.Threading.Tasks;
@@ -113,7 +189,7 @@ class Test {
     }
 
     [TestMethod]
-    public void DoesNotReportFromResultInSimpleLambdaInsideAsyncMethodWithoutReturnValue() {
+    public void DoesNotReportFromResultInExpressionBodiedLambdaInsideAsyncMethodWithoutReturnValue() {
       const string source = @"
 using System;
 using System.Threading.Tasks;
@@ -127,7 +203,7 @@ class Test {
     }
 
     [TestMethod]
-    public void DoesNotReportFromResultInParenthesizedLambdaInsideAsyncMethodWithoutReturnValue() {
+    public void DoesNotReportFromResultInLambdaInsideAsyncMethodWithoutReturnValue() {
       const string source = @"
 using System;
 using System.Threading.Tasks;
