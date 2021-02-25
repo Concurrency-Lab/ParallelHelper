@@ -111,5 +111,35 @@ class Test {
 }";
       VerifyDiagnostic(source);
     }
+
+    [TestMethod]
+    public void DoesNotReportFromResultInSimpleLambdaInsideAsyncMethodWithoutReturnValue() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    Func<Task<int>> f = () => Task.FromResult(0);
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportFromResultInParenthesizedLambdaInsideAsyncMethodWithoutReturnValue() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    Func<Task<int>> f = () => {
+      return Task.FromResult(0);
+    };
+  }
+}";
+      VerifyDiagnostic(source);
+    }
   }
 }
