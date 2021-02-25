@@ -39,7 +39,6 @@ namespace ParallelHelper.Analyzer.Smells {
       isEnabledByDefault: true, description: Description, helpLinkUri: HelpLinkFactory.CreateUri(DiagnosticId)
     );
 
-    private const string TaskType = "System.Threading.Tasks.Task";
     private const string FromResultMethod = "FromResult";
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
@@ -62,9 +61,13 @@ namespace ParallelHelper.Analyzer.Smells {
     }
 
     private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
+      private readonly TaskAnalysis _taskAnalysis;
+
       // TODO async void methods?
       // TODO unnecessary use of Task.FromResult in general?
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) {
+        _taskAnalysis = new TaskAnalysis(context.SemanticModel, context.CancellationToken);
+      }
 
       public override void Analyze() {
         foreach(var unnecessaryFromResult in GetUnnecessaryFromResultInvocations()) {
@@ -89,12 +92,12 @@ namespace ParallelHelper.Analyzer.Smells {
       private bool IsTaskFromResultInvocation(InvocationExpressionSyntax invocation) {
         return SemanticModel.GetSymbolInfo(invocation, CancellationToken).Symbol is IMethodSymbol method
           && method.Name.Equals(FromResultMethod)
-          && SemanticModel.IsEqualType(method.ContainingType, TaskType);
+          && _taskAnalysis.IsTaskType(method!.ReturnType);
       }
 
       private bool ReturnsTaskObjectWithoutValue() {
         return SemanticModel.TryGetMethodSymbolFromMethodOrFunctionDeclaration(Root, out var method, CancellationToken)
-          && SemanticModel.IsEqualType(method!.ReturnType, TaskType);
+          && _taskAnalysis.IsTaskType(method!.ReturnType);
       }
 
 
