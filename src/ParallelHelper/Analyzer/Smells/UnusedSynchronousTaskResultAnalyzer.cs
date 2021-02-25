@@ -104,7 +104,7 @@ namespace ParallelHelper.Analyzer.Smells {
           .IsNotNull();
       }
 
-      public ExpressionSyntax? GetExpressionBodyOfMethodOrFunction(SyntaxNode node) {
+      private ExpressionSyntax? GetExpressionBodyOfMethodOrFunction(SyntaxNode node) {
         return node switch {
           BaseMethodDeclarationSyntax method => method.ExpressionBody?.Expression,
           AnonymousFunctionExpressionSyntax function => function.Body is ExpressionSyntax expression ? expression : null,
