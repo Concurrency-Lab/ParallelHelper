@@ -8,7 +8,7 @@
         <License>License.txt</License>
         <GettingStartedGuide>GettingStarted.txt</GettingStartedGuide>
         <ReleaseNotes>ReleaseNotes.txt</ReleaseNotes>
-        <Tags>C#; Parallel; Asynchronous; Concurrency; Bugs; Best Practices; TPL; Task; QC; Static Analysis</Tags>
+        <Tags>C#; Parallel; Asynchronous; Concurrency; Bugs; Best Practices; TPL; Task; QC; Static Analysis; async; await</Tags>
     </Metadata>
     <Installation>
         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.3,17.0)" />

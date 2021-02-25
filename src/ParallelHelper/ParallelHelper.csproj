@@ -21,7 +21,7 @@
 - Improved Analyzer: PH_P007 - Now reports default expressions where a token is available
 - Improved Analyzer: PH_S025 - Now respects activation frames</PackageReleaseNotes>
     <Copyright>Copyright (C) 2019 - 2020 Christoph Amrein, Concurrency Lab, HSR Hochschule fuer Technik Rapperswil, Switzerland</Copyright>
-    <PackageTags>C#, Parallel, Asynchronous, Concurrency, Bugs, Best Practices, TPL, Task, QC, Static Analysis</PackageTags>
+    <PackageTags>C#, Parallel, Asynchronous, Concurrency, Bugs, Best Practices, TPL, Task, QC, Static Analysis, async, await</PackageTags>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
