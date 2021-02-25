@@ -47,22 +47,26 @@ namespace ParallelHelper.Analyzer.Smells {
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
       context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-      context.RegisterSyntaxNodeAction(AnalyzeMethodDeclaration, SyntaxKind.MethodDeclaration);
+      context.RegisterSyntaxNodeAction(
+        AnalyzeMethodOrAnonymousFunction,
+        SyntaxKind.MethodDeclaration,
+        SyntaxKind.SimpleLambdaExpression,
+        SyntaxKind.ParenthesizedLambdaExpression,
+        SyntaxKind.AnonymousMethodExpression,
+        SyntaxKind.LocalFunctionStatement
+      );
     }
 
-    private static void AnalyzeMethodDeclaration(SyntaxNodeAnalysisContext context) {
+    private static void AnalyzeMethodOrAnonymousFunction(SyntaxNodeAnalysisContext context) {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : InternalAnalyzerBase<MethodDeclarationSyntax> {
+    private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
       // TODO async void methods?
       // TODO unnecessary use of Task.FromResult in general?
       public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
-        if(!HasMethodBody()) {
-          return;
-        }
         foreach(var unnecessaryFromResult in GetUnnecessaryFromResultInvocations()) {
           Context.ReportDiagnostic(Diagnostic.Create(Rule, unnecessaryFromResult.GetLocation()));
         }
@@ -89,22 +93,29 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private bool ReturnsTaskObjectWithoutValue() {
-        var type = SemanticModel.GetTypeInfo(Root.ReturnType, CancellationToken).Type;
-        return type != null && SemanticModel.IsEqualType(type, TaskType);
+        return SemanticModel.TryGetMethodSymbolFromMethodOrFunctionDeclaration(Root, out var method, CancellationToken)
+          && SemanticModel.IsEqualType(method!.ReturnType, TaskType);
       }
 
-      private bool HasMethodBody() {
-        return Root.Body != null || Root.ExpressionBody != null;
-      }
 
       private IEnumerable<ExpressionSyntax> GetReturnValues() {
-        if (Root.ExpressionBody != null) {
-          return new[] { Root.ExpressionBody.Expression };
+        var expressionBody = GetExpressionBodyOfMethodOrFunction(Root);
+        if(expressionBody != null) {
+          return new[] { expressionBody };
         }
         return Root.DescendantNodesInSameActivationFrame()
           .OfType<ReturnStatementSyntax>()
           .Select(returnStatement => returnStatement.Expression)
           .IsNotNull();
+      }
+
+      public ExpressionSyntax? GetExpressionBodyOfMethodOrFunction(SyntaxNode node) {
+        return node switch {
+          BaseMethodDeclarationSyntax method => method.ExpressionBody?.Expression,
+          AnonymousFunctionExpressionSyntax function => function.Body is ExpressionSyntax expression ? expression : null,
+          LocalFunctionStatementSyntax function => function.ExpressionBody?.Expression,
+          _ => null
+        };
       }
 
       private IEnumerable<ExpressionSyntax> GetAwaitStatementExpressions() {
