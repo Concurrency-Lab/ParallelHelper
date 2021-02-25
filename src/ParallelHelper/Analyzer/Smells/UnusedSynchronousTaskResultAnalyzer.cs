@@ -101,14 +101,14 @@ namespace ParallelHelper.Analyzer.Smells {
         if (Root.ExpressionBody != null) {
           return new[] { Root.ExpressionBody.Expression };
         }
-        return Root.DescendantNodes()
+        return Root.DescendantNodesInSameActivationFrame()
           .OfType<ReturnStatementSyntax>()
           .Select(returnStatement => returnStatement.Expression)
           .IsNotNull();
       }
 
       private IEnumerable<ExpressionSyntax> GetAwaitStatementExpressions() {
-        return Root.DescendantNodes()
+        return Root.DescendantNodesInSameActivationFrame()
           .OfType<ExpressionStatementSyntax>()
           .Select(expressionStatement => expressionStatement.Expression)
           .OfType<AwaitExpressionSyntax>()
