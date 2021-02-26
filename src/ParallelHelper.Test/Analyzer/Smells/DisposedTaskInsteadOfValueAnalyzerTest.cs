@@ -51,6 +51,32 @@ class SomeDisposable : IDisposable {
     }
 
     [TestMethod]
+    public void ReportsUsingExpressionOfTaskWithImplicitDisposableImplementationValue() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public void DoWork() {
+    using(CreateAsync()) {
+    }
+  }
+  
+  private Task<SubType> CreateAsync() {
+    return Task.FromResult(new SubType());
+  }
+}
+
+class SubType : SomeDisposable {
+}
+
+class SomeDisposable : IDisposable {
+  public void Dispose() {}
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(6, 11));
+    }
+
+    [TestMethod]
     public void DoesNotReportUsingExpressionOfTaskWithoutValue() {
       const string source = @"
 using System;
