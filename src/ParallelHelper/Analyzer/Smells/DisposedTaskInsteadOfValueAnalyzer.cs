@@ -67,16 +67,19 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       public override void Analyze() {
-        if(DisposedTaskWithDisposableValue()) {
-          Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.Expression.GetLocation()));
+        if(Root.Expression != null) {
+          AnalyzeUsingExpression(Root.Expression);
         }
       }
 
-      private bool DisposedTaskWithDisposableValue() {
-        if(Root.Expression == null) {
-          return false;
+      public void AnalyzeUsingExpression(ExpressionSyntax expression) {
+        if(IsTaskWithDisposableValue(expression)) {
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, expression.GetLocation()));
         }
-        var type = SemanticModel.GetTypeInfo(Root.Expression, CancellationToken).Type as INamedTypeSymbol;
+      }
+
+      private bool IsTaskWithDisposableValue(ExpressionSyntax expression) {
+        var type = SemanticModel.GetTypeInfo(expression, CancellationToken).Type as INamedTypeSymbol;
         return type != null
           && type.TypeArguments.Length == 1
           && _taskAnalysis.IsTaskType(type)
