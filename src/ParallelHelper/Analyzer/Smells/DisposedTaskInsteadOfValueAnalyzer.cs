@@ -8,18 +8,23 @@ using System.Collections.Immutable;
 
 namespace ParallelHelper.Analyzer.Smells {
   /// <summary>
-  /// Analyzer that analyzes sources for async methods without *Async suffix that have a counterpart with the *Async suffix.
+  /// Analyzer that analyzes sources for using statements that dispose the task instead of the encapsulated value.
   /// 
-  /// <example>Illustrates a class with a method that uses the *Async suffix although the implementation is CPU-bound.
+  /// <example>Illustrates a class with a method that disposes a task instead of awaiting it and disposing its value.
   /// <code>
   /// class Sample {
-  ///   public Task DoWork() {
-  ///     return Task.CompletedTask;
+  ///   private async Task&lt;IDisposable&gt; CreateAsync() {
+  ///     return new SomeDisposable();
   ///   }
   ///   
-  ///   public Task DoWorkAsync() {
-  ///     return Task.CompletedTask;
+  ///   public void DoIt() {
+  ///     using(CreateAsync()) {
+  ///     }
   ///   }
+  /// }
+  /// 
+  /// class SomeDisposable : IDisposable {
+  ///   public void Dispose() {}
   /// }
   /// </code>
   /// </example>
