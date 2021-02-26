@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using ParallelHelper.Extensions;
 using ParallelHelper.Util;
 using System.Collections.Immutable;
+using System.Linq;
 
 namespace ParallelHelper.Analyzer.Smells {
   /// <summary>
@@ -83,6 +84,11 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private bool IsDisposable(ITypeSymbol type) {
+        return IsDisposableType(type)
+          || type.AllInterfaces.WithCancellation(CancellationToken).Any(IsDisposableType);
+      }
+
+      private bool IsDisposableType(ITypeSymbol type) {
         return SemanticModel.IsEqualType(type, DisposableType);
       }
     }
