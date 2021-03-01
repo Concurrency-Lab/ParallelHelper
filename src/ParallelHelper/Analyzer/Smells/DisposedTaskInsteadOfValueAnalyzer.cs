@@ -41,6 +41,7 @@ namespace ParallelHelper.Analyzer.Smells {
     private static readonly LocalizableString Description = "";
 
     private const string DisposableType = "System.IDisposable";
+    private const string DisposeAsyncMethod = "DisposeAsync";
 
     private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
       DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Warning,
@@ -88,11 +89,32 @@ namespace ParallelHelper.Analyzer.Smells {
 
       private bool IsDisposable(ITypeSymbol type) {
         return IsDisposableType(type)
+          || IsAsyncDisposableType(type)
           || type.AllInterfaces.WithCancellation(CancellationToken).Any(IsDisposableType);
       }
 
       private bool IsDisposableType(ITypeSymbol type) {
         return SemanticModel.IsEqualType(type, DisposableType);
+      }
+
+      private bool IsAsyncDisposableType(ITypeSymbol type) {
+        // IAsyncDisposable interface can be implemented implicitely by declaring
+        // a DisposeAsync method.
+        return type.GetAllAccessibleMembers()
+          .OfType<IMethodSymbol>()
+          .Any(IsDisposeAsyncMethod);
+      }
+
+      private bool IsDisposeAsyncMethod(IMethodSymbol method) {
+        return method.DeclaredAccessibility == Accessibility.Public
+          && method.Parameters.Length == 0
+          && method.Name == DisposeAsyncMethod
+          && IsAwaitable(method.ReturnType);
+      }
+      
+      private bool IsAwaitable(ITypeSymbol type) {
+        return _taskAnalysis.IsTaskType(type)
+          || _taskAnalysis.IsValueTaskType(type);
       }
     }
   }

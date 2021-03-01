@@ -77,6 +77,104 @@ class SomeDisposable : IDisposable {
     }
 
     [TestMethod]
+    public void ReportsUsingExpressionOfTaskWithAsyncDisposableInterfaceValue() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public void DoWork() {
+    using(CreateAsync()) {
+    }
+  }
+  
+  private Task<IAsyncDisposable> CreateAsync() {
+    return Task.FromResult<IAsyncDisposable>(new SomeAsyncDisposable());
+  }
+}
+
+class SomeAsyncDisposable : IAsyncDisposable {
+  public ValueTask DisposeAsync() {
+    return new ValueTask();
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(6, 11));
+    }
+
+    [TestMethod]
+    public void ReportsUsingExpressionOfTaskWithAsyncDisposableImplementationValue() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public void DoWork() {
+    using(CreateAsync()) {
+    }
+  }
+  
+  private Task<SomeDisposable> CreateAsync() {
+    return Task.FromResult(new SomeDisposable());
+  }
+}
+
+class SomeDisposable : IDisposable {
+  public void Dispose() {}
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(6, 11));
+    }
+
+    [TestMethod]
+    public void ReportsUsingExpressionOfTaskWithImplicitAsyncDisposableValueTaskImplementationValue() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public void DoWork() {
+    using(CreateAsync()) {
+    }
+  }
+  
+  private Task<SomeAsyncDisposable> CreateAsync() {
+    return Task.FromResult(new SomeAsyncDisposable());
+  }
+}
+
+class SomeAsyncDisposable {
+  public ValueTask DisposeAsync() {
+    return new ValueTask();
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(6, 11));
+    }
+
+    [TestMethod]
+    public void ReportsUsingExpressionOfTaskWithImplicitAsyncDisposableTaskImplementationValue() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public void DoWork() {
+    using(CreateAsync()) {
+    }
+  }
+  
+  private Task<SomeAsyncDisposable> CreateAsync() {
+    return Task.FromResult(new SomeAsyncDisposable());
+  }
+}
+
+class SomeAsyncDisposable {
+  public Task DisposeAsync() {
+    return Task.CompletedTask;
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(6, 11));
+    }
+
+    [TestMethod]
     public void DoesNotReportUsingExpressionOfTaskWithoutValue() {
       const string source = @"
 using System;
@@ -133,6 +231,81 @@ class Test {
 
 class SomeDisposable : IDisposable {
   public void Dispose() {}
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportUsingExpressionOfTaskWithAsyncDisposableImplementationWithWrongParamCountValue() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public void DoWork() {
+    using(CreateAsync()) {
+    }
+  }
+  
+  private Task<SomeAsyncDisposable> CreateAsync() {
+    return Task.FromResult(new SomeAsyncDisposable());
+  }
+}
+
+class SomeAsyncDisposable {
+  public ValueTask DisposeAsync(int i) {
+    return new ValueTask();
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportUsingExpressionOfTaskWithAsyncDisposableImplementationWithNonAwaitableReturnValue() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public void DoWork() {
+    using(CreateAsync()) {
+    }
+  }
+  
+  private Task<SomeAsyncDisposable> CreateAsync() {
+    return Task.FromResult(new SomeAsyncDisposable());
+  }
+}
+
+class SomeAsyncDisposable {
+  public int DisposeAsync() {
+    return 1;
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportUsingExpressionOfTaskWithNoAsyncDisposableImplementationValue() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public void DoWork() {
+    using(CreateAsync()) {
+    }
+  }
+  
+  private Task<SomeAlmostAsyncDisposable> CreateAsync() {
+    return Task.FromResult(new SomeAlmostAsyncDisposable());
+  }
+}
+
+class SomeAlmostAsyncDisposable {
+  public ValueTask NotDisposeAsync() {
+    return new ValueTask();
+  }
 }";
       VerifyDiagnostic(source);
     }
