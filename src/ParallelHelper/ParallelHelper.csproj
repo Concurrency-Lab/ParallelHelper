@@ -17,7 +17,8 @@
     <RepositoryUrl>https://github.com/Concurrency-Lab/ParallelHelper</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Description>ParallelHelper is a static code analyzer that helps to identify concurrency related issues. Moreover, it provides hints to improve the robustness of code with concurrency in mind.</Description>
-    <PackageReleaseNotes>- Improved Analyzer: PH_S007 - Now respects activation frames
+    <PackageReleaseNotes>- New Analyzer: PH_S033 - Now supports lambda expressions and respects activation frames
+- Improved Analyzer: PH_S007 - Now respects activation frames
 - Improved Analyzer: PH_P007 - Now reports default expressions where a token is available
 - Improved Analyzer: PH_S025 - Now supports lambda expressions and respects activation frames</PackageReleaseNotes>
     <Copyright>Copyright (C) 2019 - 2021  Christoph Amrein, Concurrency Lab, Eastern Switzerland University of Applied Sciences, Switzerland</Copyright>
