@@ -51,7 +51,7 @@ class SomeDisposable : IDisposable {
     }
 
     [TestMethod]
-    public void ReportsUsingExpressionOfTaskWithImplicitDisposableImplementationValue() {
+    public void ReportsUsingExpressionOfTaskWithInheritedDisposableImplementationValue() {
       const string source = @"
 using System;
 using System.Threading.Tasks;
