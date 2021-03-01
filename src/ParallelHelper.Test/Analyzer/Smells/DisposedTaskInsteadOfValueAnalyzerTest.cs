@@ -113,5 +113,28 @@ class Test {
 }";
       VerifyDiagnostic(source);
     }
+
+    [TestMethod]
+    public void DoesNotReportUsingStatementOfTaskWithDisposableInterfaceValue() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public void DoWork() {
+    using(var task = CreateAsync()) {
+    }
+  }
+  
+  private Task<IDisposable> CreateAsync() {
+    return Task.FromResult<IDisposable>(new SomeDisposable());
+  }
+}
+
+class SomeDisposable : IDisposable {
+  public void Dispose() {}
+}";
+      VerifyDiagnostic(source);
+    }
   }
 }
