@@ -7,7 +7,7 @@ using ParallelHelper.Util;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace ParallelHelper.Analyzer.Smells {
+namespace ParallelHelper.Analyzer.Bugs {
   /// <summary>
   /// Analyzer that analyzes sources for using statements that dispose the task instead of the encapsulated value.
   /// 
@@ -32,7 +32,7 @@ namespace ParallelHelper.Analyzer.Smells {
   /// </summary>
   [DiagnosticAnalyzer(LanguageNames.CSharp)]
   public class DisposedTaskInsteadOfValueAnalyzer : DiagnosticAnalyzer {
-    public const string DiagnosticId = "PH_S033";
+    public const string DiagnosticId = "PH_B015";
 
     private const string Category = "Concurrency";
 

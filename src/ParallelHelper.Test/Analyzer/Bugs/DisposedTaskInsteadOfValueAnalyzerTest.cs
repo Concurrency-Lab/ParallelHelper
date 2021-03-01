@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ParallelHelper.Analyzer.Smells;
+using ParallelHelper.Analyzer.Bugs;
 
-namespace ParallelHelper.Test.Analyzer.Smells {
+namespace ParallelHelper.Test.Analyzer.Bugs {
   [TestClass]
   public class DisposedTaskInsteadOfValueAnalyzerTest : AnalyzerTestBase<DisposedTaskInsteadOfValueAnalyzer> {
     [TestMethod]
