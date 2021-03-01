@@ -36,7 +36,7 @@ namespace ParallelHelper.Analyzer.Smells {
 
     private const string Category = "Concurrency";
 
-    private static readonly LocalizableString Title = "Disposed Task instead of Value";
+    private static readonly LocalizableString Title = "Disposed Task Instead of Value";
     private static readonly LocalizableString MessageFormat = "The using statement disposes the task instead of the encapsulated disposable value.";
     private static readonly LocalizableString Description = "";
 
