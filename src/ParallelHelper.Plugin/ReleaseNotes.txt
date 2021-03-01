@@ -1,5 +1,6 @@
 ﻿v3.1.0
 
+- New Analyzer: PH_S033 - Now supports lambda expressions and respects activation frames
 - Improved Analyzer: PH_S007 - Now respects activation frames
 - Improved Analyzer: PH_P007 - Now reports default expressions where a token is available
 - Improved Analyzer: PH_S025 - Now supports lambda expressions and respects activation frames
