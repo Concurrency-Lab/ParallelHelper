@@ -1,5 +1,5 @@
 image: Visual Studio 2019
-version: {build}
+version: '{build}'
 configuration: Release
 
 before_build:
