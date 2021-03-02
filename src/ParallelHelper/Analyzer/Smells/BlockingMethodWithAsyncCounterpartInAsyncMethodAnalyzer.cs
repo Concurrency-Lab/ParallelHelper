@@ -47,6 +47,11 @@ namespace ParallelHelper.Analyzer.Smells {
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
+    private static readonly MethodDescriptor[] ExcludedMethods = {
+      new MethodDescriptor("Microsoft.EntityFrameworkCore.DbContext", "Add", "AddRange"),
+      new MethodDescriptor("Microsoft.EntityFrameworkCore.DbSet", "Add", "AddRange")
+    };
+
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
       context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
@@ -87,7 +92,8 @@ namespace ParallelHelper.Analyzer.Smells {
 
       private void AnalyzeInvocation(InvocationExpressionSyntax invocation) {
         if(SemanticModel.GetSymbolInfo(invocation, CancellationToken).Symbol is IMethodSymbol method 
-            && !IsPotentiallyAsyncMethod(method) && TryGetAsyncCounterpart(method, out var asyncName)) {
+            && !IsPotentiallyAsyncMethod(method) && TryGetAsyncCounterpart(method, out var asyncName)
+            && !IsExcludedMethod(method)) {
           Context.ReportDiagnostic(Diagnostic.Create(Rule, invocation.GetLocation(), method.Name, asyncName));
         }
       }
@@ -104,6 +110,26 @@ namespace ParallelHelper.Analyzer.Smells {
         }
         asyncName = "";
         return false;
+      }
+
+      private bool IsExcludedMethod(IMethodSymbol method) {
+        return ExcludedMethods.WithCancellation(CancellationToken)
+          .Any(excludedMethod => IsAnyMethodOf(method, excludedMethod));
+      }
+
+      private bool IsAnyMethodOf(IMethodSymbol method, MethodDescriptor descriptor) {
+        return SemanticModel.IsEqualType(method.ContainingType, descriptor.Type)
+          && descriptor.Methods.Contains(method.Name);
+      }
+    }
+
+    private class MethodDescriptor {
+      public string Type { get; }
+      public IImmutableSet<string> Methods { get; }
+
+      public MethodDescriptor(string type, params string[] methods) {
+        Type = type;
+        Methods = methods.ToImmutableHashSet();
       }
     }
   }
