@@ -49,7 +49,7 @@ namespace ParallelHelper.Analyzer.Smells {
 
     private static readonly MethodDescriptor[] ExcludedMethods = {
       new MethodDescriptor("Microsoft.EntityFrameworkCore.DbContext", "Add", "AddRange"),
-      new MethodDescriptor("Microsoft.EntityFrameworkCore.DbSet", "Add", "AddRange")
+      new MethodDescriptor("Microsoft.EntityFrameworkCore.DbSet`1", "Add", "AddRange")
     };
 
     public override void Initialize(AnalysisContext context) {
