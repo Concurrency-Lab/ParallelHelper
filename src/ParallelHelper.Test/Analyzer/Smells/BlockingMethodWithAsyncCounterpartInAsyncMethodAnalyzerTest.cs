@@ -109,6 +109,28 @@ class Test {
     }
 
     [TestMethod]
+    public void ReportsReadOfTypeWithReadAsyncInAsyncMethodIfExclusionEntryIsInvalid() {
+      const string source = @"
+using System.IO;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    using(var client = new TcpClient())
+    using(var reader = new StreamReader(client.GetStream())) {
+      var buffer = new char[1024];
+      reader.Read(buffer, 0, buffer.Length);
+    }
+  }
+}";
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_S019.exclusions", "System.IO.StreamReader;ReadLine,Read,ReadBlock")
+        .VerifyDiagnostic(new DiagnosticResultLocation(10, 7));
+    }
+
+    [TestMethod]
     public void DoesNotReportReadOfTypeWithReadAsyncInNonAsyncMethod() {
       const string source = @"
 using System.IO;
@@ -277,6 +299,75 @@ class Test {
   }
 }";
       VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportReadOfTypeWithReadAsyncInAsyncMethodIfExcludedAsSingleTypeAndMethodEntry() {
+      const string source = @"
+using System.IO;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    using(var client = new TcpClient())
+    using(var reader = new StreamReader(client.GetStream())) {
+      var buffer = new char[1024];
+      reader.Read(buffer, 0, buffer.Length);
+    }
+  }
+}";
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_S019.exclusions", "System.IO.StreamReader:Read")
+        .VerifyDiagnostic();
+    }
+
+    [TestMethod]
+    public void DoesNotReportReadOfTypeWithReadAsyncInAsyncMethodIfExcludedAsSingleTypeEntry() {
+      const string source = @"
+using System.IO;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    using(var client = new TcpClient())
+    using(var reader = new StreamReader(client.GetStream())) {
+      var buffer = new char[1024];
+      reader.Read(buffer, 0, buffer.Length);
+    }
+  }
+}";
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_S019.exclusions", "System.IO.StreamReader:ReadLine,Read,ReadBlock")
+        .VerifyDiagnostic();
+    }
+
+    [TestMethod]
+    public void DoesNotReportReadOfTypeWithReadAsyncInAsyncMethodIfExcludedAsMultipleTypeEntry() {
+      const string source = @"
+using System.IO;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    using(var client = new TcpClient())
+    using(var reader = new StreamReader(client.GetStream())) {
+      var buffer = new char[1024];
+      reader.Read(buffer, 0, buffer.Length);
+    }
+  }
+}";
+      const string exclusions = @"Microsoft.EntityFrameworkCore.DbContext:Add,AddRange
+Microsoft.EntityFrameworkCore.DbSet`1:Add,AddRange
+System.IO.StreamReader:ReadLine,Read,ReadBlock";
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_S019.exclusions", exclusions)
+        .VerifyDiagnostic();
     }
   }
 }
