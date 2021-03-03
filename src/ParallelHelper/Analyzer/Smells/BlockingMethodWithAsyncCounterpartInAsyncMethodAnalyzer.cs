@@ -47,10 +47,8 @@ namespace ParallelHelper.Analyzer.Smells {
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-    private static readonly MethodDescriptor[] ExcludedMethods = {
-      new MethodDescriptor("Microsoft.EntityFrameworkCore.DbContext", "Add", "AddRange"),
-      new MethodDescriptor("Microsoft.EntityFrameworkCore.DbSet`1", "Add", "AddRange")
-    };
+    private const string DefaultExcludedMethods = @"Microsoft.EntityFrameworkCore.DbContext:Add,AddRange
+Microsoft.EntityFrameworkCore.DbSet`1:Add,AddRange";
 
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
@@ -79,9 +77,24 @@ namespace ParallelHelper.Analyzer.Smells {
         if(!IsAsyncMethod && !IsAsyncAnonymousFunction) {
           return;
         }
+        var excludedMethods = GetExcludedMethods().ToArray();
         foreach(var invocation in GetAllInvocations()) {
-          AnalyzeInvocation(invocation);
+          AnalyzeInvocation(invocation, excludedMethods);
         }
+      }
+
+      private IEnumerable<MethodDescriptor> GetExcludedMethods() {
+        return Context.Options.GetConfig(Rule, "exclusions", DefaultExcludedMethods).Split()
+          .WithCancellation(CancellationToken)
+          .Select(ToMethodDescriptor)
+          .IsNotNull();
+      }
+
+      private static MethodDescriptor? ToMethodDescriptor(string config) {
+        var splitByTypeAndMethods = config.Split(':');
+        return splitByTypeAndMethods.Length != 2
+          ? null
+          : new MethodDescriptor(splitByTypeAndMethods[0], splitByTypeAndMethods[1].Split(','));
       }
 
       private IEnumerable<InvocationExpressionSyntax> GetAllInvocations() {
@@ -90,10 +103,10 @@ namespace ParallelHelper.Analyzer.Smells {
           .OfType<InvocationExpressionSyntax>();
       }
 
-      private void AnalyzeInvocation(InvocationExpressionSyntax invocation) {
+      private void AnalyzeInvocation(InvocationExpressionSyntax invocation, IReadOnlyCollection<MethodDescriptor> excludedMethods) {
         if(SemanticModel.GetSymbolInfo(invocation, CancellationToken).Symbol is IMethodSymbol method 
             && !IsPotentiallyAsyncMethod(method) && TryGetAsyncCounterpart(method, out var asyncName)
-            && !IsExcludedMethod(method)) {
+            && !IsExcludedMethod(method, excludedMethods)) {
           Context.ReportDiagnostic(Diagnostic.Create(Rule, invocation.GetLocation(), method.Name, asyncName));
         }
       }
@@ -112,8 +125,8 @@ namespace ParallelHelper.Analyzer.Smells {
         return false;
       }
 
-      private bool IsExcludedMethod(IMethodSymbol method) {
-        return ExcludedMethods.WithCancellation(CancellationToken)
+      private bool IsExcludedMethod(IMethodSymbol method, IReadOnlyCollection<MethodDescriptor> excludedMethods) {
+        return excludedMethods.WithCancellation(CancellationToken)
           .Any(excludedMethod => IsAnyMethodOf(method, excludedMethod));
       }
 
