@@ -154,6 +154,58 @@ class Test {
     }
 
     [TestMethod]
+    public void ReportsAccessToMethodReturningValueWithAsyncCounterpartReturningValueOfDifferentTypeIfMatchReturnTypeIsDisabled() {
+      const string source = @"
+using System.IO;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    var value = GetIt();
+  }
+
+  public double GetIt() {
+    return 1.0;
+  }
+
+  public Task<int> GetItAsync() {
+    return Task.FromResult(1);
+  }
+}";
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_S019.returnType", "ignore")
+        .VerifyDiagnostic(new DiagnosticResultLocation(7, 17));
+    }
+
+    [TestMethod]
+    public void ReportsAccessToMethodReturningValueWithAsyncCounterpartReturningNoValueIfMatchReturnTypeIsDisabled() {
+      const string source = @"
+using System.IO;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    var value = GetIt();
+  }
+
+  public int GetIt() {
+    return 1;
+  }
+
+  public Task GetItAsync() {
+    return Task.CompletedTask;
+  }
+}";
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_S019.returnType", "ignore")
+        .VerifyDiagnostic(new DiagnosticResultLocation(7, 17));
+    }
+
+    [TestMethod]
     public void DoesNotReportReadOfTypeWithReadAsyncInNonAsyncMethod() {
       const string source = @"
 using System.IO;

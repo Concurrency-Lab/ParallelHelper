@@ -69,6 +69,8 @@ Microsoft.EntityFrameworkCore.DbSet`1:Add,AddRange";
       private bool IsAsyncAnonymousFunction => Root is AnonymousFunctionExpressionSyntax function 
         && function.AsyncKeyword.IsKind(SyntaxKind.AsyncKeyword);
 
+      private bool IsMatchReturnTypeEnabled => Context.Options.GetConfig(Rule, "returnType", "match") == "match";
+
       public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) {
         _taskAnalysis = new TaskAnalysis(context.SemanticModel, context.CancellationToken);
       }
@@ -126,11 +128,12 @@ Microsoft.EntityFrameworkCore.DbSet`1:Add,AddRange";
       }
 
       private bool HasMethodWithNameAndAsyncReturnType(IMethodSymbol method, string candidateName) {
+        bool matchReturnType = IsMatchReturnTypeEnabled;
         return method.ContainingType.GetAllPublicMembers()
           .WithCancellation(CancellationToken)
           .OfType<IMethodSymbol>()
           .Where(candidate => candidate.Name == candidateName)
-          .Any(candidate => IsMethodWithCompatibleAwaitableReturnType(method, candidate));
+          .Any(candidate => !matchReturnType || IsMethodWithCompatibleAwaitableReturnType(method, candidate));
       }
 
       private bool IsMethodWithCompatibleAwaitableReturnType(IMethodSymbol method, IMethodSymbol candidate) {
