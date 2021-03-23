@@ -27,7 +27,7 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Company>Concurrency Lab, HSR Hochschule fuer Technik Rapperswil, Switzerland</Company>
+    <Company>Concurrency Lab, Eastern Switzerland University of Applied Sciences, Switzerland</Company>
     <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
 
