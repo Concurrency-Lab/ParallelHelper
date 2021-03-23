@@ -69,6 +69,8 @@ Microsoft.EntityFrameworkCore.DbSet`1:Add,AddRange";
       private bool IsAsyncAnonymousFunction => Root is AnonymousFunctionExpressionSyntax function 
         && function.AsyncKeyword.IsKind(SyntaxKind.AsyncKeyword);
 
+      private bool IsMatchReturnTypeEnabled => Context.Options.GetConfig(Rule, "returnType", "match") == "match";
+
       public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) {
         _taskAnalysis = new TaskAnalysis(context.SemanticModel, context.CancellationToken);
       }
@@ -105,7 +107,7 @@ Microsoft.EntityFrameworkCore.DbSet`1:Add,AddRange";
 
       private void AnalyzeInvocation(InvocationExpressionSyntax invocation, IReadOnlyCollection<MethodDescriptor> excludedMethods) {
         if(SemanticModel.GetSymbolInfo(invocation, CancellationToken).Symbol is IMethodSymbol method 
-            && !IsPotentiallyAsyncMethod(method) && TryGetAsyncCounterpart(method, out var asyncName)
+            && !IsPotentiallyAsyncMethod(method) && TryGetAsyncCounterpartName(method, out var asyncName)
             && !IsExcludedMethod(method, excludedMethods)) {
           Context.ReportDiagnostic(Diagnostic.Create(Rule, invocation.GetLocation(), method.Name, asyncName));
         }
@@ -115,14 +117,34 @@ Microsoft.EntityFrameworkCore.DbSet`1:Add,AddRange";
         return method.IsAsync || method.Name.EndsWith(AsyncSuffix) || _taskAnalysis.IsTaskType(method.ReturnType);
       }
 
-      private static bool TryGetAsyncCounterpart(IMethodSymbol method, out string asyncName) {
+      private bool TryGetAsyncCounterpartName(IMethodSymbol method, out string asyncName) {
         var candidateName = method.Name + AsyncSuffix;
-        if(method.ContainingType.MemberNames.Any(candidateName.Equals)) {
+        if(HasMethodWithNameAndAsyncReturnType(method, candidateName)) {
           asyncName = candidateName;
           return true;
         }
         asyncName = "";
         return false;
+      }
+
+      private bool HasMethodWithNameAndAsyncReturnType(IMethodSymbol method, string candidateName) {
+        bool matchReturnType = IsMatchReturnTypeEnabled;
+        return method.ContainingType.GetAllPublicMembers()
+          .WithCancellation(CancellationToken)
+          .OfType<IMethodSymbol>()
+          .Where(candidate => candidate.Name == candidateName)
+          .Any(candidate => !matchReturnType || IsMethodWithCompatibleAwaitableReturnType(method, candidate));
+      }
+
+      private bool IsMethodWithCompatibleAwaitableReturnType(IMethodSymbol method, IMethodSymbol candidate) {
+        if(!_taskAnalysis.IsTaskType(candidate.ReturnType)) {
+          return false;
+        }
+        if(_taskAnalysis.IsTaskTypeWithoutResult(candidate.ReturnType)) {
+          return method.ReturnType.SpecialType == SpecialType.System_Void;
+        }
+        var candidateReturnType = (INamedTypeSymbol)candidate.ReturnType;
+        return SymbolEqualityComparer.Default.Equals(candidateReturnType.TypeArguments.Single(), method.ReturnType);
       }
 
       private bool IsExcludedMethod(IMethodSymbol method, IReadOnlyCollection<MethodDescriptor> excludedMethods) {
