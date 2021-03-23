@@ -109,6 +109,29 @@ class Test {
     }
 
     [TestMethod]
+    public void ReportsAccessToMethodReturningValueWithAsyncCounterpartReturningValueOfSameType() {
+      const string source = @"
+using System.IO;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    var value = GetIt();
+  }
+
+  public int GetIt() {
+    return 1;
+  }
+
+  public Task<int> GetItAsync() {
+    return Task.FromResult(1);
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(7, 17));
+    }
+
+    [TestMethod]
     public void ReportsReadOfTypeWithReadAsyncInAsyncMethodIfExclusionEntryIsInvalid() {
       const string source = @"
 using System.IO;
@@ -368,6 +391,95 @@ System.IO.StreamReader:ReadLine,Read,ReadBlock";
         .AddSourceTexts(source)
         .AddAnalyzerOption("dotnet_diagnostic.PH_S019.exclusions", exclusions)
         .VerifyDiagnostic();
+    }
+
+    [TestMethod]
+    public void DoesNotReportAccessToMethodReturningVoidWithAsyncCounterpartReturningValue() {
+      const string source = @"
+using System.IO;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    DoIt();
+  }
+
+  public void DoIt() {
+  }
+
+  public Task<int> DoItAsync() {
+    return Task.FromResult(1);
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportAccessToMethodReturningValueWithAsyncCounterpartReturningValueOfDifferentType() {
+      const string source = @"
+using System.IO;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    var value = GetIt();
+  }
+
+  public double GetIt() {
+    return 1.0;
+  }
+
+  public Task<int> GetItAsync() {
+    return Task.FromResult(1);
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportAccessToMethodReturningValueWithAsyncCounterpartReturningNoValue() {
+      const string source = @"
+using System.IO;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    var value = GetIt();
+  }
+
+  public int GetIt() {
+    return 1;
+  }
+
+  public Task GetItAsync() {
+    return Task.CompletedTask;
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportAccessToMethodWithAsyncCounterpartThatIsNotAwaitable() {
+      const string source = @"
+using System.IO;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    var value = GetIt();
+  }
+
+  public void DoIt() {
+  }
+
+  public void DoItAsync() {
+  }
+}";
+      VerifyDiagnostic(source);
     }
   }
 }
