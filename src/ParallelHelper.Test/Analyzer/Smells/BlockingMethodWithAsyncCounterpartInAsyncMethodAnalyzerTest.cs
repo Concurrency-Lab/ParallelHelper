@@ -47,6 +47,7 @@ class Test {
     [TestMethod]
     public void ReportsReadOfTypeWithReadAsyncInAsyncSimpleLambda() {
       const string source = @"
+using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -62,7 +63,7 @@ class Test {
     };
   }
 }";
-      VerifyDiagnostic(source, new DiagnosticResultLocation(11, 9));
+      VerifyDiagnostic(source, new DiagnosticResultLocation(12, 9));
     }
 
     [TestMethod]
@@ -522,7 +523,7 @@ using System.Threading.Tasks;
 
 class Test {
   public async Task DoWorkAsync() {
-    var value = GetIt();
+    DoIt();
   }
 
   public void DoIt() {
