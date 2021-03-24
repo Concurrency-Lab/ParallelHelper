@@ -133,6 +133,52 @@ class Test {
     }
 
     [TestMethod]
+    public void ReportsAccessToMethodReturningValueWithAsyncCounterpartReturningValueIfBothAreGenericArguments() {
+      const string source = @"
+using System.IO;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    var value = GetIt<int>();
+  }
+
+  public T GetIt<T>() {
+    return default;
+  }
+
+  public Task<T> GetItAsync<T>() {
+    return Task.FromResult<T>(default);
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(7, 17));
+    }
+
+    [TestMethod]
+    public void ReportsAccessToMethodReturningValueWithAsyncCounterpartReturningValueIfBothAreGenericTypeArguments() {
+      const string source = @"
+using System.IO;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+class Test<T> {
+  public async Task DoWorkAsync() {
+    var value = GetIt();
+  }
+
+  public T GetIt() {
+    return default;
+  }
+
+  public Task<T> GetItAsync() {
+    return Task.FromResult<T>(default);
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(7, 17));
+    }
+
+    [TestMethod]
     public void ReportsReadOfTypeWithReadAsyncInAsyncMethodIfExclusionEntryIsInvalid() {
       const string source = @"
 using System.IO;
@@ -530,6 +576,52 @@ class Test {
   }
 
   public void DoItAsync() {
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportAccessToMethodReturningValueWithAsyncCounterpartReturningValueIfOnlyCounterpartIsGeneric() {
+      const string source = @"
+using System.IO;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    var value = GetIt<int>();
+  }
+
+  public int GetIt() {
+    return 1;
+  }
+
+  public Task<T> GetItAsync<T>() {
+    return Task.FromResult<T>(default);
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportAccessToMethodReturningValueWithAsyncCounterpartReturningValueIfCounterpartIsNotGeneric() {
+      const string source = @"
+using System.IO;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    var value = GetIt<int>();
+  }
+
+  public T GetIt<T>() {
+    return default;
+  }
+
+  public Task<string> GetItAsync() {
+    return Task.FromResult<string>(default);
   }
 }";
       VerifyDiagnostic(source);

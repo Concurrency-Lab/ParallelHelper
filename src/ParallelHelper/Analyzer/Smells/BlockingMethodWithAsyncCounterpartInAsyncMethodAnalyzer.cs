@@ -143,8 +143,9 @@ Microsoft.EntityFrameworkCore.DbSet`1:Add,AddRange";
         if(_taskAnalysis.IsTaskTypeWithoutResult(candidate.ReturnType)) {
           return method.ReturnType.SpecialType == SpecialType.System_Void;
         }
-        var candidateReturnType = (INamedTypeSymbol)candidate.ReturnType;
-        return SymbolEqualityComparer.Default.Equals(candidateReturnType.TypeArguments.Single(), method.ReturnType);
+        var candidateReturnType = ((INamedTypeSymbol)candidate.ReturnType).TypeArguments.Single();
+        return SymbolEqualityComparer.Default.Equals(candidateReturnType, method.ReturnType)
+          || (candidateReturnType is ITypeParameterSymbol && method.ConstructedFrom.ReturnType is ITypeParameterSymbol);
       }
 
       private bool IsExcludedMethod(IMethodSymbol method, IReadOnlyCollection<MethodDescriptor> excludedMethods) {
