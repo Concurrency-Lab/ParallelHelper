@@ -18,6 +18,10 @@ namespace ParallelHelper.Extensions {
     /// <param name="type">The type to check.</param>
     /// <param name="metadataName">The metadata name of the type.</param>
     /// <returns><c>True</c> if the type has the given metadata name.</returns>
+    /// <remarks>
+    /// This method uses <see cref="GetTypesByName(SemanticModel, string)"/> which only respects types of
+    /// referenced assemblies and not the analyzed assembly itself at this time.
+    /// </remarks>
     public static bool IsEqualType(this SemanticModel semanticModel, ITypeSymbol type, string metadataName) {
       return semanticModel.GetTypesByName(metadataName).Any(type.IsEqualType);
     }
@@ -43,6 +47,9 @@ namespace ParallelHelper.Extensions {
     /// <param name="semanticModel">The semantic model to use when retrieving the type.</param>
     /// <param name="metadataName">The name of the type.</param>
     /// <returns>The type symbols that match the given name.</returns>
+    /// <remarks>
+    /// This method only resolves metadata types of referenced assemblies and not the analyzed assembly itself.
+    /// </remarks>
     public static IEnumerable<ITypeSymbol> GetTypesByName(this SemanticModel semanticModel, string metadataName) {
       // The implementation of semanticModel.Compilation.GetTypeByMetadataName(metadataName) is broken.
       // It returns null if there are multiple types of the same name, which happens for System.Threading.Thread.
