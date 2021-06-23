@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="ParallelHelper.f833642b-cd24-49ac-addc-e5328ce8fe88" Version="3.2.0" Language="en-US" Publisher="Christoph Amrein" />
+        <Identity Id="ParallelHelper.f833642b-cd24-49ac-addc-e5328ce8fe88" Version="3.2.1" Language="en-US" Publisher="Christoph Amrein" />
         <DisplayName>ParallelHelper</DisplayName>
         <Description xml:space="preserve">ParallelHelper is a static code analyzer that helps to identify concurrency related issues. Moreover, it provides hints to improve the robustness of code with concurrency in mind.</Description>
         <MoreInfo>https://github.com/Concurrency-Lab/ParallelHelper</MoreInfo>
@@ -11,9 +11,24 @@
         <Tags>C#; Parallel; Asynchronous; Concurrency; Bugs; Best Practices; TPL; Task; QC; Static Analysis; async; await</Tags>
     </Metadata>
     <Installation>
-        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.3,17.0)" />
-        <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[16.3,17.0)" />
-        <InstallationTarget Id="Microsoft.VisualStudio.Enterprise" Version="[16.3,17.0)" />
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.3,17.0)" >
+          <ProductArchitecture>x86</ProductArchitecture>
+        </InstallationTarget>
+        <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[16.3,17.0)" >
+          <ProductArchitecture>x86</ProductArchitecture>
+        </InstallationTarget>
+        <InstallationTarget Id="Microsoft.VisualStudio.Enterprise" Version="[16.3,17.0)" >
+          <ProductArchitecture>x86</ProductArchitecture>
+        </InstallationTarget>
+      <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0,18.0)">
+        <ProductArchitecture>amd64</ProductArchitecture>
+      </InstallationTarget>
+      <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[17.0,18.0)">
+        <ProductArchitecture>amd64</ProductArchitecture>
+      </InstallationTarget>
+      <InstallationTarget Id="Microsoft.VisualStudio.Enterprise" Version="[17.0,18.0)">
+        <ProductArchitecture>amd64</ProductArchitecture>
+      </InstallationTarget>
     </Installation>
     <Dependencies>
         <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.7.2,)" />
@@ -22,6 +37,6 @@
         <Asset Type="Microsoft.VisualStudio.Analyzer" d:Source="Project" d:ProjectName="ParallelHelper" Path="|ParallelHelper|" />
     </Assets>
     <Prerequisites>
-        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,17.0)" DisplayName="Visual Studio core editor" />
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,18.0)" DisplayName="Visual Studio core editor" />
     </Prerequisites>
 </PackageManifest>
