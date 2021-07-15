@@ -1,4 +1,11 @@
-﻿v3.2.0
+﻿v3.2.1
+
+- Added support for Visual Studio 2022
+
+
+------------------
+
+v3.2.0
 
 - Improved Analyzer: PH_S019 - Now matches the return-type by default
 
