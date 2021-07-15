@@ -1,6 +1,6 @@
 ﻿v3.2.1
 
-- Added support for Visual Studio 2022
+- Updated vsixmanifest to work in Visual Studio 2022 Preview 1.
 
 
 ------------------
