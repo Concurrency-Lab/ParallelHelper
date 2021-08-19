@@ -8,14 +8,13 @@ namespace ParallelHelper.Analyzer.BestPractices {
   /// <summary>
   /// Analyzer that analyzes sources for the use of discouraged methods.
   /// 
-  /// <example>Illustrates a class that uses the discouraged method <see cref="System.Threading.Thread.Abort"/>.
+  /// <example>Illustrates a class that uses the discouraged method <see cref="Microsoft.EntityFrameworkCore.DbContext.AddAsync"/>.
   /// <code>
   /// class Sample {
-  ///   private object syncObject = new object();
+  ///   private readonly DbContext context;
   ///   
-  ///   public void DoWork() {
-  ///     lock(syncObject) {
-  ///     }
+  ///   public async Task AddAsync(Person person) {
+  ///     context.AddAsync(person);
   ///   }
   /// }
   /// </code>

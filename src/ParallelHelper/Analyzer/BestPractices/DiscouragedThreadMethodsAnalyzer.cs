@@ -11,11 +11,10 @@ namespace ParallelHelper.Analyzer.BestPractices {
   /// <example>Illustrates a class that uses the discouraged method <see cref="System.Threading.Thread.Abort"/>.
   /// <code>
   /// class Sample {
-  ///   private object syncObject = new object();
+  ///   private readonly Thread workerThread;
   ///   
-  ///   public void DoWork() {
-  ///     lock(syncObject) {
-  ///     }
+  ///   public void Stop() {
+  ///     workerThread.Abort();
   ///   }
   /// }
   /// </code>
