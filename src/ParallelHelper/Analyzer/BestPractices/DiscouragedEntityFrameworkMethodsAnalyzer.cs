@@ -25,13 +25,13 @@ namespace ParallelHelper.Analyzer.BestPractices {
   /// </example>
   /// </summary>
   [DiagnosticAnalyzer(LanguageNames.CSharp)]
-  public class DiscouragedMethodsAnalyzer : DiagnosticAnalyzer {
-    public const string DiagnosticId = "PH_P003";
+  public class DiscouragedEntityFrameworkMethodsAnalyzer : DiagnosticAnalyzer {
+    public const string DiagnosticId = "PH_P013";
 
     private const string Category = "Concurrency";
 
-    private static readonly LocalizableString Title = "Discouraged Method";
-    private static readonly LocalizableString MessageFormat = "The use of the method '{0}' is discouraged.";
+    private static readonly LocalizableString Title = "Discouraged EntityFramework Method";
+    private static readonly LocalizableString MessageFormat = "The use of the EntityFramework method '{0}' is discouraged.";
     private static readonly LocalizableString Description = "";
 
     private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
@@ -42,7 +42,8 @@ namespace ParallelHelper.Analyzer.BestPractices {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
     private static readonly MethodDescriptor[] DiscouragedMethods = {
-      new MethodDescriptor("System.Threading.Thread", new string[] { "Abort", "Suspend", "Resume" })
+      new MethodDescriptor("Microsoft.EntityFrameworkCore.DbContext", new string[] { "AddAsync", "AddRangeAsync" }),
+      new MethodDescriptor("Microsoft.EntityFrameworkCore.DbSet`1", new string[] { "AddAsync", "AddRangeAsync" })
     };
 
     public override void Initialize(AnalysisContext context) {

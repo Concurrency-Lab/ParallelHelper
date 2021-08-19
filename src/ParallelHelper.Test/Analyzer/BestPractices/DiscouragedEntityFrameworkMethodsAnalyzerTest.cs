@@ -4,7 +4,7 @@ using ParallelHelper.Analyzer.BestPractices;
 
 namespace ParallelHelper.Test.Analyzer.BestPractices {
   [TestClass]
-  public class DiscouragedAsyncMethodsAnalyzerTest : AnalyzerTestBase<DiscouragedAsyncMethodsAnalyzer> {
+  public class DiscouragedEntityFrameworkMethodsAnalyzerTest : AnalyzerTestBase<DiscouragedEntityFrameworkMethodsAnalyzer> {
     // We define the desired types and methods here to avoid having to reference the EntityFramework package
     // and all its dependencies.
     private const string EntityFrameworkCorePrototypes = @"
