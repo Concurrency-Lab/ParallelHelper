@@ -158,15 +158,5 @@ Microsoft.EntityFrameworkCore.DbSet`1:Add,AddRange";
           && descriptor.Methods.Contains(method.Name);
       }
     }
-
-    private class MethodDescriptor {
-      public string Type { get; }
-      public IImmutableSet<string> Methods { get; }
-
-      public MethodDescriptor(string type, params string[] methods) {
-        Type = type;
-        Methods = methods.ToImmutableHashSet();
-      }
-    }
   }
 }

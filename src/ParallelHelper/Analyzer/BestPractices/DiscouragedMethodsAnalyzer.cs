@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using ParallelHelper.Extensions;
 using ParallelHelper.Util;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -42,8 +41,8 @@ namespace ParallelHelper.Analyzer.BestPractices {
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-    private static readonly DiscouragedMethodsDescriptor[] DiscouragedMethods = {
-      new DiscouragedMethodsDescriptor("System.Threading.Thread", new string[] { "Abort", "Suspend", "Resume" })
+    private static readonly MethodDescriptor[] DiscouragedMethods = {
+      new MethodDescriptor("System.Threading.Thread", new string[] { "Abort", "Suspend", "Resume" })
     };
 
     public override void Initialize(AnalysisContext context) {
@@ -70,19 +69,9 @@ namespace ParallelHelper.Analyzer.BestPractices {
         return DiscouragedMethods.Any(d => IsAnyMethodOf(method, d));
       }
 
-      private bool IsAnyMethodOf(IMethodSymbol method, DiscouragedMethodsDescriptor descriptor) {
+      private bool IsAnyMethodOf(IMethodSymbol method, MethodDescriptor descriptor) {
         return descriptor.Methods.Any(m => method.Name.Equals(m))
           && SemanticModel.IsEqualType(method.ContainingType, descriptor.Type);
-      }
-    }
-
-    private class DiscouragedMethodsDescriptor {
-      public string Type { get; }
-      public IReadOnlyList<string> Methods { get; }
-
-      public DiscouragedMethodsDescriptor(string type, IReadOnlyList<string> methods) {
-        Type = type;
-        Methods = methods;
       }
     }
   }
