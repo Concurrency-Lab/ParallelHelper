@@ -1,11 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using ParallelHelper.Extensions;
 using ParallelHelper.Util;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace ParallelHelper.Analyzer.BestPractices {
   /// <summary>
@@ -53,27 +50,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
     }
 
     private static void AnalyzeInvocation(SyntaxNodeAnalysisContext context) {
-      new Analyzer(context).Analyze();
-    }
-
-    private class Analyzer : InternalAnalyzerBase<InvocationExpressionSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
-
-      public override void Analyze() {
-        if(SemanticModel.GetSymbolInfo(Root, CancellationToken).Symbol is IMethodSymbol method && IsDiscouragedMethod(method)) {
-          var methodName = $"{method.ContainingType.Name}.{method.Name}";
-          Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetLocation(), methodName));
-        }
-      }
-
-      private bool IsDiscouragedMethod(IMethodSymbol method) {
-        return DiscouragedMethods.Any(d => IsAnyMethodOf(method, d));
-      }
-
-      private bool IsAnyMethodOf(IMethodSymbol method, MethodDescriptor descriptor) {
-        return descriptor.Methods.Any(m => method.Name.Equals(m))
-          && SemanticModel.IsEqualType(method.ContainingType, descriptor.Type);
-      }
+      new InvocationReportingAnalyzer(context, Rule, DiscouragedMethods).Analyze();
     }
   }
 }
