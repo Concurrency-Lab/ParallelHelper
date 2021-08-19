@@ -1,8 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ParallelHelper.Analyzer.Smells;
+using ParallelHelper.Analyzer.BestPractices;
 
-namespace ParallelHelper.Test.Analyzer.Smells {
+namespace ParallelHelper.Test.Analyzer.BestPractices {
   [TestClass]
   public class DiscouragedAsyncMethodsAnalyzerTest : AnalyzerTestBase<DiscouragedAsyncMethodsAnalyzer> {
     // We define the desired types and methods here to avoid having to reference the EntityFramework package
