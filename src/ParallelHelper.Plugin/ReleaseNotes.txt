@@ -1,4 +1,12 @@
-﻿v3.2.1
+﻿v3.3.0
+
+- New Analyzer: PH_P013 - Discouraged EntityFramework Method
+- Renamed Analyzer: PH_P003 - Discouraged Thread Method (was Discouraged Method)
+
+
+------------------
+
+v3.2.1
 
 - Updated vsixmanifest to work in Visual Studio 2022 Preview 1.
 
