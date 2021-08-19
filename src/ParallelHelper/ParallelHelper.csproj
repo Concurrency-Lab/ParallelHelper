@@ -11,13 +11,14 @@
 
   <PropertyGroup>
     <PackageId>ParallelHelper</PackageId>
-    <Version>3.2.1</Version>
+    <Version>3.3.0</Version>
     <Authors>Christoph Amrein</Authors>
     <PackageProjectUrl>https://github.com/Concurrency-Lab/ParallelHelper</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Concurrency-Lab/ParallelHelper</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Description>ParallelHelper is a static code analyzer that helps to identify concurrency related issues. Moreover, it provides hints to improve the robustness of code with concurrency in mind.</Description>
-    <PackageReleaseNotes>- Updated vsixmanifest to work in Visual Studio 2022 Preview 1.</PackageReleaseNotes>
+    <PackageReleaseNotes>- New Analyzer: PH_P013 - Discouraged EntityFramework Method
+- Renamed Analyzer: PH_P003 - Discouraged Thread Method (was Discouraged Method)</PackageReleaseNotes>
     <Copyright>Copyright (C) 2019 - 2021  Christoph Amrein, Concurrency Lab, Eastern Switzerland University of Applied Sciences, Switzerland</Copyright>
     <PackageTags>C#, Parallel, Asynchronous, Concurrency, Bugs, Best Practices, TPL, Task, QC, Static Analysis, async, await</PackageTags>
     <NoPackageAnalysis>true</NoPackageAnalysis>

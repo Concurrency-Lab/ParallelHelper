@@ -20,7 +20,7 @@ namespace ParallelHelper.Test.Analyzer {
     /// </summary>
     /// <param name="source">The source to analyze.</param>
     /// <param name="expectedDiagnostics">The expected diagnostics.</param>
-    public void VerifyDiagnostic(string source, params DiagnosticResultLocation[] expectedDiagnostics) {
+    public virtual void VerifyDiagnostic(string source, params DiagnosticResultLocation[] expectedDiagnostics) {
       CreateAnalyzerCompilationBuilder()
         .AddSourceTexts(source)
         .VerifyDiagnostic(expectedDiagnostics);

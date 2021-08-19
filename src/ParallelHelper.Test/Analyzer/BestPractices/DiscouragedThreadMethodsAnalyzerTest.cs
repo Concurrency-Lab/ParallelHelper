@@ -3,7 +3,7 @@ using ParallelHelper.Analyzer.BestPractices;
 
 namespace ParallelHelper.Test.Analyzer.BestPractices {
   [TestClass]
-  public class DiscouragedMethodsAnalyzerTest : AnalyzerTestBase<DiscouragedMethodsAnalyzer> {
+  public class DiscouragedThreadMethodsAnalyzerTest : AnalyzerTestBase<DiscouragedThreadMethodsAnalyzer> {
     [TestMethod]
     public void ReportsThreadAbort() {
       const string source = @"
