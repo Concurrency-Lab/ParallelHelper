@@ -19,6 +19,9 @@ csharp_style_inlined_variable_declaration = true:none
 # IDE0019: Use pattern matching
 csharp_style_pattern_matching_over_as_with_null_check = true:none
 
+# IDE0005: Using directive is unnecessary.
+dotnet_diagnostic.IDE0005.severity = warning
+
 # Code styles to enforce
 dotnet_naming_style.pascal_case_style.capitalization = pascal_case
 dotnet_naming_style.start_with_underscore_style.capitalization = camel_case
@@ -49,3 +52,4 @@ dotnet_naming_symbols.member_fields.applicable_kinds = field
 dotnet_naming_rule.member_fields_must_start_with_underscore.symbols = member_fields
 dotnet_naming_rule.member_fields_must_start_with_underscore.style = start_with_underscore_style
 dotnet_naming_rule.member_fields_must_start_with_underscore.severity = warning
+
