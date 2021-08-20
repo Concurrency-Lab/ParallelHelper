@@ -96,7 +96,7 @@ namespace ParallelHelper.Analyzer.Bugs {
 
       private bool IsLinqDescriptor(IMethodSymbol method, ClassMemberDescriptor descriptor) {
         return SemanticModel.IsEqualType(method.ContainingType, descriptor.Type)
-          && descriptor.Members.Any(method.Name.Equals);
+          && descriptor.Members.Contains(method.Name);
       }
     }
   }

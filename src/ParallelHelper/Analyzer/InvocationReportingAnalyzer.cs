@@ -35,7 +35,7 @@ namespace ParallelHelper.Analyzer {
     }
 
     private bool IsAnyMethodOf(IMethodSymbol method, ClassMemberDescriptor descriptor) {
-      return descriptor.Members.Any(method.Name.Equals)
+      return descriptor.Members.Contains(method.Name)
         && SemanticModel.IsEqualType(method.ContainingType, descriptor.Type);
     }
   }

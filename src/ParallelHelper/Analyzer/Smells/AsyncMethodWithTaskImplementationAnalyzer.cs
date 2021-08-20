@@ -114,7 +114,7 @@ namespace ParallelHelper.Analyzer.Smells {
           && TaskStartMethods
               .WithCancellation(CancellationToken)
               .Where(descriptor => SemanticModel.IsEqualType(method.ContainingType, descriptor.Type))
-              .Any(descriptor => descriptor.Members.Any(method.Name.Equals));
+              .Any(descriptor => descriptor.Members.Contains(method.Name));
       }
     }
   }
