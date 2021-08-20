@@ -36,9 +36,9 @@ namespace ParallelHelper.Analyzer.Smells {
     );
 
     private static readonly StartDescriptor[] ThreadStartMethods = {
-      new StartDescriptor("System.Threading.Tasks.Task", "Run", true),
-      new StartDescriptor("System.Threading.Tasks.TaskFactory", "StartNew", true),
-      new StartDescriptor("System.Threading.Thread", "Start")
+      new StartDescriptor("System.Threading.Tasks.Task", "Run", isFactory: true),
+      new StartDescriptor("System.Threading.Tasks.TaskFactory", "StartNew", isFactory: true),
+      new StartDescriptor("System.Threading.Thread", "Start", isFactory: false)
     };
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
@@ -81,8 +81,6 @@ namespace ParallelHelper.Analyzer.Smells {
 
     private class StartDescriptor : ClassMemberDescriptor {
       public bool IsFactory { get; }
-
-      public StartDescriptor(string type, string method) : this(type, method, false) { }
 
       public StartDescriptor(string type, string method, bool isFactory) : base(type, method) {
         IsFactory = isFactory;
