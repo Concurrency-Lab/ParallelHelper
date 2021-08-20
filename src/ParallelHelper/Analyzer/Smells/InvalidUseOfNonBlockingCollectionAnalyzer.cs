@@ -56,8 +56,8 @@ namespace ParallelHelper.Analyzer.Smells {
       "TryTake", "TryDequeue"
     };
 
-    public static string ThreadType = "System.Threading.Thread";
-    public static string SleepMethod = "Sleep";
+    public const string ThreadType = "System.Threading.Thread";
+    public const string SleepMethod = "Sleep";
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

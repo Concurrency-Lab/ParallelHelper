@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using ParallelHelper.Extensions;
 using ParallelHelper.Util;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace ParallelHelper.Analyzer.Smells {
   /// <summary>
@@ -36,9 +35,9 @@ namespace ParallelHelper.Analyzer.Smells {
       isEnabledByDefault: true, description: Description, helpLinkUri: HelpLinkFactory.CreateUri(DiagnosticId)
     );
 
-    private static readonly TaskFactoryDescriptor[] TaskFactoryDescriptors = {
-      new TaskFactoryDescriptor("System.Threading.Tasks.Task", "Run"),
-      new TaskFactoryDescriptor("System.Threading.Tasks.TaskFactory", "StartNew"),
+    private static readonly ClassMemberDescriptor[] TaskFactoryDescriptors = {
+      new ClassMemberDescriptor("System.Threading.Tasks.Task", "Run"),
+      new ClassMemberDescriptor("System.Threading.Tasks.TaskFactory", "StartNew"),
     };
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
@@ -69,12 +68,8 @@ namespace ParallelHelper.Analyzer.Smells {
 
       private bool IsGenericTaskFactory() {
         return SemanticModel.GetSymbolInfo(Root, CancellationToken).Symbol is IMethodSymbol method
-          && TaskFactoryDescriptors.Any(d => IsTaskFactory(d, method))
+          && TaskFactoryDescriptors.AnyContainsMember(SemanticModel, method)
           && IsGenericTaskType(method.ReturnType);
-      }
-
-      private bool IsTaskFactory(TaskFactoryDescriptor factoryDescriptor, IMethodSymbol method) {
-        return method.Name.Equals(factoryDescriptor.Method) && SemanticModel.IsEqualType(method.ContainingType, factoryDescriptor.Type);
       }
 
       private static bool IsGenericTaskType(ITypeSymbol taskType) {
@@ -104,16 +99,6 @@ namespace ParallelHelper.Analyzer.Smells {
 
       private static bool IsConstant(ExpressionSyntax expression) {
         return expression is LiteralExpressionSyntax;
-      }
-    }
-
-    private class TaskFactoryDescriptor {
-      public string Type { get; }
-      public string Method { get; }
-
-      public TaskFactoryDescriptor(string type, string method) {
-        Type = type;
-        Method = method;
       }
     }
   }

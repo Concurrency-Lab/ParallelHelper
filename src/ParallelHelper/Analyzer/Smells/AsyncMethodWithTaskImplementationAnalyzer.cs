@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using ParallelHelper.Extensions;
 using ParallelHelper.Util;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace ParallelHelper.Analyzer.Smells {
   /// <summary>
@@ -38,9 +37,9 @@ namespace ParallelHelper.Analyzer.Smells {
       isEnabledByDefault: true, description: Description, helpLinkUri: HelpLinkFactory.CreateUri(DiagnosticId)
     );
 
-    private static readonly StartDescriptor[] TaskStartMethods = {
-      new StartDescriptor("System.Threading.Tasks.Task", "Run"),
-      new StartDescriptor("System.Threading.Tasks.TaskFactory", "StartNew")
+    private static readonly ClassMemberDescriptor[] TaskStartMethods = {
+      new ClassMemberDescriptor("System.Threading.Tasks.Task", "Run"),
+      new ClassMemberDescriptor("System.Threading.Tasks.TaskFactory", "StartNew")
     };
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
@@ -109,22 +108,8 @@ namespace ParallelHelper.Analyzer.Smells {
         return (statements[0] as ReturnStatementSyntax)?.Expression;
       }
 
-      private bool IsTaskStart(InvocationExpressionSyntax invocationExpression) {
-        return SemanticModel.GetSymbolInfo(invocationExpression, CancellationToken).Symbol is IMethodSymbol method
-          && TaskStartMethods
-              .WithCancellation(CancellationToken)
-              .Where(descriptor => SemanticModel.IsEqualType(method.ContainingType, descriptor.Type))
-              .Any(descriptor => method.Name.Equals(descriptor.Method));
-      }
-    }
-
-    private class StartDescriptor {
-      public string Type { get; }
-      public string Method { get; }
-
-      public StartDescriptor(string type, string method) {
-        Type = type;
-        Method = method;
+      private bool IsTaskStart(InvocationExpressionSyntax invocation) {
+        return TaskStartMethods.AnyContainsInvokedMethod(SemanticModel, invocation, CancellationToken);
       }
     }
   }

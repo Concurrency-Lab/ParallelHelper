@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using ParallelHelper.Extensions;
 using ParallelHelper.Util;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace ParallelHelper.Analyzer.Smells {
   /// <summary>
@@ -37,9 +36,9 @@ namespace ParallelHelper.Analyzer.Smells {
     );
 
     private static readonly StartDescriptor[] ThreadStartMethods = {
-      new StartDescriptor("System.Threading.Tasks.Task", "Run", true),
-      new StartDescriptor("System.Threading.Tasks.TaskFactory", "StartNew", true),
-      new StartDescriptor("System.Threading.Thread", "Start")
+      new StartDescriptor("System.Threading.Tasks.Task", "Run", isFactory: true),
+      new StartDescriptor("System.Threading.Tasks.TaskFactory", "StartNew", isFactory: true),
+      new StartDescriptor("System.Threading.Thread", "Start", isFactory: false)
     };
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
@@ -72,10 +71,7 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private StartDescriptor? GetStartDescriptor(IMethodSymbol method) {
-        return ThreadStartMethods
-          .WithCancellation(CancellationToken)
-          .Where(descriptor => SemanticModel.IsEqualType(method.ContainingType, descriptor.Type))
-          .FirstOrDefault(descriptor => method.Name.Equals(descriptor.Method));
+        return ThreadStartMethods.FirstContainingMember(SemanticModel, method);
       }
 
       private static bool IsAccessingInlineConstructedInstance(InvocationExpressionSyntax invocationExpression) {
@@ -83,16 +79,10 @@ namespace ParallelHelper.Analyzer.Smells {
       }
     }
 
-    private class StartDescriptor {
-      public string Type { get; }
-      public string Method { get; }
+    private class StartDescriptor : ClassMemberDescriptor {
       public bool IsFactory { get; }
 
-      public StartDescriptor(string type, string method) : this(type, method, false) { }
-
-      public StartDescriptor(string type, string method, bool isFactory) {
-        Type = type;
-        Method = method;
+      public StartDescriptor(string type, string method, bool isFactory) : base(type, method) {
         IsFactory = isFactory;
       }
     }

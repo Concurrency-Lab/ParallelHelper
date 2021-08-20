@@ -7,7 +7,6 @@ using ParallelHelper.Util;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace ParallelHelper.Analyzer.BestPractices {
   /// <summary>
@@ -50,13 +49,13 @@ namespace ParallelHelper.Analyzer.BestPractices {
 
     private const string AsyncSuffix = "Async";
 
-    private static readonly BlockingMemberDescriptor[] BlockingMethods = {
-      new BlockingMemberDescriptor("System.Threading.Tasks.Task", new string[] { "Wait" }),
+    private static readonly ClassMemberDescriptor[] BlockingMethods = {
+      new ClassMemberDescriptor("System.Threading.Tasks.Task", "Wait"),
     };
 
 
-    private static readonly BlockingMemberDescriptor[] BlockingProperties = {
-      new BlockingMemberDescriptor("System.Threading.Tasks.Task`1", new string[] { "Result" })
+    private static readonly ClassMemberDescriptor[] BlockingProperties = {
+      new ClassMemberDescriptor("System.Threading.Tasks.Task`1", "Result")
     };
 
     public override void Initialize(AnalysisContext context) {
@@ -79,9 +78,9 @@ namespace ParallelHelper.Analyzer.BestPractices {
 
     private class Analyzer<TMemberSymbol, TExpression> : InternalAnalyzerBase<TExpression> where TMemberSymbol : ISymbol where TExpression : ExpressionSyntax {
       private readonly Func<TExpression, ExpressionSyntax?> _getInstanceExpression;
-      private readonly IReadOnlyList<BlockingMemberDescriptor> _blockDescriptors;
+      private readonly IReadOnlyList<ClassMemberDescriptor> _blockDescriptors;
 
-      public Analyzer(SyntaxNodeAnalysisContext context, IReadOnlyList<BlockingMemberDescriptor> blockDescriptors, Func<TExpression, ExpressionSyntax?> getInstanceExpression)
+      public Analyzer(SyntaxNodeAnalysisContext context, IReadOnlyList<ClassMemberDescriptor> blockDescriptors, Func<TExpression, ExpressionSyntax?> getInstanceExpression)
           : base(new SyntaxNodeAnalysisContextWrapper(context)) {
         _blockDescriptors = blockDescriptors;
         _getInstanceExpression = getInstanceExpression;
@@ -107,24 +106,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
       }
 
       private bool IsBlockingMemberAccess(TMemberSymbol member) {
-        return _blockDescriptors
-          .WithCancellation(CancellationToken)
-          .Any(descriptor => IsMemberOfDescriptor(member, descriptor));
-      }
-
-      private bool IsMemberOfDescriptor(TMemberSymbol member, BlockingMemberDescriptor descriptor) {
-        return SemanticModel.IsEqualType(member.ContainingType, descriptor.Type)
-          && descriptor.Member.Any(member.Name.Equals);
-      }
-    }
-
-    private class BlockingMemberDescriptor {
-      public string Type { get; }
-      public IReadOnlyList<string> Member { get; }
-
-      public BlockingMemberDescriptor(string type, IReadOnlyList<string> member) {
-        Type = type;
-        Member = member;
+        return _blockDescriptors.AnyContainsMember(SemanticModel, member);
       }
     }
   }

@@ -37,8 +37,8 @@ namespace ParallelHelper.Analyzer.BestPractices {
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-    private static readonly MethodDescriptor[] DiscouragedMethods = {
-      new MethodDescriptor("System.Threading.Thread", new string[] { "Abort", "Suspend", "Resume" })
+    private static readonly ClassMemberDescriptor[] DiscouragedMethods = {
+      new ClassMemberDescriptor("System.Threading.Thread", "Abort", "Suspend", "Resume")
     };
 
     public override void Initialize(AnalysisContext context) {

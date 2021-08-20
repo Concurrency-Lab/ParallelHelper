@@ -85,18 +85,18 @@ Microsoft.EntityFrameworkCore.DbSet`1:Add,AddRange";
         }
       }
 
-      private IEnumerable<MethodDescriptor> GetExcludedMethods() {
+      private IEnumerable<ClassMemberDescriptor> GetExcludedMethods() {
         return Context.Options.GetConfig(Rule, "exclusions", DefaultExcludedMethods).Split()
           .WithCancellation(CancellationToken)
           .Select(ToMethodDescriptor)
           .IsNotNull();
       }
 
-      private static MethodDescriptor? ToMethodDescriptor(string config) {
+      private static ClassMemberDescriptor? ToMethodDescriptor(string config) {
         var splitByTypeAndMethods = config.Split(':');
         return splitByTypeAndMethods.Length != 2
           ? null
-          : new MethodDescriptor(splitByTypeAndMethods[0], splitByTypeAndMethods[1].Split(','));
+          : new ClassMemberDescriptor(splitByTypeAndMethods[0], splitByTypeAndMethods[1].Split(','));
       }
 
       private IEnumerable<InvocationExpressionSyntax> GetAllInvocations() {
@@ -105,7 +105,7 @@ Microsoft.EntityFrameworkCore.DbSet`1:Add,AddRange";
           .OfType<InvocationExpressionSyntax>();
       }
 
-      private void AnalyzeInvocation(InvocationExpressionSyntax invocation, IReadOnlyCollection<MethodDescriptor> excludedMethods) {
+      private void AnalyzeInvocation(InvocationExpressionSyntax invocation, IReadOnlyCollection<ClassMemberDescriptor> excludedMethods) {
         if(SemanticModel.GetSymbolInfo(invocation, CancellationToken).Symbol is IMethodSymbol method 
             && !IsPotentiallyAsyncMethod(method) && TryGetAsyncCounterpartName(method, out var asyncName)
             && !IsExcludedMethod(method, excludedMethods)) {
@@ -148,14 +148,8 @@ Microsoft.EntityFrameworkCore.DbSet`1:Add,AddRange";
           || (candidateReturnType is ITypeParameterSymbol && method.ConstructedFrom.ReturnType is ITypeParameterSymbol);
       }
 
-      private bool IsExcludedMethod(IMethodSymbol method, IReadOnlyCollection<MethodDescriptor> excludedMethods) {
-        return excludedMethods.WithCancellation(CancellationToken)
-          .Any(excludedMethod => IsAnyMethodOf(method, excludedMethod));
-      }
-
-      private bool IsAnyMethodOf(IMethodSymbol method, MethodDescriptor descriptor) {
-        return SemanticModel.IsEqualType(method.ContainingType, descriptor.Type)
-          && descriptor.Methods.Contains(method.Name);
+      private bool IsExcludedMethod(IMethodSymbol method, IReadOnlyCollection<ClassMemberDescriptor> excludedMethods) {
+        return excludedMethods.AnyContainsMember(SemanticModel, method);
       }
     }
   }

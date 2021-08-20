@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using ParallelHelper.Extensions;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace ParallelHelper.Analyzer {
   /// <summary>
@@ -12,12 +11,12 @@ namespace ParallelHelper.Analyzer {
   /// </summary>
   internal class InvocationReportingAnalyzer : InternalAnalyzerBase<InvocationExpressionSyntax> {
     private readonly DiagnosticDescriptor _rule;
-    private readonly IReadOnlyCollection<MethodDescriptor> _methodsToReport;
+    private readonly IReadOnlyCollection<ClassMemberDescriptor> _methodsToReport;
 
     public InvocationReportingAnalyzer(
       SyntaxNodeAnalysisContext context,
       DiagnosticDescriptor rule,
-      IReadOnlyCollection<MethodDescriptor> methodsToReport
+      IReadOnlyCollection<ClassMemberDescriptor> methodsToReport
     ) : base(new SyntaxNodeAnalysisContextWrapper(context)) {
       _rule = rule;
       _methodsToReport = methodsToReport;
@@ -31,12 +30,7 @@ namespace ParallelHelper.Analyzer {
     }
 
     private bool IsDiscouragedMethod(IMethodSymbol method) {
-      return _methodsToReport.Any(methodToReport => IsAnyMethodOf(method, methodToReport));
-    }
-
-    private bool IsAnyMethodOf(IMethodSymbol method, MethodDescriptor descriptor) {
-      return descriptor.Methods.Any(method.Name.Equals)
-        && SemanticModel.IsEqualType(method.ContainingType, descriptor.Type);
+      return _methodsToReport.AnyContainsMember(SemanticModel, method);
     }
   }
 }
