@@ -88,15 +88,7 @@ namespace ParallelHelper.Analyzer.Bugs {
       }
 
       private bool IsLinqOperation() {
-        return SemanticModel.GetSymbolInfo(Root, CancellationToken).Symbol is IMethodSymbol method
-          && LinqDescriptors
-            .WithCancellation(CancellationToken)
-            .Any(descriptor => IsLinqDescriptor(method, descriptor));
-      }
-
-      private bool IsLinqDescriptor(IMethodSymbol method, ClassMemberDescriptor descriptor) {
-        return SemanticModel.IsEqualType(method.ContainingType, descriptor.Type)
-          && descriptor.Members.Contains(method.Name);
+        return LinqDescriptors.AnyContainsInvokedMethod(SemanticModel, Root, CancellationToken);
       }
     }
   }

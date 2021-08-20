@@ -7,7 +7,6 @@ using ParallelHelper.Util;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace ParallelHelper.Analyzer.BestPractices {
   /// <summary>
@@ -107,14 +106,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
       }
 
       private bool IsBlockingMemberAccess(TMemberSymbol member) {
-        return _blockDescriptors
-          .WithCancellation(CancellationToken)
-          .Any(descriptor => IsMemberOfDescriptor(member, descriptor));
-      }
-
-      private bool IsMemberOfDescriptor(TMemberSymbol member, ClassMemberDescriptor descriptor) {
-        return SemanticModel.IsEqualType(member.ContainingType, descriptor.Type)
-          && descriptor.Members.Contains(member.Name);
+        return _blockDescriptors.AnyContainsMember(SemanticModel, member);
       }
     }
   }

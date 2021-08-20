@@ -149,13 +149,7 @@ Microsoft.EntityFrameworkCore.DbSet`1:Add,AddRange";
       }
 
       private bool IsExcludedMethod(IMethodSymbol method, IReadOnlyCollection<ClassMemberDescriptor> excludedMethods) {
-        return excludedMethods.WithCancellation(CancellationToken)
-          .Any(excludedMethod => IsAnyMethodOf(method, excludedMethod));
-      }
-
-      private bool IsAnyMethodOf(IMethodSymbol method, ClassMemberDescriptor descriptor) {
-        return SemanticModel.IsEqualType(method.ContainingType, descriptor.Type)
-          && descriptor.Members.Contains(method.Name);
+        return excludedMethods.AnyContainsMember(SemanticModel, method);
       }
     }
   }

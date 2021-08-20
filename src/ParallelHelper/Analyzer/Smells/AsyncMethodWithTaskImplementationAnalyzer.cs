@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using ParallelHelper.Extensions;
 using ParallelHelper.Util;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace ParallelHelper.Analyzer.Smells {
   /// <summary>
@@ -109,12 +108,8 @@ namespace ParallelHelper.Analyzer.Smells {
         return (statements[0] as ReturnStatementSyntax)?.Expression;
       }
 
-      private bool IsTaskStart(InvocationExpressionSyntax invocationExpression) {
-        return SemanticModel.GetSymbolInfo(invocationExpression, CancellationToken).Symbol is IMethodSymbol method
-          && TaskStartMethods
-              .WithCancellation(CancellationToken)
-              .Where(descriptor => SemanticModel.IsEqualType(method.ContainingType, descriptor.Type))
-              .Any(descriptor => descriptor.Members.Contains(method.Name));
+      private bool IsTaskStart(InvocationExpressionSyntax invocation) {
+        return TaskStartMethods.AnyContainsInvokedMethod(SemanticModel, invocation, CancellationToken);
       }
     }
   }

@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using ParallelHelper.Extensions;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace ParallelHelper.Analyzer {
   /// <summary>
@@ -31,12 +30,7 @@ namespace ParallelHelper.Analyzer {
     }
 
     private bool IsDiscouragedMethod(IMethodSymbol method) {
-      return _methodsToReport.Any(methodToReport => IsAnyMethodOf(method, methodToReport));
-    }
-
-    private bool IsAnyMethodOf(IMethodSymbol method, ClassMemberDescriptor descriptor) {
-      return descriptor.Members.Contains(method.Name)
-        && SemanticModel.IsEqualType(method.ContainingType, descriptor.Type);
+      return _methodsToReport.AnyContainsMember(SemanticModel, method);
     }
   }
 }

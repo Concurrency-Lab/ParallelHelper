@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using ParallelHelper.Extensions;
 using ParallelHelper.Util;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace ParallelHelper.Analyzer.Smells {
   /// <summary>
@@ -69,13 +68,8 @@ namespace ParallelHelper.Analyzer.Smells {
 
       private bool IsGenericTaskFactory() {
         return SemanticModel.GetSymbolInfo(Root, CancellationToken).Symbol is IMethodSymbol method
-          && TaskFactoryDescriptors.Any(d => IsTaskFactory(d, method))
+          && TaskFactoryDescriptors.AnyContainsMember(SemanticModel, method)
           && IsGenericTaskType(method.ReturnType);
-      }
-
-      private bool IsTaskFactory(ClassMemberDescriptor factoryDescriptor, IMethodSymbol method) {
-        return factoryDescriptor.Members.Contains(method.Name)
-          && SemanticModel.IsEqualType(method.ContainingType, factoryDescriptor.Type);
       }
 
       private static bool IsGenericTaskType(ITypeSymbol taskType) {
