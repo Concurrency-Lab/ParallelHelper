@@ -18,3 +18,34 @@ csharp_style_inlined_variable_declaration = true:none
 
 # IDE0019: Use pattern matching
 csharp_style_pattern_matching_over_as_with_null_check = true:none
+
+# Code styles to enforce
+dotnet_naming_style.pascal_case_style.capitalization = pascal_case
+dotnet_naming_style.start_with_underscore_style.capitalization = camel_case
+dotnet_naming_style.start_with_underscore_style.required_prefix = _
+
+# The first letter of a method and property should be upper-case.
+dotnet_naming_symbols.methods_and_properties.applicable_kinds = property,method
+dotnet_naming_rule.methods_and_properties_must_be_pascal_case.symbols = methods_and_properties
+dotnet_naming_rule.methods_and_properties_must_be_pascal_case.style = pascal_case_style
+dotnet_naming_rule.methods_and_properties_must_be_pascal_case.severity = warning
+
+# The first letter of a constant should be upper-case
+dotnet_naming_symbols.constant.applicable_kinds = field
+dotnet_naming_symbols.constant.required_modifiers = const
+dotnet_naming_rule.constants_must_be_pascal_case.symbols = constant
+dotnet_naming_rule.constants_must_be_pascal_case.style = pascal_case_style
+dotnet_naming_rule.constants_must_be_pascal_case.severity = warning
+
+# The first letter of a constant-like should be upper-case
+dotnet_naming_symbols.constant_like.applicable_kinds = field
+dotnet_naming_symbols.constant_like.required_modifiers = static,readonly
+dotnet_naming_rule.constant_likes_must_be_pascal_case.symbols = constant_like
+dotnet_naming_rule.constant_likes_must_be_pascal_case.style = pascal_case_style
+dotnet_naming_rule.constant_likes_must_be_pascal_case.severity = warning
+
+# Member-fields should start with an underscore.
+dotnet_naming_symbols.member_fields.applicable_kinds = field
+dotnet_naming_rule.member_fields_must_start_with_underscore.symbols = member_fields
+dotnet_naming_rule.member_fields_must_start_with_underscore.style = start_with_underscore_style
+dotnet_naming_rule.member_fields_must_start_with_underscore.severity = warning
