@@ -47,7 +47,7 @@ namespace ParallelHelper.Analyzer.Bugs {
       isEnabledByDefault: true, description: Description, helpLinkUri: HelpLinkFactory.CreateUri(DiagnosticId)
     );
 
-    private static readonly CollectionTypeDescriptor[] collectionTypeDescriptors = {
+    private static readonly CollectionTypeDescriptor[] CollectionTypeDescriptors = {
       // TODO Properties
       new CollectionTypeDescriptor("System.Collections.Generic.Dictionary`2",
         new string[] {"ContainsKey", "ContainsValue", "TryGetValue"},
@@ -95,7 +95,7 @@ namespace ParallelHelper.Analyzer.Bugs {
     }
 
     private static CollectionTypeDescriptor? GetCollectionTypeDescriptor(SemanticModel semanticModel, IFieldSymbol field) {
-      return collectionTypeDescriptors
+      return CollectionTypeDescriptors
         .Where(descriptor => semanticModel.IsEqualType(field.Type, descriptor.Type))
         .SingleOrDefault();
     }
