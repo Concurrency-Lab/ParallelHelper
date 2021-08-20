@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using ParallelHelper.Extensions;
 using ParallelHelper.Util;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -44,12 +43,12 @@ namespace ParallelHelper.Analyzer.Bugs {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
     // TODO add all immutable types
-    private static readonly LinqDescriptor[] LinqDescriptors = {
-      new LinqDescriptor("System.Linq.Enumerable", "ToArray", "ToList"),
-      new LinqDescriptor("System.Collections.Immutable.ImmutableArray", "ToImmutableArray"),
-      new LinqDescriptor("System.Collections.Immutable.ImmutableDictionary", "ToImmutableDictionary"),
-      new LinqDescriptor("System.Collections.Immutable.ImmutableHashSet", "ToImmutableHashSet"),
-      new LinqDescriptor("System.Collections.Immutable.ImmutableList", "ToImmutableList"),
+    private static readonly ClassMemberDescriptor[] LinqDescriptors = {
+      new ClassMemberDescriptor("System.Linq.Enumerable", "ToArray", "ToList"),
+      new ClassMemberDescriptor("System.Collections.Immutable.ImmutableArray", "ToImmutableArray"),
+      new ClassMemberDescriptor("System.Collections.Immutable.ImmutableDictionary", "ToImmutableDictionary"),
+      new ClassMemberDescriptor("System.Collections.Immutable.ImmutableHashSet", "ToImmutableHashSet"),
+      new ClassMemberDescriptor("System.Collections.Immutable.ImmutableList", "ToImmutableList"),
     };
 
     private static readonly string[] ConcurrentCollectionTypes = {
@@ -95,19 +94,9 @@ namespace ParallelHelper.Analyzer.Bugs {
             .Any(descriptor => IsLinqDescriptor(method, descriptor));
       }
 
-      private bool IsLinqDescriptor(IMethodSymbol method, LinqDescriptor descriptor) {
+      private bool IsLinqDescriptor(IMethodSymbol method, ClassMemberDescriptor descriptor) {
         return SemanticModel.IsEqualType(method.ContainingType, descriptor.Type)
-          && descriptor.Methods.Any(method.Name.Equals);
-      }
-    }
-
-    private class LinqDescriptor {
-      public string Type { get; }
-      public IReadOnlyCollection<string> Methods { get; }
-
-      public LinqDescriptor(string type, params string[] methods) {
-        Type = type;
-        Methods = methods;
+          && descriptor.Members.Any(method.Name.Equals);
       }
     }
   }

@@ -36,9 +36,9 @@ namespace ParallelHelper.Analyzer.Smells {
       isEnabledByDefault: true, description: Description, helpLinkUri: HelpLinkFactory.CreateUri(DiagnosticId)
     );
 
-    private static readonly TaskFactoryDescriptor[] TaskFactoryDescriptors = {
-      new TaskFactoryDescriptor("System.Threading.Tasks.Task", "Run"),
-      new TaskFactoryDescriptor("System.Threading.Tasks.TaskFactory", "StartNew"),
+    private static readonly ClassMemberDescriptor[] TaskFactoryDescriptors = {
+      new ClassMemberDescriptor("System.Threading.Tasks.Task", "Run"),
+      new ClassMemberDescriptor("System.Threading.Tasks.TaskFactory", "StartNew"),
     };
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
@@ -73,8 +73,9 @@ namespace ParallelHelper.Analyzer.Smells {
           && IsGenericTaskType(method.ReturnType);
       }
 
-      private bool IsTaskFactory(TaskFactoryDescriptor factoryDescriptor, IMethodSymbol method) {
-        return method.Name.Equals(factoryDescriptor.Method) && SemanticModel.IsEqualType(method.ContainingType, factoryDescriptor.Type);
+      private bool IsTaskFactory(ClassMemberDescriptor factoryDescriptor, IMethodSymbol method) {
+        return factoryDescriptor.Members.Contains(method.Name)
+          && SemanticModel.IsEqualType(method.ContainingType, factoryDescriptor.Type);
       }
 
       private static bool IsGenericTaskType(ITypeSymbol taskType) {
@@ -104,16 +105,6 @@ namespace ParallelHelper.Analyzer.Smells {
 
       private static bool IsConstant(ExpressionSyntax expression) {
         return expression is LiteralExpressionSyntax;
-      }
-    }
-
-    private class TaskFactoryDescriptor {
-      public string Type { get; }
-      public string Method { get; }
-
-      public TaskFactoryDescriptor(string type, string method) {
-        Type = type;
-        Method = method;
       }
     }
   }
