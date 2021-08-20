@@ -30,17 +30,34 @@ namespace ParallelHelper.Extensions {
     /// <summary>
     /// Checks if the given symbol is a member (field, method, or property) represented by any of the given descriptors.
     /// </summary>
-    /// <param name="symbol">The symbol to check if its a member.</param>
     /// <param name="semanticModel">The semantic model to use to check the type compatibility.</param>
     /// <param name="descriptors">The descriptors to query.</param>
+    /// <param name="symbol">The symbol to check if its a member.</param>
     /// <returns><c>true</c> if the given method is a member.</returns>
     public static bool AnyContainsMember(
       this IEnumerable<ClassMemberDescriptor> descriptors,
       SemanticModel semanticModel,
       ISymbol symbol
     ) {
-      return IsMemberSymbol(symbol)
-        && descriptors.Any(descriptor => descriptor.ContainsMember(semanticModel, symbol));
+      return descriptors.FirstContainingMember(semanticModel, symbol) != null;
+    }
+
+    /// <summary>
+    /// Tries to find the first descriptor containing the specified member.
+    /// </summary>
+    /// <param name="descriptors">The descriptors to find the member in.</param>
+    /// <param name="semanticModel">The semantic model to use to check the type compatibility.</param>
+    /// <param name="symbol">The symbol to find the containing descriptor of.</param>
+    /// <returns>The descriptor containing the given symbol or <c>null</c> if no descriptor contains the given member symbol.</returns>
+    public static TDescriptor? FirstContainingMember<TDescriptor>(
+      this IEnumerable<TDescriptor> descriptors,
+      SemanticModel semanticModel,
+      ISymbol symbol
+    ) where TDescriptor : ClassMemberDescriptor {
+      if(!IsMemberSymbol(symbol)) {
+        return null;
+      }
+      return descriptors.FirstOrDefault(descriptor => descriptor.ContainsMember(semanticModel, symbol));
     }
 
     private static bool ContainsMember(this ClassMemberDescriptor descriptor, SemanticModel semanticModel, ISymbol symbol) {
