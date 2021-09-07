@@ -2,6 +2,7 @@
 
 - New Analyzer: PH_P013 - Discouraged EntityFramework Method
 - Renamed Analyzer: PH_P003 - Discouraged Thread Method (was Discouraged Method)
+- Improved Analyzer: PH_B014 - Now reports await of as-expressions
 
 
 ------------------
