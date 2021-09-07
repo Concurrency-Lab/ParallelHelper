@@ -73,6 +73,7 @@ namespace ParallelHelper.Analyzer.Bugs {
           ParenthesizedExpressionSyntax parenthesized => ContainsConditionalAccess(parenthesized.Expression),
           MemberAccessExpressionSyntax memberAccess => ContainsConditionalAccess(memberAccess.Expression),
           CastExpressionSyntax cast => ContainsConditionalAccess(cast.Expression),
+          BinaryExpressionSyntax binary => binary.IsKind(SyntaxKind.AsExpression),
           _ => false
         };
       }

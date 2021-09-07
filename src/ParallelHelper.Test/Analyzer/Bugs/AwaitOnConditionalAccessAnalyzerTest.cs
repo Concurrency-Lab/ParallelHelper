@@ -99,6 +99,25 @@ class Test {
     }
 
     [TestMethod]
+    public void ReportsAwaitOnAsExpressionNestedInParentheses() {
+      const string source = @"
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWork() {
+    var test = new Sub();
+    await (test as Sub).Nested.Task;
+  }
+
+  private class Sub {
+    public Sub Nested { get; }
+    public Task Task { get; }
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(6, 5));
+    }
+
+    [TestMethod]
     public void DoesReportsDirectConditionalAccessWithoutAwait() {
       const string source = @"
 using System.Threading.Tasks;
