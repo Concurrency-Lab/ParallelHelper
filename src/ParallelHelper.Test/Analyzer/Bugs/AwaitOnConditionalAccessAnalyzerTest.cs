@@ -99,7 +99,7 @@ class Test {
     }
 
     [TestMethod]
-    public void ReportsAwaitOnAsExpression() {
+    public void ReportsAwaitOnAsExpressionNestedInParentheses() {
       const string source = @"
 using System.Threading.Tasks;
 
