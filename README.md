@@ -102,3 +102,5 @@ Issues are not mutually exclusive. After fixing one issue, the code may have a s
 Because of *Parallel Helper*'s conservative design, there is a chance of false positives, although the goal is to keep the false positive number small. Therefore, there is also a chance of false negatives. There is no guarantee that there are no concurrency problems if *Parallel Helper* does not report any issues.
 
 *Parallel Helper* focuses on issues on a higher semantic level; thus, it generally does not report issues such as data races, although they might be part of another problem. If a thorough data race analysis is desirable, consider the use of the Visual Studio extension [Parallel Checker](https://marketplace.visualstudio.com/items?itemName=LBHSR.HSRParallelCheckerforC7VS2017).
+
+There is no academic publication yet. However, *Parallel Helper* is based on the findings and core idea of [this thesis](https://eprints.ost.ch/id/eprint/953/).
