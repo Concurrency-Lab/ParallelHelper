@@ -3,7 +3,7 @@ using ParallelHelper.Analyzer.BestPractices;
 
 namespace ParallelHelper.Test.Analyzer.BestPractices {
   [TestClass]
-  public class MissingAsyncGateKeeperAnalyzerTest : AnalyzerTestBase<MissingAsyncGateKeeperAnalyzer> {
+  public class BlockingWaitOnAsyncMethodAnalyzerTest : AnalyzerTestBase<BlockingWaitOnAsyncMethodAnalyzer> {
     [TestMethod]
     public void ReportsWaitOnAsyncMethod() {
       const string source = @"

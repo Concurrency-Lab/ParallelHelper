@@ -30,14 +30,14 @@ namespace ParallelHelper.Analyzer.BestPractices {
   /// </example>
   /// </summary>
   [DiagnosticAnalyzer(LanguageNames.CSharp)]
-  public class MissingAsyncGateKeeperAnalyzer : DiagnosticAnalyzer {
+  public class BlockingWaitOnAsyncMethodAnalyzer : DiagnosticAnalyzer {
     // TODO maybe limit this to only analyze code that potentially has a synchronization context.
     public const string DiagnosticId = "PH_P005";
 
     private const string Category = "Concurrency";
 
-    private static readonly LocalizableString Title = "Missing Gate-Keeper";
-    private static readonly LocalizableString MessageFormat = "The blocking access '{0}' lacks a gate-keeper. It is recommended to enclose blocking task operations with a Task.Run to prevent the capturing of the synchronization context.";
+    private static readonly LocalizableString Title = "Blocking Wait on Async Method";
+    private static readonly LocalizableString MessageFormat = "The access is '{0}' is blocking. Either use the async/await pattern or use a gate-keeper to prevent capturing of the synchronization context.";
     private static readonly LocalizableString Description = "";
 
     private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
@@ -87,6 +87,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
       }
 
       public override void Analyze() {
+        var list = new List<string>();
         if(SemanticModel.GetSymbolInfo(Root, CancellationToken).Symbol is TMemberSymbol member && IsBlockingMemberAccessOnAsyncMethod(member)) {
           var access = $"{member.ContainingType.Name}.{member.Name}";
           Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetLocation(), access));
