@@ -87,7 +87,6 @@ namespace ParallelHelper.Analyzer.BestPractices {
       }
 
       public override void Analyze() {
-        var list = new List<string>();
         if(SemanticModel.GetSymbolInfo(Root, CancellationToken).Symbol is TMemberSymbol member && IsBlockingMemberAccessOnAsyncMethod(member)) {
           var access = $"{member.ContainingType.Name}.{member.Name}";
           Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetLocation(), access));
