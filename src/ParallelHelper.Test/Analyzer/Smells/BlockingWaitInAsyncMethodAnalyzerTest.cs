@@ -46,6 +46,24 @@ class Test {
     }
 
     [TestMethod]
+    public void ReportsValueTaskResultInAsyncMethod() {
+      const string source = @"
+using System.Threading.Tasks;
+
+class Test {
+  public async Task<int> DoWorkAsync() {
+    var value = GetAsync().Result;
+    return Task.FromResult(value);
+  }
+
+  private ValueTask<int> GetAsync() {
+    return new ValueTask<int>(1);
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(5, 17));
+    }
+
+    [TestMethod]
     public void ReportsTaskResultOfAsyncInvocation() {
       const string source = @"
 using System.Threading.Tasks;

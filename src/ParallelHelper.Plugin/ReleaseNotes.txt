@@ -4,6 +4,8 @@
 - Renamed Analyzer: PH_P003 - Discouraged Thread Method (was Discouraged Method)
 - Renamed Analyzer: PH_P005 - Blocking Wait on Async Method (was Missing Gate-Keeper)
 - Improved Analyzer: PH_B014 - Now reports await of as-expressions
+- Improved Analyzer: PH_P005 - Now reports blocking accesses on ValueTasks
+- Improved Analyzer: PH_S026 - Now reports blocking accesses on ValueTasks
 
 
 ------------------

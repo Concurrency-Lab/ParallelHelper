@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ParallelHelper.Analyzer.BestPractices;
+using System.Threading.Tasks;
 
 namespace ParallelHelper.Test.Analyzer.BestPractices {
   [TestClass]
@@ -52,6 +53,23 @@ class Test {
   }
 }";
       VerifyDiagnostic(source, new DiagnosticResultLocation(5, 5));
+    }
+
+    [TestMethod]
+    public void ReportsResultOnMethodWithAsyncSuffixReturningValueTask() {
+      const string source = @"
+using System.Threading.Tasks;
+
+class Test {
+  public void DoWork() {
+    var result = DoWorkAsync().Result;
+  }
+
+  public ValueTask<int> DoWorkAsync() {
+    return new ValueTask(1);
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(5, 18));
     }
 
     [TestMethod]

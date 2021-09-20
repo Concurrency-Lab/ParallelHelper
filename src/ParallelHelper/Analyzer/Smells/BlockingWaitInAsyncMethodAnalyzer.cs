@@ -44,9 +44,7 @@ namespace ParallelHelper.Analyzer.Smells {
       isEnabledByDefault: true, description: Description, helpLinkUri: HelpLinkFactory.CreateUri(DiagnosticId)
     );
 
-    private const string WaitMethod = "Wait";
     private const string ConfigureAwaitMethod = "ConfigureAwait";
-    private const string ResultProperty = "Result";
 
     private static readonly string[] WhenMethods = { "WhenAll", "WhenAny" };
 
@@ -92,32 +90,34 @@ namespace ParallelHelper.Analyzer.Smells {
 
       private IEnumerable<ExpressionSyntax> GetBlockingTaskUsages() {
         var awaitedTasks = GetAllAwaitedTasks().ToImmutableHashSet();
-        return GetTaskWaitInvocationsWithout(awaitedTasks)
+        return GetBlockingMethodInvocationsWithout(awaitedTasks)
           .Cast<ExpressionSyntax>()
-          .Concat(GetTaskResultAccessesWithout(awaitedTasks));
+          .Concat(GetBlockingPropertyAccessesWithout(awaitedTasks));
       }
 
-      private IEnumerable<InvocationExpressionSyntax> GetTaskWaitInvocationsWithout(ISet<ISymbol> excludedTasks) {
+      private IEnumerable<InvocationExpressionSyntax> GetBlockingMethodInvocationsWithout(ISet<ISymbol> excludedTasks) {
         return Root.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<InvocationExpressionSyntax>()
-          .Where(invocation => IsNotExcludedTaskMemberAccess(invocation.Expression, WaitMethod, excludedTasks));
+          .Where(_taskAnalysis.IsBlockingMethodInvocation)
+          .Where(invocation => !IsPotentiallyDesignatingSymbolOf(invocation.Expression, excludedTasks));
       }
 
-      private IEnumerable<MemberAccessExpressionSyntax> GetTaskResultAccessesWithout(ISet<ISymbol> excludedTasks) {
+      private IEnumerable<MemberAccessExpressionSyntax> GetBlockingPropertyAccessesWithout(ISet<ISymbol> excludedTasks) {
         return Root.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
           .OfType<MemberAccessExpressionSyntax>()
-          .Where(memberAccess => IsNotExcludedTaskMemberAccess(memberAccess, ResultProperty, excludedTasks));
+          .Where(_taskAnalysis.IsBlockingPropertyAccess)
+          .Where(memberAccess => !IsPotentiallyDesignatingSymbolOf(memberAccess, excludedTasks));
       }
 
-      private bool IsNotExcludedTaskMemberAccess(ExpressionSyntax expression, string memberName, ISet<ISymbol> excludedTasks) {
+      private bool IsPotentiallyDesignatingSymbolOf(ExpressionSyntax expression, ISet<ISymbol> symbols) {
         var memberAccess = expression as MemberAccessExpressionSyntax;
-        if(memberAccess == null || memberAccess.Name.Identifier.Text != memberName || !_taskAnalysis.IsTaskTyped(memberAccess.Expression)) {
-          return false;
+        if(memberAccess == null) {
+          return true;
         }
         var symbol = SemanticModel.GetSymbolInfo(memberAccess.Expression, CancellationToken).Symbol;
-        return symbol != null && !excludedTasks.Contains(symbol);
+        return symbol != null && symbols.Contains(symbol);
       }
 
       private IEnumerable<ISymbol> GetAllAwaitedTasks() {
