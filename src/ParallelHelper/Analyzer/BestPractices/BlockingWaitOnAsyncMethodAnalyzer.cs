@@ -2,10 +2,8 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using ParallelHelper.Extensions;
 using ParallelHelper.Util;
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 
 namespace ParallelHelper.Analyzer.BestPractices {
@@ -49,15 +47,6 @@ namespace ParallelHelper.Analyzer.BestPractices {
 
     private const string AsyncSuffix = "Async";
 
-    private static readonly ClassMemberDescriptor[] BlockingMethods = {
-      new ClassMemberDescriptor("System.Threading.Tasks.Task", "Wait"),
-    };
-
-
-    private static readonly ClassMemberDescriptor[] BlockingProperties = {
-      new ClassMemberDescriptor("System.Threading.Tasks.Task`1", "Result")
-    };
-
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
       context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
@@ -66,47 +55,49 @@ namespace ParallelHelper.Analyzer.BestPractices {
     }
 
     private static void AnalyzeInvocation(SyntaxNodeAnalysisContext context) {
-      new Analyzer<IMethodSymbol, InvocationExpressionSyntax>(
-        context, BlockingMethods, 
+      new Analyzer<InvocationExpressionSyntax>(
+        context,
+        new TaskAnalysis(context.SemanticModel, context.CancellationToken).IsBlockingMethodInvocation, 
         node => (node.Expression as MemberAccessExpressionSyntax)?.Expression
       ).Analyze();
     }
 
     private static void AnalyzeMemberAccess(SyntaxNodeAnalysisContext context) {
-      new Analyzer<IPropertySymbol, MemberAccessExpressionSyntax>(context, BlockingProperties, node => node.Expression).Analyze();
+      new Analyzer<MemberAccessExpressionSyntax>(
+        context,
+        new TaskAnalysis(context.SemanticModel, context.CancellationToken).IsBlockingPropertyAccess,
+        node => node.Expression
+      ).Analyze();
     }
 
-    private class Analyzer<TMemberSymbol, TExpression> : InternalAnalyzerBase<TExpression> where TMemberSymbol : ISymbol where TExpression : ExpressionSyntax {
+    private class Analyzer<TExpression> : InternalAnalyzerBase<TExpression> where TExpression : ExpressionSyntax {
+      private readonly Func<TExpression, bool> _isBlockingAccess;
       private readonly Func<TExpression, ExpressionSyntax?> _getInstanceExpression;
-      private readonly IReadOnlyList<ClassMemberDescriptor> _blockDescriptors;
 
-      public Analyzer(SyntaxNodeAnalysisContext context, IReadOnlyList<ClassMemberDescriptor> blockDescriptors, Func<TExpression, ExpressionSyntax?> getInstanceExpression)
+      public Analyzer(SyntaxNodeAnalysisContext context, Func<TExpression, bool> isBlockingAccess, Func<TExpression, ExpressionSyntax?> getInstanceExpression)
           : base(new SyntaxNodeAnalysisContextWrapper(context)) {
-        _blockDescriptors = blockDescriptors;
+        _isBlockingAccess = isBlockingAccess;
         _getInstanceExpression = getInstanceExpression;
       }
 
       public override void Analyze() {
-        if(SemanticModel.GetSymbolInfo(Root, CancellationToken).Symbol is TMemberSymbol member && IsBlockingMemberAccessOnAsyncMethod(member)) {
+        var member = SemanticModel.GetSymbolInfo(Root, CancellationToken).Symbol;
+        if(member != null && IsBlockingMemberAccessOnAsyncMethod()) {
           var access = $"{member.ContainingType.Name}.{member.Name}";
           Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetLocation(), access));
         }
       }
 
-      private bool IsBlockingMemberAccessOnAsyncMethod(TMemberSymbol member) {
+      private bool IsBlockingMemberAccessOnAsyncMethod() {
         var instanceExpression = _getInstanceExpression(Root);
         return instanceExpression != null
           && IsPotentiallyAsyncMethod(instanceExpression)
-          && IsBlockingMemberAccess(member);
+          && _isBlockingAccess(Root);
       }
 
       private bool IsPotentiallyAsyncMethod(ExpressionSyntax expression) {
         return SemanticModel.GetSymbolInfo(expression, CancellationToken).Symbol is IMethodSymbol method
           && (method.IsAsync || method.Name.EndsWith(AsyncSuffix));
-      }
-
-      private bool IsBlockingMemberAccess(TMemberSymbol member) {
-        return _blockDescriptors.AnyContainsMember(SemanticModel, member);
       }
     }
   }
