@@ -99,7 +99,7 @@ namespace ParallelHelper.Util {
     /// <returns><c>true</c> if it's a blocking property access, <c>false</c> otherwise.</returns>
     public bool IsBlockingPropertyAccess(MemberAccessExpressionSyntax memberAccess) {
       return _semanticModel.GetSymbolInfo(memberAccess, _cancellationToken).Symbol is IPropertySymbol property
-        && IsAnyTaskMember(property, BlockingProperties);
+        && IsAnyTaskOrValueTaskMember(property, BlockingProperties);
     }
 
     /// <summary>
@@ -108,7 +108,7 @@ namespace ParallelHelper.Util {
     /// <param name="invocation">The method invocation to check.</param>
     /// <returns><c>true</c> if it's a blocking method invocation, <c>false</c> otherwise.</returns>
     public bool IsBlockingMethodInvocation(InvocationExpressionSyntax invocation) {
-      return IsAnyTaskMethodInvocation(invocation, BlockingMethods);
+      return IsAnyTaskOrValueTaskMethodInvocation(invocation, BlockingMethods);
     }
 
     /// <summary>
@@ -117,7 +117,7 @@ namespace ParallelHelper.Util {
     /// <param name="invocation">The method invocation to check.</param>
     /// <returns><c>true</c> if it's a blocking method invocation, <c>false</c> otherwise.</returns>
     public bool IsContinuationMethodInvocation(InvocationExpressionSyntax invocation) {
-      return IsAnyTaskMethodInvocation(invocation, ContinuationMethods);
+      return IsAnyTaskOrValueTaskMethodInvocation(invocation, ContinuationMethods);
     }
 
     /// <summary>
@@ -140,13 +140,14 @@ namespace ParallelHelper.Util {
         && IsTaskType(method!.ReturnType);
     }
 
-    private bool IsAnyTaskMethodInvocation(InvocationExpressionSyntax invocation, ICollection<string> taskMembers) {
+    private bool IsAnyTaskOrValueTaskMethodInvocation(InvocationExpressionSyntax invocation, ICollection<string> taskMembers) {
       return _semanticModel.GetSymbolInfo(invocation, _cancellationToken).Symbol is IMethodSymbol method
-        && IsAnyTaskMember(method, taskMembers);
+        && IsAnyTaskOrValueTaskMember(method, taskMembers);
     }
 
-    private bool IsAnyTaskMember(ISymbol member, ICollection<string> taskMembers) {
-      return taskMembers.Contains(member.Name) && IsTaskType(member.ContainingType);
+    private bool IsAnyTaskOrValueTaskMember(ISymbol member, ICollection<string> taskMembers) {
+      return taskMembers.Contains(member.Name)
+        && (IsTaskType(member.ContainingType) || IsValueTaskType(member.ContainingType));
     }
 
     private bool IsTaskMethodInvocation(InvocationExpressionSyntax invocation, string taskMember) {

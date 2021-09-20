@@ -393,6 +393,27 @@ public class Test {
     }
 
     [TestMethod]
+    public void IsBlockingPropertyAccessReturnsTrueForAccessingValueTaskResult() {
+      const string source = @"
+using System.Threading.Tasks;
+
+public class Test {
+  public int GetValue() {
+    var task = new ValueTask<int>(1);
+    return task.Result;
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var type = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<ReturnStatementSyntax>()
+        .Select(returnStatement => (MemberAccessExpressionSyntax)returnStatement.Expression)
+        .Single();
+      var analysis = new TaskAnalysis(semanticModel, default);
+      Assert.IsTrue(analysis.IsBlockingPropertyAccess(type));
+    }
+
+    [TestMethod]
     public void IsBlockingPropertyAccessReturnsFalseForAccessingTaskStatus() {
       const string source = @"
 using System.Threading.Tasks;
