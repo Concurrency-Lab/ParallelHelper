@@ -3,7 +3,7 @@ using ParallelHelper.Analyzer.Bugs;
 
 namespace ParallelHelper.Test.Analyzer.Bugs {
   [TestClass]
-  public class MissingMonitorLockOnMultipleFieldAnalyzerTest : AnalyzerTestBase<MissingMonitorLockOnMultipleFieldAnalyzer> {
+  public class IncompleteMonitorSynchronizationOnMultipleFieldsAnalyzerTest : AnalyzerTestBase<IncompleteMonitorSynchronizationOnMultipleFieldsAnalyzer> {
     [TestMethod]
     public void ReportsDoubleReadAccessOnFieldsWithOneWrittenInsideLock() {
       const string source = @"
