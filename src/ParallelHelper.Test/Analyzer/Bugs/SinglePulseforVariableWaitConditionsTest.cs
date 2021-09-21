@@ -3,7 +3,7 @@ using ParallelHelper.Analyzer.Bugs;
 
 namespace ParallelHelper.Test.Analyzer.Bugs {
   [TestClass]
-  public class MonitorPulseWithParameterDependentWaitConditionsAnalyzerTest : AnalyzerTestBase<MonitorPulseWithParameterDependentWaitConditionsAnalyzer> {
+  public class SinglePulseforVariableWaitConditionsTest : AnalyzerTestBase<SinglePulseforVariableWaitConditionsAnalyzer> {
     [TestMethod]
     public void ReportsPulseSignalingParameterDependantWait() {
       const string source = @"

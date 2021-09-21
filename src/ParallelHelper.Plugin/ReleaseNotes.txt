@@ -5,6 +5,7 @@
 - Renamed Analyzer: PH_P005 - Blocking Wait on Async Method (was Missing Gate-Keeper)
 - Renamed Analyzer: PH_B009 - Incomplete Monitor Synchronization on Multiple Fields (was Missing Monitor Synchronization)
 - Renamed Analyzer: PH_B010 - Incomplete Monitor Synchronization on Single Field (was Missing Monitor Synchronization)
+- Renamed Analyzer: PH_B004 - Single Pulse for Variable Wait Conditions (Monitor.Wait is Enclosed By Parameter-Dependent While-Loop)
 - Improved Analyzer: PH_B014 - Now reports await of as-expressions
 - Improved Analyzer: PH_P005 - Now reports blocking accesses on ValueTasks
 - Improved Analyzer: PH_S026 - Now reports blocking accesses on ValueTasks
