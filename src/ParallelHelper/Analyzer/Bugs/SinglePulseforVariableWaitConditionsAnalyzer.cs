@@ -40,12 +40,12 @@ namespace ParallelHelper.Analyzer.Bugs {
   /// </example>
   /// </summary>
   [DiagnosticAnalyzer(LanguageNames.CSharp)]
-  public class MonitorPulseWithParameterDependentWaitConditionsAnalyzer : DiagnosticAnalyzer {
+  public class SinglePulseforVariableWaitConditionsAnalyzer : DiagnosticAnalyzer {
     public const string DiagnosticId = "PH_B004";
 
     private const string Category = "Concurrency";
 
-    private static readonly LocalizableString Title = "Monitor.Wait is Enclosed By Parameter-Dependent While-Loop";
+    private static readonly LocalizableString Title = "Single Pulse for Variable Wait Conditions";
     private static readonly LocalizableString MessageFormat = "It appears that at least one Monitor.Wait depends on a method parameter (chance for threads with semantically different wait conditions), Monitor.PulseAll might be more suitable here.";
     private static readonly LocalizableString Description = "";
 
