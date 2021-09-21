@@ -36,12 +36,12 @@ namespace ParallelHelper.Analyzer.Bugs {
   /// </example>
   /// </summary>
   [DiagnosticAnalyzer(LanguageNames.CSharp)]
-  public class MissingMonitorLockOnSingleFieldAnalyzer : DiagnosticAnalyzer {
+  public class IncompleteMonitorSynchronizationOnSingleFieldAnalyzer : DiagnosticAnalyzer {
     public const string DiagnosticId = "PH_B010";
 
     private const string Category = "Concurrency";
 
-    private static readonly LocalizableString Title = "Missing Monitor Synchronization";
+    private static readonly LocalizableString Title = "Incomplete Monitor Synchronization on Single Field";
     private static readonly LocalizableString MessageFormat = "The access to the field '{0}' is probably missing an enclosing lock-statement for synchronization.";
     private static readonly LocalizableString Description = "";
 
