@@ -369,5 +369,38 @@ class Test : Base {
 }";
       VerifyDiagnostic(source, new DiagnosticResultLocation(11, 11));
     }
+
+
+    [TestMethod]
+    public void DoesNotReportIfMissingForMethodThatIsExcludedByDefault() {
+      const string source = @"
+using System.Threading;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync1(CancellationToken cancellationToken = default) {
+    await Task.Run(() => {});
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+
+    [TestMethod]
+    public void DoesNotReportIfMissingForMethodThatIsManuallyExcluded() {
+      const string source = @"
+using System.Threading;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync1(CancellationToken cancellationToken = default) {
+    await Task.Delay(1000);
+  }
+}";
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_P007.exclusions", "System.Threading.Tasks.Task:Delay")
+        .VerifyDiagnostic();
+    }
   }
 }
