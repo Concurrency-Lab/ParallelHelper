@@ -8,6 +8,7 @@ dotnet_diagnostic.PH_P004.severity = warning
 dotnet_diagnostic.PH_P005.severity = warning
 dotnet_diagnostic.PH_P006.severity = warning
 dotnet_diagnostic.PH_P007.severity = warning
+dotnet_diagnostic.PH_P007.exclusions = 
 dotnet_diagnostic.PH_P008.severity = warning
 dotnet_diagnostic.PH_P009.severity = warning
 dotnet_diagnostic.PH_P010.severity = warning
