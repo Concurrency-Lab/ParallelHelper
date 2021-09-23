@@ -143,6 +143,23 @@ class Test {
     }
 
     [TestMethod]
+    public void ReportsIfMissingForMethodThatIsExcludedByDefaultButReenabled() {
+      const string source = @"
+using System.Threading;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync1(CancellationToken cancellationToken = default) {
+    await Task.Run(() => {});
+  }
+}";
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_P007.exclusions", "")
+        .VerifyDiagnostic(new DiagnosticResultLocation(6, 11));
+    }
+
+    [TestMethod]
     public void DoesNotReportIfCancellationTokenIsPassed() {
       const string source = @"
 using System.Threading;
@@ -384,7 +401,6 @@ class Test {
 }";
       VerifyDiagnostic(source);
     }
-
 
     [TestMethod]
     public void DoesNotReportIfMissingForMethodThatIsManuallyExcluded() {
