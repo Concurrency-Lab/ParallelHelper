@@ -54,6 +54,8 @@ namespace ParallelHelper.Analyzer.BestPractices {
       "System.Threading.CancellationTokenSource"
     };
 
+    private const string DefaultExcludedMethods = "System.Threading.Tasks.Task:Run";
+
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
       context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
@@ -62,7 +64,8 @@ namespace ParallelHelper.Analyzer.BestPractices {
 
     private static void AnalyzeMemberAccess(SyntaxNodeAnalysisContext context) {
       var (staticTokens, instanceTokens) = GetDeclaredCancellationTokensCount(context);
-      new Analyzer(context, staticTokens, instanceTokens).Analyze();
+      var excludedMethods = GetExcludedMethods(context).ToArray();
+      new Analyzer(context, staticTokens, instanceTokens, excludedMethods).Analyze();
     }
 
     private static (int StaticTokens, int InstanceTokens) GetDeclaredCancellationTokensCount(SyntaxNodeAnalysisContext context) {
@@ -92,7 +95,23 @@ namespace ParallelHelper.Analyzer.BestPractices {
       return CancellationTokenTypes.Any(cancellationTokenType => semanticModel.IsEqualType(type, cancellationTokenType));
     }
 
+    private static IEnumerable<ClassMemberDescriptor> GetExcludedMethods(SyntaxNodeAnalysisContext context) {
+      return context.Options.AnalyzerConfigOptionsProvider.GetOptions(context.SemanticModel.SyntaxTree)
+        .GetConfig(Rule, "exclusions", DefaultExcludedMethods).Split()
+        .WithCancellation(context.CancellationToken)
+        .Select(ToMethodDescriptor)
+        .IsNotNull();
+    }
+
+    private static ClassMemberDescriptor? ToMethodDescriptor(string config) {
+      var splitByTypeAndMethods = config.Split(':');
+      return splitByTypeAndMethods.Length != 2
+        ? null
+        : new ClassMemberDescriptor(splitByTypeAndMethods[0], splitByTypeAndMethods[1].Split(','));
+    }
+
     private class Analyzer : InternalAnalyzerWithSyntaxWalkerBase<ClassDeclarationSyntax> {
+
       // TODO Do not assume that nested classes share the same scope?
       // TODO Avoid that two analyses of nested classes report the same issue twice.
       private bool EnclosingScopeHasUseableToken {
@@ -106,21 +125,27 @@ namespace ParallelHelper.Analyzer.BestPractices {
 
       private readonly int _instanceTokensInEnclosingScope;
       private readonly int _staticTokensInEnclosingScope;
-      private int _localTokensInEnclosingScope;
+      private readonly IReadOnlyCollection<ClassMemberDescriptor> _excludedMethods;
 
+      private int _localTokensInEnclosingScope;
       private bool _enclosingScopeIsInstance;
 
-      public Analyzer(SyntaxNodeAnalysisContext context, int staticFieldTokens, int instanceFieldTokens)
+      public Analyzer(SyntaxNodeAnalysisContext context, int staticFieldTokens, int instanceFieldTokens, IReadOnlyCollection<ClassMemberDescriptor> excludedMethods)
           : base(new SyntaxNodeAnalysisContextWrapper(context)) {
         _staticTokensInEnclosingScope = staticFieldTokens;
         _instanceTokensInEnclosingScope = instanceFieldTokens;
+        _excludedMethods = excludedMethods;
       }
 
       public override void VisitInvocationExpression(InvocationExpressionSyntax node) {
-        if(EnclosingScopeHasUseableToken && InvocationMissesCancellationToken(node)) {
+        if(EnclosingScopeHasUseableToken && !IsExcludedMethod(node) && InvocationMissesCancellationToken(node)) {
           Context.ReportDiagnostic(Diagnostic.Create(Rule, node.GetLocation()));
         }
         base.VisitInvocationExpression(node);
+      }
+
+      private bool IsExcludedMethod(InvocationExpressionSyntax invocation) {
+        return _excludedMethods.AnyContainsInvokedMethod(SemanticModel, invocation, CancellationToken);
       }
 
       public override void VisitMethodDeclaration(MethodDeclarationSyntax node) {
