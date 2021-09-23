@@ -6,6 +6,7 @@
 - Improved Analyzer: PH_B014 - Now reports await of as-expressions
 - Improved Analyzer: PH_P005 - Now reports blocking accesses on ValueTasks
 - Improved Analyzer: PH_S026 - Now reports blocking accesses on ValueTasks
+- Improved Analyzer: PH_P007 - Now supports method exclusions (Task.Run by default)
 
 
 ------------------

@@ -22,7 +22,8 @@
 - Renamed Analyzer: PH_P005 - Blocking Wait on Async Method (was Missing Gate-Keeper)
 - Improved Analyzer: PH_B014 - Now reports await of as-expressions
 - Improved Analyzer: PH_P005 - Now reports blocking accesses on ValueTasks
-- Improved Analyzer: PH_S026 - Now reports blocking accesses on ValueTasks</PackageReleaseNotes>
+- Improved Analyzer: PH_S026 - Now reports blocking accesses on ValueTasks
+- Improved Analyzer: PH_P007 - Now supports method exclusions (Task.Run by default)</PackageReleaseNotes>
     <Copyright>Copyright (C) 2019 - 2021  Christoph Amrein, Concurrency Lab, Eastern Switzerland University of Applied Sciences, Switzerland</Copyright>
     <PackageTags>C#, Parallel, Asynchronous, Concurrency, Bugs, Best Practices, TPL, Task, QC, Static Analysis, async, await</PackageTags>
     <NoPackageAnalysis>true</NoPackageAnalysis>
