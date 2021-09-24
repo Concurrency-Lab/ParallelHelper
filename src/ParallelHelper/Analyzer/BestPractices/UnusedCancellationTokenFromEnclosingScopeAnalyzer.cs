@@ -97,17 +97,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
 
     private static IEnumerable<ClassMemberDescriptor> GetExcludedMethods(SyntaxNodeAnalysisContext context) {
       return context.Options.AnalyzerConfigOptionsProvider.GetOptions(context.SemanticModel.SyntaxTree)
-        .GetConfig(Rule, "exclusions", DefaultExcludedMethods).Split()
-        .WithCancellation(context.CancellationToken)
-        .Select(ToMethodDescriptor)
-        .IsNotNull();
-    }
-
-    private static ClassMemberDescriptor? ToMethodDescriptor(string config) {
-      var splitByTypeAndMethods = config.Split(':');
-      return splitByTypeAndMethods.Length != 2
-        ? null
-        : new ClassMemberDescriptor(splitByTypeAndMethods[0], splitByTypeAndMethods[1].Split(','));
+        .GetConfigAsMemberDescriptors(Rule, "exclusions", DefaultExcludedMethods);
     }
 
     private class Analyzer : InternalAnalyzerWithSyntaxWalkerBase<ClassDeclarationSyntax> {
