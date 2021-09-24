@@ -86,17 +86,7 @@ Microsoft.EntityFrameworkCore.DbSet`1:Add,AddRange";
       }
 
       private IEnumerable<ClassMemberDescriptor> GetExcludedMethods() {
-        return Context.Options.GetConfig(Rule, "exclusions", DefaultExcludedMethods).Split()
-          .WithCancellation(CancellationToken)
-          .Select(ToMethodDescriptor)
-          .IsNotNull();
-      }
-
-      private static ClassMemberDescriptor? ToMethodDescriptor(string config) {
-        var splitByTypeAndMethods = config.Split(':');
-        return splitByTypeAndMethods.Length != 2
-          ? null
-          : new ClassMemberDescriptor(splitByTypeAndMethods[0], splitByTypeAndMethods[1].Split(','));
+        return Context.Options.GetConfigAsMemberDescriptors(Rule, "exclusions", DefaultExcludedMethods);
       }
 
       private IEnumerable<InvocationExpressionSyntax> GetAllInvocations() {
