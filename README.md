@@ -64,7 +64,7 @@ To enable reporting of one or more of the above issues, add an entry like the fo
 dotnet_diagnostic.PH_S004.severity = suggestion
 ```
 
-The same method allows changing the severity of any of the reported issues. The possible severities are *none*, *silent*, *suggestion*, *warning*, and *error*. See the Microsoft documentation about [severity levels](https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-language-conventions?view=vs-2019#severity-levels) for more details. You may also take a look at the [example .editorconfig](reportall.editorconfig) that sets all analyzers to *warning* and makes them the least conservative.
+The same method allows changing the severity of any of the reported issues. The possible severities are *none*, *silent*, *suggestion*, *warning*, and *error*. See the Microsoft documentation about [severity levels](https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-options#severity-level) for more details. You may also take a look at the [example .editorconfig](reportall.editorconfig) that sets all analyzers to *warning* and makes them the least conservative.
 
 Alternatively, an entry to the *CodeAnalysis.ruleset* file has the same effect.
 
