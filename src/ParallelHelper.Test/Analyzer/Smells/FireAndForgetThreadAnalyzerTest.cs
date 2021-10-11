@@ -5,45 +5,6 @@ namespace ParallelHelper.Test.Analyzer.Smells {
   [TestClass]
   public class FireAndForgetThreadAnalyzerTest : AnalyzerTestBase<FireAndForgetThreadAnalyzer> {
     [TestMethod]
-    public void ReportsTaskRunFireAndForget() {
-      const string source = @"
-using System.Threading.Tasks;
-
-class Test {
-  public void DoWork() {
-    Task.Run(() => {});
-  }
-}";
-      VerifyDiagnostic(source, new DiagnosticResultLocation(5, 5));
-    }
-
-    [TestMethod]
-    public void ReportsTaskFactoryStartNewFireAndForget() {
-      const string source = @"
-using System.Threading.Tasks;
-
-class Test {
-  public void DoWork() {
-    Task.Factory.StartNew(() => {});
-  }
-}";
-      VerifyDiagnostic(source, new DiagnosticResultLocation(5, 5));
-    }
-
-    [TestMethod]
-    public void ReportsGenericTaskRunFireAndForget() {
-      const string source = @"
-using System.Threading.Tasks;
-
-class Test {
-  public void DoWork() {
-    Task.Run(() => 123);
-  }
-}";
-      VerifyDiagnostic(source, new DiagnosticResultLocation(5, 5));
-    }
-
-    [TestMethod]
     public void ReportsThreadStartFireAndForget() {
       const string source = @"
 using System.Threading;
@@ -71,70 +32,33 @@ class Test {
     }
 
     [TestMethod]
-    public void DoesNotReportAwaitedTask() {
+    public void DoesNotReportThreadStartedFromMethodInvocation() {
       const string source = @"
-using System.Threading.Tasks;
-
-class Test {
-  public async Task DoWork() {
-    await Task.Run(() => {});
-  }
-}";
-      VerifyDiagnostic(source);
-    }
-
-    [TestMethod]
-    public void DoesNotReportReturnedTask() {
-      const string source = @"
-using System.Threading.Tasks;
-
-class Test {
-  public Task DoWork() {
-    return Task.Run(() => {});
-  }
-}";
-      VerifyDiagnostic(source);
-    }
-
-    [TestMethod]
-    public void DoesNotReportTaskAssignedToVariable() {
-      const string source = @"
-using System.Threading.Tasks;
+using System.Threading;
 
 class Test {
   public void DoWork() {
-    var task = Task.Run(() => {});
+    CreateThread().Start();
+  }
+
+  public Thread CreateThread() {
+    return new Thread(() => {});
   }
 }";
       VerifyDiagnostic(source);
     }
 
     [TestMethod]
-    public void DoesNotReportTaskPassedAsArgument() {
-      const string source = @"
-using System.Threading.Tasks;
-
-class Test {
-  public void DoWork() {
-    Receiver(Task.Run(() => {}));
-  }
-
-  public void Receiver(Task task) {}
-}";
-      VerifyDiagnostic(source);
-    }
-
-    [TestMethod]
-    public void DoesNotReportNonTaskFireAndForget() {
+    public void DoesNotReportNonThreadFireAndForget() {
       const string source = @"
 using System.Threading.Tasks;
 
 class Test {
   public static void DoWork() {
-    new Test().Run();
+    new Test().Start();
   }
 
-  public void Run() {}
+  public void Start() {}
 }";
       VerifyDiagnostic(source);
     }
