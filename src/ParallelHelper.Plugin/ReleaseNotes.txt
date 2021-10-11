@@ -1,6 +1,7 @@
 ﻿v3.3.0
 
 - New Analyzer: PH_P013 - Discouraged EntityFramework Method
+- New Analyzer: PH_S033 - Fire-and-Forget Tasks
 - Renamed Analyzer: PH_P003 - Discouraged Thread Method (was Discouraged Method)
 - Renamed Analyzer: PH_P005 - Blocking Wait on Async Method (was Missing Gate-Keeper)
 - Renamed Analyzer: PH_B009 - Incomplete Monitor Synchronization on Multiple Fields (was Missing Monitor Synchronization)
@@ -10,6 +11,7 @@
 - Improved Analyzer: PH_P005 - Now reports blocking accesses on ValueTasks
 - Improved Analyzer: PH_S026 - Now reports blocking accesses on ValueTasks
 - Improved Analyzer: PH_P007 - Now supports method exclusions (Task.Run by default)
+- Improved Analyzer: PH_S004 - Moved Task related analysis to the new analyzer PH_S033
 
 
 ------------------

@@ -8,26 +8,26 @@ using System.Collections.Immutable;
 
 namespace ParallelHelper.Analyzer.Smells {
   /// <summary>
-  /// Analyzer that analyzes sources for the use of fire-and-forget threads.
+  /// Analyzer that analyzes sources for the use of fire-and-forget tasks.
   /// 
-  /// <example>Illustrates a class with a method that starts a thread without making use of the thread object.
+  /// <example>Illustrates a class with a method that starts a task without making use of the returned task object.
   /// <code>
   /// class Sample {
   ///   public void DoWork() {
-  ///     new Thread(() => /* ... */)).Start();
+  ///     Task.Run(() => /* ... */));
   ///   }
   /// }
   /// </code>
   /// </example>
   /// </summary>
   [DiagnosticAnalyzer(LanguageNames.CSharp)]
-  public class FireAndForgetThreadAnalyzer : DiagnosticAnalyzer {
-    public const string DiagnosticId = "PH_S004";
+  public class FireAndForgetTaskAnalyzer : DiagnosticAnalyzer {
+    public const string DiagnosticId = "PH_S033";
 
     private const string Category = "Concurrency";
 
-    private static readonly LocalizableString Title = "Fire-and-Forget Threads";
-    private static readonly LocalizableString MessageFormat = "The use of threads in a fire-and-forget manner is discouraged.";
+    private static readonly LocalizableString Title = "Fire-and-Forget Tasks";
+    private static readonly LocalizableString MessageFormat = "The use of tasks in a fire-and-forget manner is discouraged.";
     private static readonly LocalizableString Description = "";
 
     private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
@@ -35,8 +35,9 @@ namespace ParallelHelper.Analyzer.Smells {
       isEnabledByDefault: true, description: Description, helpLinkUri: HelpLinkFactory.CreateUri(DiagnosticId)
     );
 
-    private static readonly ClassMemberDescriptor[] ThreadStartMethods = {
-      new ClassMemberDescriptor("System.Threading.Thread", "Start")
+    private static readonly ClassMemberDescriptor[] TaskStartMethods = {
+      new ClassMemberDescriptor("System.Threading.Tasks.Task", "Run"),
+      new ClassMemberDescriptor("System.Threading.Tasks.TaskFactory", "StartNew")
     };
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
@@ -55,25 +56,19 @@ namespace ParallelHelper.Analyzer.Smells {
       public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
-        if(IsFireAndForgetThread()) {
+        if(IsFireAndForgetTask()) {
           Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetLocation()));
         }
       }
 
-      private bool IsFireAndForgetThread() {
+      private bool IsFireAndForgetTask() {
         return Root.Expression is InvocationExpressionSyntax invocation
-          && IsAccessingInlineConstructedInstance(invocation)
           && SemanticModel.GetSymbolInfo(invocation, CancellationToken).Symbol is IMethodSymbol method
-          && IsThreadStartMethod(method);
+          && IsTaskStartMethod(method);
       }
 
-      private bool IsThreadStartMethod(IMethodSymbol method) {
-        return ThreadStartMethods.AnyContainsMember(SemanticModel, method);
-      }
-
-      private static bool IsAccessingInlineConstructedInstance(InvocationExpressionSyntax invocationExpression) {
-        return invocationExpression.Expression is MemberAccessExpressionSyntax memberAccess
-          && memberAccess.Expression is ObjectCreationExpressionSyntax;
+      private bool IsTaskStartMethod(IMethodSymbol method) {
+        return TaskStartMethods.AnyContainsMember(SemanticModel, method);
       }
     }
   }
