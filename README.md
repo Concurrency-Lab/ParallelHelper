@@ -53,9 +53,10 @@ The following issues are *Hidden* by default:
 - [PH_P004](doc/analyzers/PH_P004.md) - CancellationToken not Passed Through (this analysis is covered by [PH_P007](doc/analyzers/PH_P007.md))
 - [PH_P005](doc/analyzers/PH_P005.md) - Blocking Wait on Async Method
 - [PH_P010](doc/analyzers/PH_P010.md) - Async Instead of Continuation
-- [PH_S004](doc/analyzers/PH_S004.md) - Fire-and-forget Threads
+- [PH_S004](doc/analyzers/PH_S004.md) - Fire-and-Forget Threads
 - [PH_S006](doc/analyzers/PH_S006.md) - Unnecessarily Async Methods
 - [PH_S008](doc/analyzers/PH_S008.md) - Timer Scheduled upon Instantiation
+- [PH_S033](doc/analyzers/PH_S033.md) - Fire-and-Forget Tasks
 
 To enable reporting of one or more of the above issues, add an entry like the following one to the *.editorconfig* file (does not work for Visual Studio 2017).
 
