@@ -18,7 +18,6 @@ dotnet_diagnostic.PH_P012.named = report
 dotnet_diagnostic.PH_P013.severity = warning
 
 # Smells
-dotnet_diagnostic.PH_S001.severity = warning
 dotnet_diagnostic.PH_S002.severity = warning
 dotnet_diagnostic.PH_S003.severity = warning
 dotnet_diagnostic.PH_S004.severity = warning
@@ -33,7 +32,6 @@ dotnet_diagnostic.PH_S011.severity = warning
 dotnet_diagnostic.PH_S012.severity = warning
 dotnet_diagnostic.PH_S013.severity = warning
 dotnet_diagnostic.PH_S014.severity = warning
-dotnet_diagnostic.PH_S015.severity = warning
 dotnet_diagnostic.PH_S016.severity = warning
 dotnet_diagnostic.PH_S017.severity = warning
 dotnet_diagnostic.PH_S019.severity = warning
@@ -43,11 +41,14 @@ dotnet_diagnostic.PH_S020.severity = warning
 dotnet_diagnostic.PH_S021.severity = warning
 dotnet_diagnostic.PH_S022.severity = warning
 dotnet_diagnostic.PH_S023.severity = warning
-dotnet_diagnostic.PH_S024.severity = warning
 dotnet_diagnostic.PH_S025.severity = warning
 dotnet_diagnostic.PH_S026.severity = warning
 dotnet_diagnostic.PH_S027.severity = warning
 dotnet_diagnostic.PH_S028.severity = warning
+dotnet_diagnostic.PH_S029.severity = warning
+dotnet_diagnostic.PH_S030.severity = warning
+dotnet_diagnostic.PH_S031.severity = warning
+dotnet_diagnostic.PH_S032.severity = warning
 dotnet_diagnostic.PH_S033.severity = warning
 
 # Bugs
