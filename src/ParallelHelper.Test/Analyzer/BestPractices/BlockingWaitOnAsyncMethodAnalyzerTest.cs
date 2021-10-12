@@ -1,6 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ParallelHelper.Analyzer.BestPractices;
-using System.Threading.Tasks;
 
 namespace ParallelHelper.Test.Analyzer.BestPractices {
   [TestClass]
