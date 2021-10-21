@@ -253,7 +253,7 @@ class Test {
     }
 
     [TestMethod]
-    public void ReportsAccessToMethodWithAsyncCounterPartWithDifferentParameterCountIfMatchParameterTypesIsDisabled() {
+    public void ReportsAccessToMethodWithAsyncCounterPartWithDifferentParameterCount() {
       const string source = @"
 using System.IO;
 using System.Net.Sockets;
@@ -272,14 +272,11 @@ class Test {
     return Task.FromResult(value);
   }
 }";
-      CreateAnalyzerCompilationBuilder()
-        .AddSourceTexts(source)
-        .AddAnalyzerOption("dotnet_diagnostic.PH_S019.parameterTypes", "ignore")
-        .VerifyDiagnostic(new DiagnosticResultLocation(7, 17));
+      VerifyDiagnostic(source, new DiagnosticResultLocation(7, 17));
     }
 
     [TestMethod]
-    public void ReportsAccessToMethodWithAsyncCounterPartWithDifferentParameterTypesIfMatchParameterTypesIsDisabled() {
+    public void ReportsAccessToMethodWithAsyncCounterPartWithDifferentParameterTypes() {
       const string source = @"
 using System.IO;
 using System.Net.Sockets;
@@ -297,14 +294,11 @@ class Test {
     return Task.CompletedTask;
   }
 }";
-      CreateAnalyzerCompilationBuilder()
-        .AddSourceTexts(source)
-        .AddAnalyzerOption("dotnet_diagnostic.PH_S019.parameterTypes", "ignore")
-        .VerifyDiagnostic(new DiagnosticResultLocation(7, 5));
+      VerifyDiagnostic(source, new DiagnosticResultLocation(7, 5));
     }
 
     [TestMethod]
-    public void ReportsAccessToMethodWithAsyncCounterPartWithDifferentParameterCountAndTypesIfMatchParameterTypesIsDisabled() {
+    public void ReportsAccessToMethodWithAsyncCounterPartWithDifferentParameterCountAndTypes() {
       const string source = @"
 using System.IO;
 using System.Net.Sockets;
@@ -322,10 +316,7 @@ class Test {
     return Task.CompletedTask;
   }
 }";
-      CreateAnalyzerCompilationBuilder()
-        .AddSourceTexts(source)
-        .AddAnalyzerOption("dotnet_diagnostic.PH_S019.parameterTypes", "ignore")
-        .VerifyDiagnostic(new DiagnosticResultLocation(7, 5));
+      VerifyDiagnostic(source, new DiagnosticResultLocation(7, 5));
     }
 
     [TestMethod]
@@ -704,7 +695,7 @@ class Test {
     }
 
     [TestMethod]
-    public void DoesNotReportAccessToMethodWithAsyncCounterPartWithDifferentParameterCount() {
+    public void DoesNotReportAccessToMethodWithAsyncCounterPartWithDifferentParameterCountIfMatchParameterTypesIsEnabled() {
       const string source = @"
 using System.IO;
 using System.Net.Sockets;
@@ -723,11 +714,14 @@ class Test {
     return Task.FromResult(value);
   }
 }";
-      VerifyDiagnostic(source);
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_S019.parameterTypes", "match")
+        .VerifyDiagnostic();
     }
 
     [TestMethod]
-    public void DoesNotReportAccessToMethodWithAsyncCounterPartWithDifferentParameterTypes() {
+    public void DoesNotReportAccessToMethodWithAsyncCounterPartWithDifferentParameterTypesIfMatchParameterTypesIsEnabled() {
       const string source = @"
 using System.IO;
 using System.Net.Sockets;
@@ -745,11 +739,14 @@ class Test {
     return Task.CompletedTask;
   }
 }";
-      VerifyDiagnostic(source);
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_S019.parameterTypes", "match")
+        .VerifyDiagnostic();
     }
 
     [TestMethod]
-    public void DoesNotReportAccessToMethodWithAsyncCounterPartWithDifferentParameterCountAndTypes() {
+    public void DoesNotReportAccessToMethodWithAsyncCounterPartWithDifferentParameterCountAndTypesIfMatchParameterTypesIsEnabled() {
       const string source = @"
 using System.IO;
 using System.Net.Sockets;
@@ -767,7 +764,10 @@ class Test {
     return Task.CompletedTask;
   }
 }";
-      VerifyDiagnostic(source);
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_S019.parameterTypes", "match")
+        .VerifyDiagnostic();
     }
   }
 }

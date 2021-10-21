@@ -34,8 +34,6 @@ namespace ParallelHelper.Analyzer.Smells {
 
     private const string Category = "Concurrency";
 
-    private const string AsyncSuffix = "Async";
-
     private static readonly LocalizableString Title = "Blocking Method in Async Method";
     private static readonly LocalizableString MessageFormat = "The blocking method '{0}' is used inside an async method, although it appears to have an async counterpart '{1}'.";
     private static readonly LocalizableString Description = "";
@@ -47,6 +45,9 @@ namespace ParallelHelper.Analyzer.Smells {
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
+    private const string AsyncSuffix = "Async";
+    private const string MatchOption = "match";
+    private const string IgnoreOption = "ignore";
     private const string DefaultExcludedMethods = @"Microsoft.EntityFrameworkCore.DbContext:Add,AddRange
 Microsoft.EntityFrameworkCore.DbSet`1:Add,AddRange";
 
@@ -62,7 +63,6 @@ Microsoft.EntityFrameworkCore.DbSet`1:Add,AddRange";
     }
 
     private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
-      private const string MatchOption = "match";
       private readonly TaskAnalysis _taskAnalysis;
 
       private bool IsAsyncMethod => Root is MethodDeclarationSyntax method 
@@ -71,7 +71,7 @@ Microsoft.EntityFrameworkCore.DbSet`1:Add,AddRange";
         && function.AsyncKeyword.IsKind(SyntaxKind.AsyncKeyword);
 
       private bool IsMatchReturnTypeEnabled => Context.Options.GetConfig(Rule, "returnType", MatchOption) == MatchOption;
-      private bool IsMatchParameterTypesEnabled => Context.Options.GetConfig(Rule, "parameterTypes", MatchOption) == MatchOption;
+      private bool IsMatchParameterTypesEnabled => Context.Options.GetConfig(Rule, "parameterTypes", IgnoreOption) == MatchOption;
 
       public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) {
         _taskAnalysis = new TaskAnalysis(context.SemanticModel, context.CancellationToken);
