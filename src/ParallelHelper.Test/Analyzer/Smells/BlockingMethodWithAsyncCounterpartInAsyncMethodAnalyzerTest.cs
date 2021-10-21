@@ -253,6 +253,82 @@ class Test {
     }
 
     [TestMethod]
+    public void ReportsAccessToMethodWithAsyncCounterPartWithDifferentParameterCountIfMatchParameterTypesIsDisabled() {
+      const string source = @"
+using System.IO;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    var value = GetIt();
+  }
+
+  public int GetIt() {
+    return 1;
+  }
+
+  public Task<int> GetItAsync(int value) {
+    return Task.FromResult(value);
+  }
+}";
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_S019.parameterTypes", "ignore")
+        .VerifyDiagnostic(new DiagnosticResultLocation(7, 17));
+    }
+
+    [TestMethod]
+    public void ReportsAccessToMethodWithAsyncCounterPartWithDifferentParameterTypesIfMatchParameterTypesIsDisabled() {
+      const string source = @"
+using System.IO;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    DoIt(1);
+  }
+
+  public void DoIt(int value) {
+  }
+
+  public Task DoItAsync(string value) {
+    return Task.CompletedTask;
+  }
+}";
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_S019.parameterTypes", "ignore")
+        .VerifyDiagnostic(new DiagnosticResultLocation(7, 5));
+    }
+
+    [TestMethod]
+    public void ReportsAccessToMethodWithAsyncCounterPartWithDifferentParameterCountAndTypesIfMatchParameterTypesIsDisabled() {
+      const string source = @"
+using System.IO;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    DoIt(1);
+  }
+
+  public void DoIt(int value) {
+  }
+
+  public Task DoItAsync(string value, string second) {
+    return Task.CompletedTask;
+  }
+}";
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_S019.parameterTypes", "ignore")
+        .VerifyDiagnostic(new DiagnosticResultLocation(7, 5));
+    }
+
+    [TestMethod]
     public void DoesNotReportReadOfTypeWithReadAsyncInNonAsyncMethod() {
       const string source = @"
 using System.IO;
@@ -622,6 +698,73 @@ class Test {
 
   public Task<string> GetItAsync() {
     return Task.FromResult<string>(default);
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportAccessToMethodWithAsyncCounterPartWithDifferentParameterCount() {
+      const string source = @"
+using System.IO;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    var value = GetIt();
+  }
+
+  public int GetIt() {
+    return 1;
+  }
+
+  public Task<int> GetItAsync(int value) {
+    return Task.FromResult(value);
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportAccessToMethodWithAsyncCounterPartWithDifferentParameterTypes() {
+      const string source = @"
+using System.IO;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    DoIt(1);
+  }
+
+  public void DoIt(int value) {
+  }
+
+  public Task DoItAsync(string value) {
+    return Task.CompletedTask;
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportAccessToMethodWithAsyncCounterPartWithDifferentParameterCountAndTypes() {
+      const string source = @"
+using System.IO;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+class Test {
+  public async Task DoWorkAsync() {
+    DoIt(1);
+  }
+
+  public void DoIt(int value) {
+  }
+
+  public Task DoItAsync(string value, string second) {
+    return Task.CompletedTask;
   }
 }";
       VerifyDiagnostic(source);
