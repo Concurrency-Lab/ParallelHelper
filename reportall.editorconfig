@@ -37,6 +37,7 @@ dotnet_diagnostic.PH_S017.severity = warning
 dotnet_diagnostic.PH_S019.severity = warning
 dotnet_diagnostic.PH_S019.exclusions = 
 dotnet_diagnostic.PH_S019.returnType = ignore
+dotnet_diagnostic.PH_S019.parameterTypes = ignore
 dotnet_diagnostic.PH_S020.severity = warning
 dotnet_diagnostic.PH_S021.severity = warning
 dotnet_diagnostic.PH_S022.severity = warning

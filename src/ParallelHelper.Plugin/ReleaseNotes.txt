@@ -1,4 +1,11 @@
-﻿v3.3.0
+﻿v3.4.0
+
+- Improved Analyzer: PH_S019 - Now matches parameter types (disabled by default)
+
+
+------------------
+
+v3.3.0
 
 - New Analyzer: PH_P013 - Discouraged EntityFramework Method
 - New Analyzer: PH_S033 - Fire-and-Forget Tasks
@@ -102,6 +109,7 @@ v2.0.0
 
 
 ------------------
+
 v1.8.3
 
 Initial public release.
