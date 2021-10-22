@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using ParallelHelper.Extensions;
 using ParallelHelper.Util;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -47,7 +48,6 @@ namespace ParallelHelper.Analyzer.Smells {
 
     private const string AsyncSuffix = "Async";
     private const string MatchOption = "match";
-    private const string IgnoreOption = "ignore";
     private const string DefaultExcludedMethods = @"Microsoft.EntityFrameworkCore.DbContext:Add,AddRange
 Microsoft.EntityFrameworkCore.DbSet`1:Add,AddRange";
 
@@ -65,13 +65,13 @@ Microsoft.EntityFrameworkCore.DbSet`1:Add,AddRange";
     private class Analyzer : InternalAnalyzerBase<SyntaxNode> {
       private readonly TaskAnalysis _taskAnalysis;
 
-      private bool IsAsyncMethod => Root is MethodDeclarationSyntax method 
+      private bool IsAsyncMethod => Root is MethodDeclarationSyntax method
         && method.Modifiers.Any(SyntaxKind.AsyncKeyword);
-      private bool IsAsyncAnonymousFunction => Root is AnonymousFunctionExpressionSyntax function 
+      private bool IsAsyncAnonymousFunction => Root is AnonymousFunctionExpressionSyntax function
         && function.AsyncKeyword.IsKind(SyntaxKind.AsyncKeyword);
 
       private bool IsMatchReturnTypeEnabled => Context.Options.GetConfig(Rule, "returnType", MatchOption) == MatchOption;
-      private bool IsMatchParameterTypesEnabled => Context.Options.GetConfig(Rule, "parameterTypes", IgnoreOption) == MatchOption;
+      private int ParameterTypeMatchCount => int.TryParse(Context.Options.GetConfig(Rule, "parameterTypeMatchCount", "1"), out var count) ? count : 0;
 
       public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) {
         _taskAnalysis = new TaskAnalysis(context.SemanticModel, context.CancellationToken);
@@ -98,7 +98,7 @@ Microsoft.EntityFrameworkCore.DbSet`1:Add,AddRange";
       }
 
       private void AnalyzeInvocation(InvocationExpressionSyntax invocation, IReadOnlyCollection<ClassMemberDescriptor> excludedMethods) {
-        if(SemanticModel.GetSymbolInfo(invocation, CancellationToken).Symbol is IMethodSymbol method 
+        if(SemanticModel.GetSymbolInfo(invocation, CancellationToken).Symbol is IMethodSymbol method
             && !IsPotentiallyAsyncMethod(method) && TryGetAsyncCounterpartName(method, out var asyncName)
             && !IsExcludedMethod(method, excludedMethods)) {
           Context.ReportDiagnostic(Diagnostic.Create(Rule, invocation.GetLocation(), method.Name, asyncName));
@@ -125,13 +125,13 @@ Microsoft.EntityFrameworkCore.DbSet`1:Add,AddRange";
 
       private bool HasMethodWithNameAndAsyncReturnType(IMethodSymbol method, string candidateName) {
         bool matchReturnType = IsMatchReturnTypeEnabled;
-        bool matchParameterTypes = IsMatchParameterTypesEnabled;
+        int parameterTypeMatchCount = ParameterTypeMatchCount;
         return method.ContainingType.GetAllPublicMembers()
           .WithCancellation(CancellationToken)
           .OfType<IMethodSymbol>()
           .Where(candidate => candidate.Name == candidateName)
           .Where(candidate => !matchReturnType || IsMethodWithCompatibleAwaitableReturnType(method, candidate))
-          .Any(candidate => !matchParameterTypes || IsMethodWithCompatibleParameterTypes(method, candidate));
+          .Any(candidate => MatchesTheGivenNumberOfParameterTypes(method, candidate, parameterTypeMatchCount));
       }
 
       private bool IsMethodWithCompatibleAwaitableReturnType(IMethodSymbol method, IMethodSymbol candidate) {
@@ -146,13 +146,18 @@ Microsoft.EntityFrameworkCore.DbSet`1:Add,AddRange";
           || (candidateReturnType is ITypeParameterSymbol && method.ConstructedFrom.ReturnType is ITypeParameterSymbol);
       }
 
-      private bool IsMethodWithCompatibleParameterTypes(IMethodSymbol method, IMethodSymbol candidate) {
-        if(method.Parameters.Length != candidate.Parameters.Length) {
+      private bool MatchesTheGivenNumberOfParameterTypes(IMethodSymbol method, IMethodSymbol candidate, int parameterTypeMatchCount) {
+        if(parameterTypeMatchCount == 0) {
+          return true;
+        }
+        int parametersToMatch = Math.Min(parameterTypeMatchCount, method.Parameters.Length);
+        if(candidate.Parameters.Length < parametersToMatch) {
           return false;
         }
         return method.Parameters
           .WithCancellation(CancellationToken)
           .Zip(candidate.Parameters, (methodParameter, candidateParameter) => methodParameter.Type.Equals(candidateParameter.Type, SymbolEqualityComparer.Default))
+          .Take(parametersToMatch)
           .All(equalType => equalType);
       }
     }
