@@ -87,5 +87,34 @@ class Test {
 }";
       VerifyDiagnostic(source);
     }
+
+    [TestMethod]
+    public void DoesNotReportPulseSignalingMethodWithParametersOnlyUsedInLoopsBody() {
+      const string source = @"
+using System.Threading;
+
+class Test {
+  private readonly object syncObject = new object();
+  private int count;
+
+  public void Take(CancellationToken cancellationToken = default) {
+    lock(syncObject) {
+      while(count == 0) {
+        cancellationToken.ThrowIfCancellationRequested();
+        Monitor.Wait(syncObject);
+      }
+      count--;
+    }
+  }
+
+  public void Put() {
+    lock(syncObject) {
+      count++;
+      Monitor.Pulse(syncObject);
+    }
+  }
+}";
+      VerifyDiagnostic(source);
+    }
   }
 }
