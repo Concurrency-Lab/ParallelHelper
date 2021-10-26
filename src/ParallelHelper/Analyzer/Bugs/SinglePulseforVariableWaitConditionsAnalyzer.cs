@@ -104,11 +104,11 @@ namespace ParallelHelper.Analyzer.Bugs {
           && IsParameterDependant(LoopsEnclosedByLock.Peek());
       }
 
-      private bool IsParameterDependant(SyntaxNode syntax) {
-        return syntax.DescendantNodes()
+      private bool IsParameterDependant(WhileStatementSyntax whileStatement) {
+        return whileStatement.Condition.DescendantNodes()
           .WithCancellation(CancellationToken)
           .OfType<IdentifierNameSyntax>()
-          .Select(i => SemanticModel.GetSymbolInfo(i, CancellationToken).Symbol)
+          .Select(identifier => SemanticModel.GetSymbolInfo(identifier, CancellationToken).Symbol)
           .OfType<IParameterSymbol>()
           .Any();
       }
