@@ -3,7 +3,7 @@ using ParallelHelper.Analyzer.Bugs;
 
 namespace ParallelHelper.Test.Analyzer.Bugs {
   [TestClass]
-  public class SinglePulseforVariableWaitConditionsTest : AnalyzerTestBase<SinglePulseforVariableWaitConditionsAnalyzer> {
+  public class SinglePulseforVariableWaitConditionsAnalyzerTest : AnalyzerTestBase<SinglePulseforVariableWaitConditionsAnalyzer> {
     [TestMethod]
     public void ReportsPulseSignalingParameterDependantWait() {
       const string source = @"
@@ -82,6 +82,35 @@ class Test {
     lock(syncObject) {
       count += amount;
       Monitor.PulseAll(syncObject);
+    }
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportPulseSignalingMethodWithParametersOnlyUsedInLoopsBody() {
+      const string source = @"
+using System.Threading;
+
+class Test {
+  private readonly object syncObject = new object();
+  private int count;
+
+  public void Take(CancellationToken cancellationToken = default) {
+    lock(syncObject) {
+      while(count == 0) {
+        cancellationToken.ThrowIfCancellationRequested();
+        Monitor.Wait(syncObject);
+      }
+      count--;
+    }
+  }
+
+  public void Put() {
+    lock(syncObject) {
+      count++;
+      Monitor.Pulse(syncObject);
     }
   }
 }";
