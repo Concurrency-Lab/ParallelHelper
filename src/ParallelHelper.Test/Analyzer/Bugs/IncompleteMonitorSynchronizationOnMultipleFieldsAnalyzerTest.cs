@@ -263,10 +263,75 @@ class Test {
       Value = value;
     }
   }
-}
-
-";
+}";
       VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportAccessesToFieldsThatAreReadonlyByDefault() {
+      const string source = @"
+class Test {
+  private readonly object syncObject = new object();
+
+  private readonly string a;
+  private readonly string b;
+
+  private string x;
+
+  public Test(string a, string b) {
+    this.a = a;
+    this.b = b;
+  }
+
+  public void CombineSingle() {
+    lock(syncObject) {
+      x = a + b;
+    }
+  }
+
+  public void CombineDouble() {
+    var x = a + b;
+    lock(syncObject) {
+      this.x = x + x;
+    }
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportAccessesToFieldsThatAreReadonlyIfIgnored() {
+      const string source = @"
+class Test {
+  private readonly object syncObject = new object();
+
+  private readonly string a;
+  private readonly string b;
+
+  private string x;
+
+  public Test(string a, string b) {
+    this.a = a;
+    this.b = b;
+  }
+
+  public void CombineSingle() {
+    lock(syncObject) {
+      x = a + b;
+    }
+  }
+
+  public void CombineDouble() {
+    var x = a + b;
+    lock(syncObject) {
+      this.x = x + x;
+    }
+  }
+}";
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_B009.readonly", "ignore")
+        .VerifyDiagnostic();
     }
   }
 }
