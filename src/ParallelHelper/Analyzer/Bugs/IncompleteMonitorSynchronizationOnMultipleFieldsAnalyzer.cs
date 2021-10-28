@@ -56,6 +56,8 @@ namespace ParallelHelper.Analyzer.Bugs {
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
+
+
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
       context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
@@ -63,11 +65,12 @@ namespace ParallelHelper.Analyzer.Bugs {
     }
 
     private static void AnalyzeClassDeclaration(SyntaxNodeAnalysisContext context) {
-      new Analyzer(context, GetAllNonConstFields(context)).Analyze();
+      var contextWrapper = new SyntaxNodeAnalysisContextWrapper(context);
+      bool includeReadonly = contextWrapper.Options.GetConfig(Rule, "readonly", "ignore") == "report";
+      new Analyzer(contextWrapper, GetAllNonConstFields(context, includeReadonly)).Analyze();
     }
 
-    private static ISet<IFieldSymbol> GetAllNonConstFields(SyntaxNodeAnalysisContext context) {
-      // TODO also exclude readonly fields?
+    private static ISet<IFieldSymbol> GetAllNonConstFields(SyntaxNodeAnalysisContext context, bool includeReadonly) {
       var classDeclaration = (ClassDeclarationSyntax)context.Node;
       var semanticModel = context.SemanticModel;
       var cancellationToken = context.CancellationToken;
@@ -75,6 +78,7 @@ namespace ParallelHelper.Analyzer.Bugs {
         .WithCancellation(cancellationToken)
         .OfType<FieldDeclarationSyntax>()
         .Where(declaration => !declaration.Modifiers.Any(SyntaxKind.ConstKeyword))
+        .Where(declaration => includeReadonly || !declaration.Modifiers.Any(SyntaxKind.ReadOnlyKeyword))
         .SelectMany(declaration => declaration.Declaration.Variables)
         .Select(variable => (IFieldSymbol)semanticModel.GetDeclaredSymbol(variable, cancellationToken))
         .IsNotNull()
@@ -82,8 +86,7 @@ namespace ParallelHelper.Analyzer.Bugs {
     }
 
     private class Analyzer : FieldAccessAwareAnalyzerWithSyntaxWalkerBase<ClassDeclarationSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context, ISet<IFieldSymbol> declaredFields)
-        : base(new SyntaxNodeAnalysisContextWrapper(context), declaredFields) { }
+      public Analyzer(SyntaxNodeAnalysisContextWrapper context, ISet<IFieldSymbol> declaredFields) : base(context, declaredFields) { }
 
       public override void Analyze() {
         base.VisitClassDeclaration(Root);
