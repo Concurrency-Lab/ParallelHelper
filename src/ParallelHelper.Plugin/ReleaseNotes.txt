@@ -1,6 +1,7 @@
 ﻿v3.4.0
 
 - Improved Analyzer: PH_S019 - Now matches parameter types (only the first by default)
+- Improved Analyzer: PH_B004 - Now only respects the while-loop's condition
 - Improved Analyzer: PH_B009 - Now ignores readonly fields by default
 
 
