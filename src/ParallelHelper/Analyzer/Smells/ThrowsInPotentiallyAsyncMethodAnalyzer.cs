@@ -30,8 +30,6 @@ namespace ParallelHelper.Analyzer.Smells {
 
     private const string Category = "Concurrency";
 
-    private const string AsyncSuffix = "Async";
-
     private static readonly LocalizableString Title = "Throws in Potentially Async Method";
     private static readonly LocalizableString MessageFormat = "A method that throws an exception that denotes itself as async behaves differently than an async method. Return Task.FromException(...) instead.";
     private static readonly LocalizableString Description = "";
@@ -42,6 +40,9 @@ namespace ParallelHelper.Analyzer.Smells {
     );
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+
+    private const string AsyncSuffix = "Async";
+    private const string DefaultExcludedTypes = "System.ArgumentException System.NotImplementedException";
 
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
@@ -72,6 +73,10 @@ namespace ParallelHelper.Analyzer.Smells {
         }
       }
 
+      private IEnumerable<string> GetExcludedExceptionTypes() {
+        return Context.Options.GetConfig(Rule, "exclusions", DefaultExcludedTypes).Split();
+      }
+
       private bool IsPotentiallyAsyncMethod() {
         return !IsAsyncMethod
           && IsMethodWithAsyncSuffix
@@ -84,9 +89,24 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private IEnumerable<SyntaxNode> GetAllThrowsStatementsAndExpressionsInSameActivationFrame() {
+        var excludedExceptionTypes = GetExcludedExceptionTypes().ToArray();
         return Root.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
-          .Where(node => node is ThrowStatementSyntax || node is ThrowExpressionSyntax);
+          .Where(node => IsThrowsWithoutExcludedType(node, excludedExceptionTypes));
+      }
+
+      private bool IsThrowsWithoutExcludedType(SyntaxNode node, IEnumerable<string> excludedTypes) {
+        return node switch {
+          ThrowStatementSyntax statement => !IsAnyOfType(statement.Expression, excludedTypes),
+          ThrowExpressionSyntax expression => !IsAnyOfType(expression.Expression, excludedTypes),
+          _ => false
+        };
+      }
+
+      private bool IsAnyOfType(SyntaxNode node, IEnumerable<string> types) {
+        var nodeType = SemanticModel.GetTypeInfo(node, CancellationToken).Type;
+        return nodeType != null
+          && types.Any(type => SemanticModel.IsEqualType(nodeType, type));
       }
     }
   }
