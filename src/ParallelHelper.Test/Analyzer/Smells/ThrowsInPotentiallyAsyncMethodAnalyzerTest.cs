@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 class Test {
   public Task DoWorkAsync(int input) {
-    throw new ArgumentException(nameof(input));
+    throw new InvalidOperationException();
   }
 }";
       VerifyDiagnostic(source, new DiagnosticResultLocation(6, 5));
@@ -28,7 +28,7 @@ class Test {
   private string value;
 
   public Task<int> DoWorkAsync(string value) {
-    this.value = value ?? throw new ArgumentException(nameof(value));
+    this.value = value ?? throw new InvalidOperationException(nameof(value));
     return Task.FromResult(value.Length);
   }
 }";
@@ -75,6 +75,40 @@ class Test {
   }
 }";
       VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportNonAsyncMethodWithAsyncSuffixAndReturningTaskThatUsesThrowsExpressionWithDefaultExcludedType() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  private string value;
+
+  public Task<int> DoWorkAsync(string value) {
+    this.value = value ?? throw new ArgumentException(nameof(value));
+    return Task.FromResult(value.Length);
+  }
+}";
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportNonAsyncMethodWithAsyncSuffixAndReturningTaskThatUsesThrowsStatementWithExplicitlyExcludedException() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public Task DoWorkAsync(int input) {
+    throw new InvalidOperationException();
+  }
+}";
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_S032.exclusions", "System.InvalidOperationException")
+        .VerifyDiagnostic();
     }
   }
 }

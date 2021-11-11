@@ -50,6 +50,7 @@ dotnet_diagnostic.PH_S029.severity = warning
 dotnet_diagnostic.PH_S030.severity = warning
 dotnet_diagnostic.PH_S031.severity = warning
 dotnet_diagnostic.PH_S032.severity = warning
+dotnet_diagnostic.PH_S032.exclusions = 
 dotnet_diagnostic.PH_S033.severity = warning
 
 # Bugs
