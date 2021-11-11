@@ -179,6 +179,28 @@ class Test<T> {
     }
 
     [TestMethod]
+    public void ReportsAccessToSemaphoreSlimWait() {
+      const string source = @"
+using System.Threading;
+using System.Threading.Tasks;
+
+class Test {
+  private readonly SemaphoreSlim _mutex = new SemaphoreSlim(1);
+  private int count;
+
+  public async Task<int> IncrementAndGetAsync() {
+    _mutex.Wait();
+    try {
+      return ++count;
+    } finally {
+      _mutex.Release();
+    }
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(9, 5));
+    }
+
+    [TestMethod]
     public void ReportsReadOfTypeWithReadAsyncInAsyncMethodIfExclusionEntryIsInvalid() {
       const string source = @"
 using System.IO;
