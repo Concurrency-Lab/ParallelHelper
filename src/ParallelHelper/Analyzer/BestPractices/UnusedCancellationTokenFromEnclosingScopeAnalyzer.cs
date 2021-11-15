@@ -74,8 +74,7 @@ namespace ParallelHelper.Analyzer.BestPractices {
         Func<TSymbol, ITypeSymbol?> getType,
         Func<TSymbol, bool> isStatic
       ) where TSymbol : ISymbol {
-        return classSymbol.GetAllBaseTypesAndSelf()
-          .SelectMany(type => type.GetMembers())
+        return classSymbol.GetAllAccessibleMembers()
           .WithCancellation(context.CancellationToken)
           .OfType<TSymbol>()
           .Where(field => getType(field) != null)
