@@ -46,8 +46,6 @@ namespace ParallelHelper.Analyzer.Bugs {
     private static readonly ClassMemberDescriptor[] LinqDescriptors = {
       new ClassMemberDescriptor("System.Linq.Enumerable", "ToArray", "ToList"),
       new ClassMemberDescriptor("System.Collections.Immutable.ImmutableArray", "ToImmutableArray"),
-      new ClassMemberDescriptor("System.Collections.Immutable.ImmutableDictionary", "ToImmutableDictionary"),
-      new ClassMemberDescriptor("System.Collections.Immutable.ImmutableHashSet", "ToImmutableHashSet"),
       new ClassMemberDescriptor("System.Collections.Immutable.ImmutableList", "ToImmutableList"),
     };
 
