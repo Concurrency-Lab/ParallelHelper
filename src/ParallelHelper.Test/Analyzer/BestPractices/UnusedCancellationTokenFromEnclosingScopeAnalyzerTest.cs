@@ -384,7 +384,7 @@ class Test : Base {
     return Task.CompletedTask;
   }
 }";
-      VerifyDiagnostic(source, new DiagnosticResultLocation(11, 11));
+      VerifyDiagnostic(source);
     }
 
 
@@ -417,6 +417,27 @@ class Test {
         .AddSourceTexts(source)
         .AddAnalyzerOption("dotnet_diagnostic.PH_P007.exclusions", "System.Threading.Tasks.Task:Delay")
         .VerifyDiagnostic();
+    }
+
+
+    [TestMethod]
+    public void DoesNotReportMissingForMethodCallWhereCancellationTokenIsPrivateFromBaseType() {
+      const string source = @"
+using System.Threading;
+using System.Threading.Tasks;
+
+class Test : Base {
+  public async Task DoWorkAsync() {
+    await DoInternalAsync();
+  }
+
+  private async Task DoInternalAsync(CancellationToken cancellationToken = default) {}
+}
+
+class Base {
+  private readonly CancellationTokenSource cancellationToken = new CancellationTokenSource();
+}";
+      VerifyDiagnostic(source);
     }
   }
 }

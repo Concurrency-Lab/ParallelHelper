@@ -20,6 +20,8 @@
     <PackageReleaseNotes>- Improved Analyzer: PH_S019 - Now matches parameter types (only the first by default)
 - Improved Analyzer: PH_B004 - Now only respects the while-loop's condition
 - Improved Analyzer: PH_B009 - Now ignores readonly fields by default
+- Improved Analyzer: PH_S032 - Now supports exception type exclusions (ArgumentException and NotImplementedException by default)
+- Improved Analyzer: PH_P007 - Now excludes private members from base types
 - Improved Analyzer: PH_B008 - No longer reports ToImmutableDictionary and ToImmutableHashSet</PackageReleaseNotes>
     <Copyright>Copyright (C) 2019 - 2021  Christoph Amrein, Concurrency Lab, Eastern Switzerland University of Applied Sciences, Switzerland</Copyright>
     <PackageTags>C#, Parallel, Asynchronous, Concurrency, Bugs, Best Practices, TPL, Task, QC, Static Analysis, async, await</PackageTags>
