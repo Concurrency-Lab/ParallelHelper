@@ -42,7 +42,7 @@ namespace ParallelHelper.Analyzer.Smells {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
     private const string AsyncSuffix = "Async";
-    private const string DefaultExcludedTypes = "System.ArgumentException System.NotImplementedException";
+    private const string DefaultExcludedBaseTypes = "System.ArgumentException System.NotImplementedException";
 
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
@@ -73,8 +73,10 @@ namespace ParallelHelper.Analyzer.Smells {
         }
       }
 
-      private IEnumerable<string> GetExcludedExceptionTypes() {
-        return Context.Options.GetConfig(Rule, "exclusions", DefaultExcludedTypes).Split();
+      private IEnumerable<ITypeSymbol> GetExcludedExceptionBaseTypes() {
+        return Context.Options.GetConfig(Rule, "exclusions", DefaultExcludedBaseTypes)
+          .Split()
+          .SelectMany(SemanticModel.GetTypesByName);
       }
 
       private bool IsPotentiallyAsyncMethod() {
@@ -89,24 +91,25 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private IEnumerable<SyntaxNode> GetAllThrowsStatementsAndExpressionsInSameActivationFrame() {
-        var excludedExceptionTypes = GetExcludedExceptionTypes().ToArray();
+        var excludedBaseTypes = GetExcludedExceptionBaseTypes().ToArray();
         return Root.DescendantNodesInSameActivationFrame()
           .WithCancellation(CancellationToken)
-          .Where(node => IsThrowsWithoutExcludedType(node, excludedExceptionTypes));
+          .Where(node => IsThrowsWithoutExcludedType(node, excludedBaseTypes));
       }
 
-      private bool IsThrowsWithoutExcludedType(SyntaxNode node, IEnumerable<string> excludedTypes) {
+      private bool IsThrowsWithoutExcludedType(SyntaxNode node, IEnumerable<ITypeSymbol> excludedBaseTypes) {
+        
         return node switch {
-          ThrowStatementSyntax statement => !IsAnyOfType(statement.Expression, excludedTypes),
-          ThrowExpressionSyntax expression => !IsAnyOfType(expression.Expression, excludedTypes),
+          ThrowStatementSyntax statement => !IsAnySubTypeOf(statement.Expression, excludedBaseTypes),
+          ThrowExpressionSyntax expression => !IsAnySubTypeOf(expression.Expression, excludedBaseTypes),
           _ => false
         };
       }
 
-      private bool IsAnyOfType(SyntaxNode node, IEnumerable<string> types) {
+      private bool IsAnySubTypeOf(SyntaxNode node, IEnumerable<ITypeSymbol> types) {
         var nodeType = SemanticModel.GetTypeInfo(node, CancellationToken).Type;
         return nodeType != null
-          && types.Any(type => SemanticModel.IsEqualType(nodeType, type));
+          && types.Any(baseType => baseType.IsBaseTypeOf(nodeType, CancellationToken));
       }
     }
   }

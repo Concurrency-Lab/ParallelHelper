@@ -110,5 +110,25 @@ class Test {
         .AddAnalyzerOption("dotnet_diagnostic.PH_S032.exclusions", "System.InvalidOperationException")
         .VerifyDiagnostic();
     }
+
+    [TestMethod]
+    public void DoesNotReportNonAsyncMethodWithAsyncSuffixAndReturningTaskThatUsesThrowsExpressionWithSubTypeOfExcludedType() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  private string value;
+
+  public Task<int> DoWorkAsync(string value) {
+    this.value = value ?? throw new ArgumentNullException(nameof(value));
+    return Task.FromResult(value.Length);
+  }
+}";
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .AddAnalyzerOption("dotnet_diagnostic.PH_S032.exclusions", "System.ArgumentException")
+        .VerifyDiagnostic();
+    }
   }
 }
