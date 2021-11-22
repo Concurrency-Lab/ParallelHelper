@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace ParallelHelper.Extensions {
   /// <summary>
@@ -76,6 +77,20 @@ namespace ParallelHelper.Extensions {
     /// <returns>All the members of the type and its base types.</returns>
     public static IEnumerable<ISymbol> GetAllMembers(this ITypeSymbol type) {
       return GetAllBaseTypesAndSelf(type).SelectMany(baseType => baseType.GetMembers());
+    }
+
+    /// <summary>
+    /// Checks if the given type is a base type of the given type.
+    /// </summary>
+    /// <param name="baseType">The base type to check.</param>
+    /// <param name="subType">The type to check if it's a sub type of the given base type.</param>
+    /// <param name="cancellationToken">A token to stop the check before completion.</param>
+    /// <returns><c>True</c> if the given type is a sub-type of the given base type.</returns>
+    /// <remarks>This check does not include interfaces.</remarks>
+    public static bool IsBaseTypeOf(this ITypeSymbol baseType, ITypeSymbol subType, CancellationToken cancellationToken) {
+      return subType.GetAllBaseTypesAndSelf()
+        .WithCancellation(cancellationToken)
+        .Any(type => baseType.Equals(type, SymbolEqualityComparer.Default));
     }
   }
 }
