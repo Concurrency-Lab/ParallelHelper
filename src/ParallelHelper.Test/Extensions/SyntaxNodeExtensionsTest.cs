@@ -7,6 +7,91 @@ namespace ParallelHelper.Test.Extensions {
   [TestClass]
   public class SyntaxNodeExtensionsTest {
     [TestMethod]
+    public void IsNewActivationFrameReturnsTrueForMethodDeclarations() {
+      const string source = @"
+using System;
+
+public class Test {
+  public void TestMethod() {}
+}";
+      var declaration = CompilationFactory.GetNodesOfType<MethodDeclarationSyntax>(source)
+        .Single();
+      Assert.IsTrue(declaration.IsNewActivationFrame());
+    }
+
+    [TestMethod]
+    public void IsNewActivationFrameReturnsTrueForLambdaExpressions() {
+      const string source = @"
+using System;
+
+public class Test {
+  public void TestMethod() {
+    Action test = () => {};
+  }
+}";
+      var declaration = CompilationFactory.GetNodesOfType<LambdaExpressionSyntax>(source)
+        .Single();
+      Assert.IsTrue(declaration.IsNewActivationFrame());
+    }
+
+    [TestMethod]
+    public void IsNewActivationFrameReturnsTrueForDelegates() {
+      const string source = @"
+using System;
+
+public class Test {
+  public void TestMethod() {
+    Action test = delegate {};
+  }
+}";
+      var declaration = CompilationFactory.GetNodesOfType<AnonymousMethodExpressionSyntax>(source)
+        .Single();
+      Assert.IsTrue(declaration.IsNewActivationFrame());
+    }
+
+    [TestMethod]
+    public void IsNewActivationFrameReturnsTrueForLocalFunction() {
+      const string source = @"
+using System;
+
+public class Test {
+  public void TestMethod() {
+    void Test() {}
+  }
+}";
+      var declaration = CompilationFactory.GetNodesOfType<LocalFunctionStatementSyntax>(source)
+        .Single();
+      Assert.IsTrue(declaration.IsNewActivationFrame());
+    }
+
+    [TestMethod]
+    public void IsNewActivationFrameReturnsFalseForClassDeclarations() {
+      const string source = @"
+using System;
+
+public class Test {
+}";
+      var declaration = CompilationFactory.GetNodesOfType<ClassDeclarationSyntax>(source)
+        .Single();
+      Assert.IsFalse(declaration.IsNewActivationFrame());
+    }
+
+    [TestMethod]
+    public void IsNewActivationFrameReturnsFalseForLocalVariableDeclarations() {
+      const string source = @"
+using System;
+
+public class Test {
+  private void TestMethod() {
+    int x = 1;
+  }
+}";
+      var declaration = CompilationFactory.GetNodesOfType<LocalDeclarationStatementSyntax>(source)
+        .Single();
+      Assert.IsFalse(declaration.IsNewActivationFrame());
+    }
+
+    [TestMethod]
     public void DescendantNodesInSameActivationFrameExcludesNodesInsideParenthizedLambdaExpressions() {
       const string source = @"
 using System;
