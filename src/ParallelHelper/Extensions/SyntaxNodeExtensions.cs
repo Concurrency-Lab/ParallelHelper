@@ -17,10 +17,15 @@ namespace ParallelHelper.Extensions {
     /// <param name="node">The node to get the descendant nodes of.</param>
     /// <returns>The descendant nodes of the provided node.</returns>
     public static IEnumerable<SyntaxNode> DescendantNodesInSameActivationFrame(this SyntaxNode node) {
-      return node.DescendantNodes(descendant => node == descendant || !IsNewActivationFrame(descendant));
+      return node.DescendantNodes(descendant => node == descendant || !descendant.IsNewActivationFrame());
     }
 
-    private static bool IsNewActivationFrame(SyntaxNode node) {
+    /// <summary>
+    /// Checks if the given node represents a new activation frame.
+    /// </summary>
+    /// <param name="node">The node to check if it's a new activation frame.</param>
+    /// <returns><c>True</c> if the node is a new activation frame.</returns>
+    public static bool IsNewActivationFrame(this SyntaxNode node) {
       return node is BaseMethodDeclarationSyntax
         || node is AnonymousFunctionExpressionSyntax
         || node is LocalFunctionStatementSyntax;
