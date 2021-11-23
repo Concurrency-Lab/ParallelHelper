@@ -86,6 +86,7 @@ namespace ParallelHelper.Analyzer.Bugs {
         foreach(var catchClause in node.Catches) {
           catchClause.Accept(this);
         }
+        node.Finally?.Accept(this);
       }
 
       public override void VisitReturnStatement(ReturnStatementSyntax node) {
