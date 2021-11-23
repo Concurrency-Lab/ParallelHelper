@@ -1,10 +1,12 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using ParallelHelper.Extensions;
 using ParallelHelper.Util;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 
 namespace ParallelHelper.Analyzer.Bugs {
   /// <summary>
@@ -48,59 +50,33 @@ namespace ParallelHelper.Analyzer.Bugs {
     public override void Initialize(AnalysisContext context) {
       context.EnableConcurrentExecution();
       context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-      context.RegisterSemanticModelAction(AnalyzeExpressionStatement);
+      context.RegisterSyntaxNodeAction(AnalyzeTryStatement, SyntaxKind.TryStatement);
     }
 
-    private static void AnalyzeExpressionStatement(SemanticModelAnalysisContext context) {
+    private static void AnalyzeTryStatement(SyntaxNodeAnalysisContext context) {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : InternalAnalyzerWithSyntaxWalkerBase<SyntaxNode> {
+    private class Analyzer : InternalAnalyzerBase<TryStatementSyntax> {
       private readonly TaskAnalysis _taskAnalysis;
 
-      private Stack<int> _tryStatementsPerActivationFrame = new Stack<int>();
-      private int _enclosingTryStatementsOfCurrentActivationFrame;
-
-      private bool IsEnclosedByTryStatement => _enclosingTryStatementsOfCurrentActivationFrame > 0;
-
-      public Analyzer(SemanticModelAnalysisContext context) : base(new SemanticModelAnalysisContextWrapper(context)) {
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) {
         _taskAnalysis = new TaskAnalysis(context.SemanticModel, context.CancellationToken);
       }
 
-      public override void Visit(SyntaxNode node) {
-        if(!node.IsNewActivationFrame()) {
-          base.Visit(node);
-          return;
-        }
-        _tryStatementsPerActivationFrame.Push(_enclosingTryStatementsOfCurrentActivationFrame);
-        _enclosingTryStatementsOfCurrentActivationFrame = 0;
-        base.Visit(node);
-        _enclosingTryStatementsOfCurrentActivationFrame = _tryStatementsPerActivationFrame.Pop();
-      }
-
-      public override void VisitTryStatement(TryStatementSyntax node) {
-        ++_enclosingTryStatementsOfCurrentActivationFrame;
-        node.Block.Accept(this);
-        --_enclosingTryStatementsOfCurrentActivationFrame;
-        foreach(var catchClause in node.Catches) {
-          catchClause.Accept(this);
-        }
-        node.Finally?.Accept(this);
-      }
-
-      public override void VisitReturnStatement(ReturnStatementSyntax node) {
-        if(node.Expression == null || !IsEnclosedByTryStatement) {
-          base.VisitReturnStatement(node);
-          return;
-        }
-        if(IsInvocationOfTaskReturningMethod(node)) {
-          Context.ReportDiagnostic(Diagnostic.Create(Rule, node.Expression.GetLocation()));
+      public override void Analyze() {
+        foreach(var invocation in GetAllImmediatelyReturnedTaskTypedInvocations()) {
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, invocation.GetLocation()));
         }
       }
 
-      private bool IsInvocationOfTaskReturningMethod(ReturnStatementSyntax node) {
-        return node.Expression is InvocationExpressionSyntax
-          && _taskAnalysis.IsTaskTyped(node.Expression);
+      private IEnumerable<InvocationExpressionSyntax> GetAllImmediatelyReturnedTaskTypedInvocations() {
+        return Root.Block.DescendantNodesInSameActivationFrame(node => !(node is TryStatementSyntax))
+          .WithCancellation(CancellationToken)
+          .OfType<ReturnStatementSyntax>()
+          .Select(returnStatement => returnStatement.Expression)
+          .OfType<InvocationExpressionSyntax>()
+          .Where(_taskAnalysis.IsTaskTyped);
       }
     }
   }

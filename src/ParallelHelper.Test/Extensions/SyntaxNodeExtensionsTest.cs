@@ -207,6 +207,28 @@ public class Test {
     }
 
     [TestMethod]
+    public void DescendantNodesInSameActivationExcludesNodesFilteredByAdditionalCriteria() {
+      const string source = @"
+using System;
+
+public class Test {
+  public void TestMethod() {
+    int x = 0;
+    int y = 1;
+    try {
+      int k = 2;
+      int l = 3;
+    } catch(Exception e) {}
+  }
+}";
+      var descendants = CompilationFactory.GetNodesOfType<MethodDeclarationSyntax>(source)
+        .Single()
+        .DescendantNodesInSameActivationFrame(node => !(node is TryStatementSyntax))
+        .ToArray();
+      Assert.AreEqual(2, descendants.OfType<VariableDeclarationSyntax>().Count());
+    }
+
+    [TestMethod]
     public void IsMethodOrFunctionWithAsyncModifierReturnsTrueIfMethodIsAsync() {
       const string source = @"
 using System.Threading.Tasks;
