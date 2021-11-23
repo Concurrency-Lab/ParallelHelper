@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using ParallelHelper.Extensions;
 using ParallelHelper.Util;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 
 namespace ParallelHelper.Analyzer.Bugs {
@@ -57,10 +58,10 @@ namespace ParallelHelper.Analyzer.Bugs {
     private class Analyzer : InternalAnalyzerWithSyntaxWalkerBase<SyntaxNode> {
       private readonly TaskAnalysis _taskAnalysis;
 
-      private bool _isInsideActivationFrame;
-      private int _enclosingTryStatements;
+      private Stack<int> _tryStatementsPerActivationFrame = new Stack<int>();
+      private int _enclosingTryStatementsOfCurrentActivationFrame;
 
-      private bool IsEnclosedByTryStatement => _enclosingTryStatements > 0;
+      private bool IsEnclosedByTryStatement => _enclosingTryStatementsOfCurrentActivationFrame > 0;
 
       public Analyzer(SemanticModelAnalysisContext context) : base(new SemanticModelAnalysisContextWrapper(context)) {
         _taskAnalysis = new TaskAnalysis(context.SemanticModel, context.CancellationToken);
@@ -71,18 +72,16 @@ namespace ParallelHelper.Analyzer.Bugs {
           base.Visit(node);
           return;
         }
-        if(_isInsideActivationFrame) {
-          return;
-        }
-        _isInsideActivationFrame = true;
+        _tryStatementsPerActivationFrame.Push(_enclosingTryStatementsOfCurrentActivationFrame);
+        _enclosingTryStatementsOfCurrentActivationFrame = 0;
         base.Visit(node);
-        _isInsideActivationFrame = false;
+        _enclosingTryStatementsOfCurrentActivationFrame = _tryStatementsPerActivationFrame.Pop();
       }
 
       public override void VisitTryStatement(TryStatementSyntax node) {
-        ++_enclosingTryStatements;
+        ++_enclosingTryStatementsOfCurrentActivationFrame;
         node.Block.Accept(this);
-        --_enclosingTryStatements;
+        --_enclosingTryStatementsOfCurrentActivationFrame;
         foreach(var catchClause in node.Catches) {
           catchClause.Accept(this);
         }

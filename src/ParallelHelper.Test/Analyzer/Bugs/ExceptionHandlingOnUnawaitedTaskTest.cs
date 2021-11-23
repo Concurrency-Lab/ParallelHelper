@@ -43,6 +43,70 @@ class Test {
     }
 
     [TestMethod]
+    public void ReportsReturnedAsyncMethodInvocationWithinTwoEnclosingTryStatementsOnlyOnce() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public Task DoWorkAsync() {
+    try {
+      try {
+        return DoWorkInternalAsync();
+      } catch(ArgumetException) { }
+    } catch(Exception) { }
+    return Task.CompletedTask;
+  }
+
+  private Task DoWorkInternalAsync() {
+    return Task.CompletedTask;
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(8, 16));
+    }
+
+    [TestMethod]
+    public void ReportsReturnedTaskWhenTryCatchIsInsideNewActivationFrame() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public void DoWork() {
+    Func<Task> action = () => {
+      try {
+        return Task.Run(() => { });
+      } catch(Exception e) { }
+      return Task.CompletedTask;
+    };
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(8, 16));
+    }
+
+    [TestMethod]
+    public void ReportsReturnedTaskWhenTryCatchIsInsideNewActivationFrameEnclosedByFinally() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public void DoWork() {
+    try {
+    } finally {
+      Func<Task> action = () => {
+        try {
+          return Task.Run(() => { });
+        } catch(Exception e) { }
+        return Task.CompletedTask;
+      };
+    }
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(10, 18));
+    }
+
+    [TestMethod]
     public void DoesNotReportReturnedCompletedTaskEnclosedByTryStatement() {
       const string source = @"
 using System;
@@ -71,6 +135,7 @@ class Test {
     } catch(Exception e) {
       return Task.FromException(e);
     }
+    return Task.CompletedTask;
   }
 }";
       VerifyDiagnostic(source);
