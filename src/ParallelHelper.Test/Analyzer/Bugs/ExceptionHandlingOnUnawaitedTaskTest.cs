@@ -53,7 +53,7 @@ class Test {
     try {
       try {
         return DoWorkInternalAsync();
-      } catch(ArgumetException) { }
+      } catch(ArgumentException) { }
     } catch(Exception) { }
     return Task.CompletedTask;
   }

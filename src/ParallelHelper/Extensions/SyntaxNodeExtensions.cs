@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -15,9 +16,12 @@ namespace ParallelHelper.Extensions {
     /// it will not return nodes of a lambda expression that is declared inside this method.
     /// </summary>
     /// <param name="node">The node to get the descendant nodes of.</param>
+    /// <param name="descendIntoChildren">Additional predicate to apply before descending into children. <c>null</c> if no additional filter should be applied.</param>
     /// <returns>The descendant nodes of the provided node.</returns>
-    public static IEnumerable<SyntaxNode> DescendantNodesInSameActivationFrame(this SyntaxNode node) {
-      return node.DescendantNodes(descendant => node == descendant || !descendant.IsNewActivationFrame());
+    public static IEnumerable<SyntaxNode> DescendantNodesInSameActivationFrame(this SyntaxNode node, Func<SyntaxNode, bool>? descendIntoChildren = null) {
+      return node.DescendantNodes(
+        descendant => (node == descendant || !descendant.IsNewActivationFrame()) && (descendIntoChildren == null || descendIntoChildren(descendant))
+      );
     }
 
     /// <summary>
