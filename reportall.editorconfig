@@ -71,3 +71,4 @@ dotnet_diagnostic.PH_B012.severity = warning
 dotnet_diagnostic.PH_B013.severity = warning
 dotnet_diagnostic.PH_B014.severity = warning
 dotnet_diagnostic.PH_B015.severity = warning
+dotnet_diagnostic.PH_B016.severity = warning
