@@ -2,7 +2,6 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using ParallelHelper.Extensions;
 using ParallelHelper.Util;
 using System.Collections.Immutable;
 
@@ -36,10 +35,6 @@ namespace ParallelHelper.Analyzer.Smells {
       isEnabledByDefault: true, description: Description, helpLinkUri: HelpLinkFactory.CreateUri(DiagnosticId)
     );
 
-    private const string TaskType = "System.Threading.Tasks.Task";
-    private const string FromResultMethod = "FromResult";
-    private const string CompletedTaskProperty = "CompletedTask";
-
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
     public override void Initialize(AnalysisContext context) {
@@ -53,7 +48,11 @@ namespace ParallelHelper.Analyzer.Smells {
     }
 
     private class Analyzer : InternalAnalyzerBase<AwaitExpressionSyntax> {
-      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
+      private readonly TaskAnalysis _taskAnalysis;
+
+      public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) {
+        _taskAnalysis = new TaskAnalysis(context.SemanticModel, context.CancellationToken);
+      }
 
       public override void Analyze() {
         if(!AwaitsSynchronouslyCompletedTask()) {
@@ -69,16 +68,12 @@ namespace ParallelHelper.Analyzer.Smells {
 
       private bool IsTaskFromResult(ExpressionSyntax expression) {
         return expression is InvocationExpressionSyntax invocation
-          && SemanticModel.GetSymbolInfo(invocation, CancellationToken).Symbol is IMethodSymbol method
-          && method.Name.Equals(FromResultMethod)
-          && SemanticModel.IsEqualType(method.ContainingType, TaskType);
+          && _taskAnalysis.IsFromResultInvocation(invocation);
       }
 
       private bool IsCompletedTask(ExpressionSyntax expression) {
         return expression is MemberAccessExpressionSyntax memberAccess
-          && SemanticModel.GetSymbolInfo(memberAccess, CancellationToken).Symbol is IPropertySymbol property
-          && property.Name.Equals(CompletedTaskProperty)
-          && SemanticModel.IsEqualType(property.ContainingType, TaskType);
+          && _taskAnalysis.IsCompletedTaskAccess(memberAccess);
       }
     }
   }
