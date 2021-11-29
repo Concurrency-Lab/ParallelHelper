@@ -861,5 +861,65 @@ public class Test {
       var analysis = new TaskAnalysis(semanticModel, default);
       Assert.IsFalse(analysis.IsFromResultInvocation(invocation));
     }
+
+
+
+    [TestMethod]
+    public void IsCompletedTaskAccessReturnsTrueForAccessingCompletedTask() {
+      const string source = @"
+using System.Threading.Tasks;
+
+public class Test {
+  public void DoIt() {
+    var task = Task.CompletedTask;
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var memberAccess = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<MemberAccessExpressionSyntax>()
+        .Single();
+      var analysis = new TaskAnalysis(semanticModel, default);
+      Assert.IsTrue(analysis.IsCompletedTaskAccess(memberAccess));
+    }
+
+    [TestMethod]
+    public void IsCompletedTaskAccessReturnsFalseForAccessingUnknownTaskMember() {
+      const string source = @"
+using System.Threading.Tasks;
+
+public class Test {
+  public void DoIt() {
+    var task = Task.SomeNotExistantProperty;
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var memberAccess = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<MemberAccessExpressionSyntax>()
+        .Single();
+      var analysis = new TaskAnalysis(semanticModel, default);
+      Assert.IsFalse(analysis.IsCompletedTaskAccess(memberAccess));
+    }
+
+    [TestMethod]
+    public void IsCompletedTaskAccessReturnsFalseForAccessingDifferentMember() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+public class Test {
+  public void DoIt() {
+    var task = Task.Factory;
+  }
+}";
+      var semanticModel = CompilationFactory.GetSemanticModel(source);
+      var memberAccess = semanticModel.SyntaxTree.GetRoot()
+        .DescendantNodes()
+        .OfType<MemberAccessExpressionSyntax>()
+        .Single();
+      var analysis = new TaskAnalysis(semanticModel, default);
+      Assert.IsFalse(analysis.IsCompletedTaskAccess(memberAccess));
+    }
   }
 }

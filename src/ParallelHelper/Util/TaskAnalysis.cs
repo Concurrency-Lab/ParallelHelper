@@ -36,6 +36,7 @@ namespace ParallelHelper.Util {
     );
 
     private const string FromResultMethod = "FromResult";
+    private const string CompletedTaskProperty = "CompletedTask";
 
     private readonly SemanticModel _semanticModel;
     private readonly CancellationToken _cancellationToken;
@@ -130,7 +131,16 @@ namespace ParallelHelper.Util {
     }
 
     /// <summary>
-    /// CHecks if the given node is a method or function (e.g. lambda) returns a task.
+    /// Checks if the given member access is accessing <see cref="System.Threading.Tasks.Task.CompletedTask"/>.
+    /// </summary>
+    /// <param name="memberAccess">The member access to check.</param>
+    /// <returns><c>true</c> if it's the member access of CompletedTask, <c>false</c> otherwise.</returns>
+    public bool IsCompletedTaskAccess(MemberAccessExpressionSyntax memberAccess) {
+      return IsTaskMemberAccess(memberAccess, CompletedTaskProperty);
+    }
+
+    /// <summary>
+    /// Checks if the given node is a method or function (e.g. lambda) returns a task.
     /// </summary>
     /// <param name="node">The node to check.</param>
     /// <returns><c>true</c> if the underlying method or function returns a task, <c>false</c> otherwise.</returns>
@@ -153,6 +163,12 @@ namespace ParallelHelper.Util {
     private bool IsTaskMethodInvocation(InvocationExpressionSyntax invocation, string taskMember) {
       return _semanticModel.GetSymbolInfo(invocation, _cancellationToken).Symbol is IMethodSymbol method
         && IsTaskMember(method, taskMember);
+    }
+
+    private bool IsTaskMemberAccess(MemberAccessExpressionSyntax invocation, string taskMember) {
+      var symbol = _semanticModel.GetSymbolInfo(invocation, _cancellationToken).Symbol;
+      return symbol != null
+        && IsTaskMember(symbol, taskMember);
     }
 
     private bool IsTaskMember(ISymbol member, string taskMember) {
