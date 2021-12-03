@@ -19,9 +19,18 @@ jobs:
       - name: "Build"
         run: msbuild /property:Configuration=Release "src\ParallelHelper.sln"
 
+      - name: "Install Coverlet"
+        uses: actions/setup-dotnet@v1
+        run: dotnet tool install --global coverlet.console --version 1.7.0
+
       - name: "Test"
         shell: pwsh
         run: coverlet src\ParallelHelper.Test\bin\Release\netcoreapp3.1\ParallelHelper.Test.dll --target "dotnet" --targetargs 'test src\ParallelHelper.Test -c Release -logger:""C:\Program Files\AppVeyor\BuildAgent\dotnetcore\Appveyor.MSBuildLogger.dll"" --no-build' --format opencover --output coverage.xml
+
+      - name: "Create Coverage Report"
+        run: |
+          dotnet tool install --global Codecov.Tool
+          codecov -f "coverage.xml"
 
       - name: "Upload Coverage Report"
         uses: codecov/codecov-action@v2
