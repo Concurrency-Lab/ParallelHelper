@@ -1,0 +1,27 @@
+name: Build
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+
+      - name: "Install MSBuild"
+        uses: microsoft/setup-msbuild@v1.1
+
+      - name: "Restore Dependencies"
+        run: msbuild -t:restore "src\ParallelHelper.sln"
+
+      - name: "Build"
+        run: msbuild /property:Configuration=Release "src\ParallelHelper.sln"
+
+      - name: "Test"
+        shell: pwsh
+        run: coverlet src\ParallelHelper.Test\bin\Release\netcoreapp3.1\ParallelHelper.Test.dll --target "dotnet" --targetargs 'test src\ParallelHelper.Test -c Release -logger:""C:\Program Files\AppVeyor\BuildAgent\dotnetcore\Appveyor.MSBuildLogger.dll"" --no-build' --format opencover --output coverage.xml
+
+      - name: "Upload Coverage Report"
+        uses: codecov/codecov-action@v2
+        with:
+          files: ./coverage.xml
