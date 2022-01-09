@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -37,7 +38,9 @@ namespace ParallelHelper.Test {
       MetadataReference.CreateFromFile(typeof(WebClient).Assembly.Location),
       MetadataReference.CreateFromFile(typeof(StreamReader).Assembly.Location),
       MetadataReference.CreateFromFile(typeof(Socket).Assembly.Location),
-      MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location)
+      MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),
+
+      MetadataReference.CreateFromFile(typeof(Component).Assembly.Location)
     };
 
     private static readonly CSharpCompilation BaseCompilation = CSharpCompilation.Create(
