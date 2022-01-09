@@ -115,5 +115,25 @@ class FileDownloader {
 }";
       VerifyDiagnostic(source);
     }
+
+    [TestMethod]
+    public void DoesNotReportAsyncLambdaAssignedToEventHandler() {
+      const string source = @"
+using System;
+using System.IO;
+using System.Net;
+using System.Threading.Tasks;
+
+class Test {
+  public event Action<Uri> OnDownloadRequested;
+
+  public void AddDownloadClient(WebClient webClient) {
+    OnDownloadRequested += async address => {
+      await webClient.DownloadStringTaskAsync(address);
+    };
+  }
+}";
+      VerifyDiagnostic(source);
+    }
   }
 }
