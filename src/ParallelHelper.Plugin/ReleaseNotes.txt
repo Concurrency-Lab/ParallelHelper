@@ -1,6 +1,6 @@
 ﻿v3.6.0
 
-- New Analyzer: PH_S034 - Async Lambda Reduced to Async Void
+- New Analyzer: PH_S034 - Async Lambda Inferred to Async Void
 
 
 ------------------

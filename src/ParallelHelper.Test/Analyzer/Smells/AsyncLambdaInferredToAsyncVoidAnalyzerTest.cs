@@ -3,7 +3,7 @@ using ParallelHelper.Analyzer.Smells;
 
 namespace ParallelHelper.Test.Analyzer.Smells {
   [TestClass]
-  public class AsyncLambdaReducedToAsyncVoidAnalyzerTest : AnalyzerTestBase<AsyncLambdaReducedToAsyncVoidAnalyzer> {
+  public class AsyncLambdaInferredToAsyncVoidAnalyzerTest : AnalyzerTestBase<AsyncLambdaInferredToAsyncVoidAnalyzer> {
     [TestMethod]
     public void ReportsAsyncParenthesizedLambdaPassedToMethodAcceptingAction() {
       const string source = @"

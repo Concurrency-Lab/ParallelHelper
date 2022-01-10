@@ -7,9 +7,9 @@ using System.Collections.Immutable;
 
 namespace ParallelHelper.Analyzer.Smells {
   /// <summary>
-  /// Analyzer that analyzes sources for async lambda expressions that are reduced to async void.
+  /// Analyzer that analyzes sources for async lambda expressions that are inferred to async void.
   /// 
-  /// <example>Illustrates a class that defines an async lambda expression which is reduced to async void.
+  /// <example>Illustrates a class that defines an async lambda expression which is inferred to async void.
   /// <code>
   /// interface IWorkQueue {
   ///   // Method only accepts synchronous callbacks
@@ -33,13 +33,13 @@ namespace ParallelHelper.Analyzer.Smells {
   /// </example>
   /// </summary>
   [DiagnosticAnalyzer(LanguageNames.CSharp)]
-  public class AsyncLambdaReducedToAsyncVoidAnalyzer : DiagnosticAnalyzer {
+  public class AsyncLambdaInferredToAsyncVoidAnalyzer : DiagnosticAnalyzer {
     public const string DiagnosticId = "PH_S034";
 
     private const string Category = "Concurrency";
 
-    private static readonly LocalizableString Title = "Async Lambda Reduced to Async Void";
-    private static readonly LocalizableString MessageFormat = "The async lambda expression is reduced to async void; thus, it cannot be awaited and uncaught exceptions may crash the application.";
+    private static readonly LocalizableString Title = "Async Lambda Inferred to Async Void";
+    private static readonly LocalizableString MessageFormat = "The async lambda expression is inferred to async void; thus, it cannot be awaited and uncaught exceptions may crash the application.";
     private static readonly LocalizableString Description = "";
 
     private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
