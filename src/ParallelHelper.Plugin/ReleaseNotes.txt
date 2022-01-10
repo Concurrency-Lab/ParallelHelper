@@ -1,4 +1,11 @@
-﻿v3.5.0
+﻿v3.6.0
+
+- New Analyzer: PH_S034 - Async Lambda Inferred to Async Void
+
+
+------------------
+
+v3.5.0
 
 - New Analyzer: PH_B016 - Exception handling on unawaited Task
 
