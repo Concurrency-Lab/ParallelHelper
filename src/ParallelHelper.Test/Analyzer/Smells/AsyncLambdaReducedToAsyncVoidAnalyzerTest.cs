@@ -60,6 +60,26 @@ class FileDownloader {
     }
 
     [TestMethod]
+    public void ReportsAsyncLambdaAssignedToField() {
+      const string source = @"
+using System;
+using System.IO;
+using System.Net;
+using System.Threading.Tasks;
+
+class Test {
+  private Action<Uri> OnDownloadRequested;
+
+  public void SetDownloadClient(WebClient webClient) {
+     OnDownloadRequested = async address => {
+      await webClient.DownloadStringTaskAsync(address);
+    };
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(10, 28));
+    }
+
+    [TestMethod]
     public void DoesNotReportAsyncParenthesizedLambdaPassedToMethodAcceptingFuncReturningTask() {
       const string source = @"
 using System;
@@ -117,7 +137,7 @@ class FileDownloader {
     }
 
     [TestMethod]
-    public void DoesNotReportAsyncLambdaAssignedToEventHandler() {
+    public void DoesNotReportAsyncLambdaAssignedToEvent() {
       const string source = @"
 using System;
 using System.IO;
