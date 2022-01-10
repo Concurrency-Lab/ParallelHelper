@@ -10,6 +10,7 @@ namespace ParallelHelper.Analyzer.Smells {
   /// Analyzer that analyzes sources for async lambda expressions that are reduced to async void.
   /// 
   /// <example>Illustrates a class that defines an async lambda expression which is reduced to async void.
+  /// <code>
   /// interface IWorkQueue {
   ///   // Method only accepts synchronous callbacks
   ///   void ScheduleWork(Action job);
@@ -62,7 +63,7 @@ namespace ParallelHelper.Analyzer.Smells {
       public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) { }
 
       public override void Analyze() {
-        if(IsAsyncVoidLambda()) {
+        if(IsAsyncVoidLambda() && !IsEventHandler()) {
           Context.ReportDiagnostic(Diagnostic.Create(Rule, Root.GetLocation()));
         }
       }
@@ -71,6 +72,11 @@ namespace ParallelHelper.Analyzer.Smells {
         return SemanticModel.GetSymbolInfo(Root, CancellationToken).Symbol is IMethodSymbol method
           && method.ReturnsVoid
           && method.IsAsync;
+      }
+
+      private bool IsEventHandler() {
+        return Root.Parent is AssignmentExpressionSyntax assignment
+          && SemanticModel.GetSymbolInfo(assignment.Left, CancellationToken).Symbol is IEventSymbol;
       }
     }
   }
