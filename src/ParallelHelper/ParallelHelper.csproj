@@ -6,7 +6,6 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
-    <NullableContextOptions>enable</NullableContextOptions> <!-- pre vs 2019.2 -->
   </PropertyGroup>
 
   <PropertyGroup>
