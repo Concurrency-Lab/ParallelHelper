@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ParallelHelper.Test {
   /// <summary>
@@ -29,7 +30,7 @@ namespace ParallelHelper.Test {
         _options = options.WithComparers(KeyComparer);
       }
 
-      public override bool TryGetValue(string key, out string value) {
+      public override bool TryGetValue(string key, [NotNullWhen(true)] out string? value) {
         return _options.TryGetValue(key, out value);
       }
     }

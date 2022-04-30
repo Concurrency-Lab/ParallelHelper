@@ -35,14 +35,14 @@ namespace ParallelHelper.Test {
       return $"{Path}: {Line},{Column}";
     }
 
-    public static bool operator==(DiagnosticResultLocation left, DiagnosticResultLocation right) {
+    public static bool operator==(DiagnosticResultLocation? left, DiagnosticResultLocation? right) {
       if(left == null) {
         return right == null;
       }
       return left.Equals(right);
     }
 
-    public static bool operator!=(DiagnosticResultLocation left, DiagnosticResultLocation right) {
+    public static bool operator!=(DiagnosticResultLocation? left, DiagnosticResultLocation? right) {
       return !(left == right);
     }
   }
