@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="ParallelHelper.f833642b-cd24-49ac-addc-e5328ce8fe88" Version="3.7.0" Language="en-US" Publisher="Christoph Amrein" />
+        <Identity Id="ParallelHelper.f833642b-cd24-49ac-addc-e5328ce8fe88" Version="3.6.0" Language="en-US" Publisher="Christoph Amrein" />
         <DisplayName>ParallelHelper</DisplayName>
         <Description xml:space="preserve">ParallelHelper is a static code analyzer that helps to identify concurrency related issues. Moreover, it provides hints to improve the robustness of code with concurrency in mind.</Description>
         <MoreInfo>https://github.com/Concurrency-Lab/ParallelHelper</MoreInfo>
