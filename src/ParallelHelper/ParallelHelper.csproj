@@ -10,13 +10,14 @@
 
   <PropertyGroup>
     <PackageId>ParallelHelper</PackageId>
-    <Version>3.7.0</Version>
+    <Version>3.6.0</Version>
     <Authors>Christoph Amrein</Authors>
     <PackageProjectUrl>https://github.com/Concurrency-Lab/ParallelHelper</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Concurrency-Lab/ParallelHelper</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Description>ParallelHelper is a static code analyzer that helps to identify concurrency related issues. Moreover, it provides hints to improve the robustness of code with concurrency in mind.</Description>
-    <PackageReleaseNotes>- New Analyzer: PH_S035 - Blocking Async Method Invocation in Constructor</PackageReleaseNotes>
+    <PackageReleaseNotes>- New Analyzer: PH_S034 - Async Lambda Inferred to Async Void
+- New Analyzer: PH_S035 - Blocking Async Method Invocation in Constructor</PackageReleaseNotes>
     <Copyright>Copyright (C) 2022  Christoph Amrein</Copyright>
     <PackageTags>C#, Parallel, Asynchronous, Concurrency, Bugs, Best Practices, TPL, Task, QC, Static Analysis, async, await</PackageTags>
     <NoPackageAnalysis>true</NoPackageAnalysis>
