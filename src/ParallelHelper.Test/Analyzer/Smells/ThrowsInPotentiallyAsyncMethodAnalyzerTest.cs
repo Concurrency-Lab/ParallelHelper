@@ -36,6 +36,27 @@ class Test {
     }
 
     [TestMethod]
+    public void ReportsNonAsyncMethodWithAsyncSuffixAndReturningTaskThatRethrows() {
+      // Reported: https://github.com/Concurrency-Lab/ParallelHelper/issues/106
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  private string value;
+
+  public Task<int> DoWorkAsync(string value) {
+    try {
+    } catch(Exception) {
+      throw;
+    }
+    return Task.FromResult(true);
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(10, 7));
+    }
+
+    [TestMethod]
     public void DoesNotReportNonAsyncMethodWithoutAsyncSuffixAndReturningTaskThatUsesThrowsStatement() {
       const string source = @"
 using System;

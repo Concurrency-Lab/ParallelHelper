@@ -1,4 +1,11 @@
-﻿v3.6.0
+﻿v3.6.1
+
+- Fixed Analyzer: PH_S032 - Fix NRE when re-throwing exceptions
+
+
+------------------
+
+v3.6.0
 
 - New Analyzer: PH_S034 - Async Lambda Inferred to Async Void
 - New Analyzer: PH_S035 - Blocking Async Method Invocation in Constructor
