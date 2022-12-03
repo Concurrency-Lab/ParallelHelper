@@ -98,7 +98,6 @@ namespace ParallelHelper.Analyzer.Smells {
       }
 
       private bool IsThrowsWithoutExcludedType(SyntaxNode node, IEnumerable<ITypeSymbol> excludedBaseTypes) {
-        
         return node switch {
           ThrowStatementSyntax statement => !IsAnySubTypeOf(statement.Expression, excludedBaseTypes),
           ThrowExpressionSyntax expression => !IsAnySubTypeOf(expression.Expression, excludedBaseTypes),
@@ -106,7 +105,10 @@ namespace ParallelHelper.Analyzer.Smells {
         };
       }
 
-      private bool IsAnySubTypeOf(SyntaxNode node, IEnumerable<ITypeSymbol> types) {
+      private bool IsAnySubTypeOf(SyntaxNode? node, IEnumerable<ITypeSymbol> types) {
+        if(node == null) {
+          return false;
+        }
         var nodeType = SemanticModel.GetTypeInfo(node, CancellationToken).Type;
         return nodeType != null
           && types.Any(baseType => baseType.IsBaseTypeOf(nodeType, CancellationToken));
