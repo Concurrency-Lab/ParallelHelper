@@ -151,5 +151,24 @@ class Test {
         .AddAnalyzerOption("dotnet_diagnostic.PH_S032.exclusions", "System.ArgumentException")
         .VerifyDiagnostic();
     }
+
+    [TestMethod]
+    public void DoesNotReportNonAsyncMethodWithAsyncSuffixAndReturningTaskThatUsesThrowsStatementButCatchesTheException() {
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public Task DoWorkAsync(int input) {
+    try {
+      throw new InvalidOperationException();
+    } catch(Exception) {}
+    return Task.CompletedTask;
+  }
+}";
+      CreateAnalyzerCompilationBuilder()
+        .AddSourceTexts(source)
+        .VerifyDiagnostic();
+    }
   }
 }
