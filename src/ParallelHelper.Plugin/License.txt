@@ -1,6 +1,6 @@
 Parallel Helper, Static C# Code Analyzer for Concurrency Related Issues
 Copyright (C) 2019 - 2021  Christoph Amrein, Concurrency Lab, Eastern Switzerland University of Applied Sciences, Switzerland
-Copyright (C) 2022  Christoph Amrein
+Copyright (C) 2022 - 2023  Christoph Amrein
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
