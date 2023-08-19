@@ -47,13 +47,31 @@ class Test {
 
   public Task<int> DoWorkAsync(string value) {
     try {
+      return Task.FromResult(1);
     } catch(Exception) {
       throw;
     }
-    return Task.FromResult(true);
   }
 }";
-      VerifyDiagnostic(source, new DiagnosticResultLocation(10, 7));
+      VerifyDiagnostic(source, new DiagnosticResultLocation(11, 7));
+    }
+
+    [TestMethod]
+    public void ReportsNonAsyncMethodWithAsyncSuffixAndReturningTaskThatUsesThrowsStatementAndCatchesOtherException() {
+      // Reported: https://github.com/Concurrency-Lab/ParallelHelper/issues/108
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public Task DoWorkAsync(int input) {
+    try {
+      throw new InvalidOperationException();
+    } catch(ArgumentNullException) {}
+    return Task.CompletedTask;
+  }
+}";
+      VerifyDiagnostic(source, new DiagnosticResultLocation(7, 7));
     }
 
     [TestMethod]
@@ -154,6 +172,7 @@ class Test {
 
     [TestMethod]
     public void DoesNotReportNonAsyncMethodWithAsyncSuffixAndReturningTaskThatUsesThrowsStatementButCatchesTheException() {
+      // Reported: https://github.com/Concurrency-Lab/ParallelHelper/issues/108
       const string source = @"
 using System;
 using System.Threading.Tasks;
@@ -166,9 +185,25 @@ class Test {
     return Task.CompletedTask;
   }
 }";
-      CreateAnalyzerCompilationBuilder()
-        .AddSourceTexts(source)
-        .VerifyDiagnostic();
+      VerifyDiagnostic(source);
+    }
+
+    [TestMethod]
+    public void DoesNotReportNonAsyncMethodWithAsyncSuffixAndReturningTaskThatUsesThrowsExpressionButCatchesTheException() {
+      // Reported: https://github.com/Concurrency-Lab/ParallelHelper/issues/108
+      const string source = @"
+using System;
+using System.Threading.Tasks;
+
+class Test {
+  public Task DoWorkAsync(int input) {
+    try {
+      var x = value ?? throw new ArgumentNullException(nameof(value));
+    } catch(Exception) {}
+    return Task.CompletedTask;
+  }
+}";
+      VerifyDiagnostic(source);
     }
   }
 }
