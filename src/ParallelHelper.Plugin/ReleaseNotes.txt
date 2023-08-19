@@ -1,6 +1,7 @@
 ﻿v3.6.1
 
 - Fixed Analyzer: PH_S032 - Fix NRE when re-throwing exceptions
+- Fixed Analyzer: PH_S032 - Fix false positives for caught exceptions
 
 
 ------------------
