@@ -106,9 +106,23 @@ namespace ParallelHelper.Analyzer.Smells {
         base.VisitThrowExpression(node);
       }
 
+      public override void VisitTryStatement(TryStatementSyntax node) {
+        int trackedExceptions = 0;
+        foreach(var catchClause in node.Catches) {
+          var type = SemanticModel.GetTypeInfo(catchClause.Declaration.Type, CancellationToken).Type;
+          if(type != null) {
+            _caughtExceptionTypes.Push(type);
+            trackedExceptions++;
+          }
+        }
+        base.VisitTryStatement(node);
+        for(int i = 0; i < trackedExceptions; i++) {
+          _caughtExceptionTypes.Pop();
+        }
+      }
+
       private bool IsExceptionToReport(ExpressionSyntax node) {
-        return !IsAnySubTypeOf(node, _excludedBaseTypes)
-          && !IsAnySubTypeOf(node, _caughtExceptionTypes);
+        return !IsAnySubTypeOf(node, _excludedBaseTypes.Concat(_caughtExceptionTypes).Distinct());
       }
 
       private bool IsAnySubTypeOf(SyntaxNode? node, IEnumerable<ITypeSymbol> types) {
