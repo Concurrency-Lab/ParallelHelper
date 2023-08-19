@@ -54,29 +54,31 @@ namespace ParallelHelper.Analyzer.Smells {
       new Analyzer(context).Analyze();
     }
 
-    private class Analyzer : InternalAnalyzerBase<MethodDeclarationSyntax> {
+    private class Analyzer : InternalAnalyzerWithSyntaxWalkerBase<MethodDeclarationSyntax> {
       private readonly TaskAnalysis _taskAnalysis;
+      private readonly Stack<ITypeSymbol> _caughtExceptionTypes = new Stack<ITypeSymbol>();
+      private readonly ISet<ITypeSymbol> _excludedBaseTypes;
 
       private bool IsMethodWithAsyncSuffix => Root.Identifier.Text.EndsWith(AsyncSuffix);
       private bool IsAsyncMethod => Root.Modifiers.Any(SyntaxKind.AsyncKeyword);
 
       public Analyzer(SyntaxNodeAnalysisContext context) : base(new SyntaxNodeAnalysisContextWrapper(context)) {
         _taskAnalysis = new TaskAnalysis(context.SemanticModel, context.CancellationToken);
+        _excludedBaseTypes = GetExcludedExceptionBaseTypes();
       }
 
       public override void Analyze() {
         if(!IsPotentiallyAsyncMethod()) {
           return;
         }
-        foreach(var throwsStatement in GetAllThrowsStatementsAndExpressionsInSameActivationFrame()) {
-          Context.ReportDiagnostic(Diagnostic.Create(Rule, throwsStatement.GetLocation()));
-        }
+        base.Analyze();
       }
 
-      private IEnumerable<ITypeSymbol> GetExcludedExceptionBaseTypes() {
+      private ISet<ITypeSymbol> GetExcludedExceptionBaseTypes() {
         return Context.Options.GetConfig(Rule, "exclusions", DefaultExcludedBaseTypes)
           .Split()
-          .SelectMany(SemanticModel.GetTypesByName);
+          .SelectMany(SemanticModel.GetTypesByName)
+          .ToImmutableHashSet();
       }
 
       private bool IsPotentiallyAsyncMethod() {
@@ -90,19 +92,23 @@ namespace ParallelHelper.Analyzer.Smells {
         return returnType != null && _taskAnalysis.IsTaskType(returnType);
       }
 
-      private IEnumerable<SyntaxNode> GetAllThrowsStatementsAndExpressionsInSameActivationFrame() {
-        var excludedBaseTypes = GetExcludedExceptionBaseTypes().ToArray();
-        return Root.DescendantNodesInSameActivationFrame()
-          .WithCancellation(CancellationToken)
-          .Where(node => IsThrowsWithoutExcludedType(node, excludedBaseTypes));
+      public override void VisitThrowStatement(ThrowStatementSyntax node) {
+        if(IsExceptionToReport(node.Expression)) {
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, node.GetLocation()));
+        }
+        base.VisitThrowStatement(node);
       }
 
-      private bool IsThrowsWithoutExcludedType(SyntaxNode node, IEnumerable<ITypeSymbol> excludedBaseTypes) {
-        return node switch {
-          ThrowStatementSyntax statement => !IsAnySubTypeOf(statement.Expression, excludedBaseTypes),
-          ThrowExpressionSyntax expression => !IsAnySubTypeOf(expression.Expression, excludedBaseTypes),
-          _ => false
-        };
+      public override void VisitThrowExpression(ThrowExpressionSyntax node) {
+        if(IsExceptionToReport(node.Expression)) {
+          Context.ReportDiagnostic(Diagnostic.Create(Rule, node.GetLocation()));
+        }
+        base.VisitThrowExpression(node);
+      }
+
+      private bool IsExceptionToReport(ExpressionSyntax node) {
+        return !IsAnySubTypeOf(node, _excludedBaseTypes)
+          && !IsAnySubTypeOf(node, _caughtExceptionTypes);
       }
 
       private bool IsAnySubTypeOf(SyntaxNode? node, IEnumerable<ITypeSymbol> types) {
